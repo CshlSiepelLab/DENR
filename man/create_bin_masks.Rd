@@ -9,7 +9,7 @@ create_bin_masks(txdb, bins, mask_start_bins = 0, mask_end_bins = 0)
 \arguments{
 \item{txdb}{a \code{\link[GenomicFeatures]{Txdb-class}} object}
 
-\item{bins}{a \code{\link[GenomicRanges]{GRangesList-class}}}
+\item{bins}{a \code{\link[GenomicRanges]{GRangesList-class}} object}
 
 \item{mask_start_bins}{The number of bins at the start of each transcript to
 mask}
@@ -18,7 +18,7 @@ mask}
 mask}
 }
 \value{
-A txDB object.
+A list of bit vectors
 }
 \description{
 Creates a set of bin masks for transcript starts and ends

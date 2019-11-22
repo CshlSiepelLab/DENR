@@ -43,3 +43,4 @@ vignettes/*.pdf
 *.Rproj
 
 log/
+.Rproj.user
