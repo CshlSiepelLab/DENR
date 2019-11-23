@@ -6,7 +6,14 @@ Authors@R: person("Yixin", "Zhao", email = "gzbyzyx2011@gmail.com",
   role = c("aut", "cre"))
 Description: Select the most actively transcribed transcript model using PRO-seq.
 bioCviews:
+  Software,
+  StatisticalMethod,
+  Transcriptomics
 Imports:
+  biomaRt,
+  AnnotationDbi,
+  stringr,
+  rappdirs
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
