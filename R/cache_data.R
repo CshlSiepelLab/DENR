@@ -188,11 +188,11 @@ cache_txdb <- function(txdb, species_name = NULL, genome_name = NULL,
     if(is.null(species_name)){
         species_name=organism(txdb)
     }
-    if(is.null(species_name)){
+    if(is.null(genome_name)){
         genome_name=txdb_metadata[txdb_metadata$name ==
                                       "biomart_dataset_version",]$value
     }
-    if(is.null(species_name)){
+    if(is.null(annotation_version)){
         annotation_version=txdb_metadata[txdb_metadata$name ==
                                              "biomart_database_version",]$value
     }
@@ -206,7 +206,7 @@ cache_txdb <- function(txdb, species_name = NULL, genome_name = NULL,
     txdb_name = paste0(paste(species_name,genome_name,annotation_version,sep = "-")
                        ,".txdb")
     cache_dir = cache_get_dir()
-    out_path =file.path(cache_dir,txdb_name)
+    out_path = file.path(cache_dir,txdb_name)
     message(paste("Saving db to", out_path))
     invisible(AnnotationDbi::saveDb(txdb,file = out_path))
 }
