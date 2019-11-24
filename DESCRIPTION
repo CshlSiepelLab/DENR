@@ -12,6 +12,8 @@ bioCviews:
 Imports:
   biomaRt,
   AnnotationDbi,
+  GenomeInfoDbData,
+  GenomicFeatures,
   stringr,
   rappdirs
 License: GPL (>=2)

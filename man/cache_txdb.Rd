@@ -4,12 +4,8 @@
 \alias{cache_txdb}
 \title{Cache a TxDb}
 \usage{
-cache_txdb(
-  txdb,
-  species_name = NULL,
-  genome_name = NULL,
-  annotation_version = NULL
-)
+cache_txdb(txdb, species_name = NULL, genome_name = NULL,
+  annotation_version = NULL)
 }
 \arguments{
 \item{txdb}{a TxDb object}
