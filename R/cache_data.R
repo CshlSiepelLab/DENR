@@ -1,12 +1,15 @@
 #' @title Split path
 #'
 #' @description Splits path into vector of path elements
-#' @return A vector of path elements. From
-#' \url{https://stackoverflow.com/questions/29214932/split-a-file-path-into-folder-names-vector}
+#' @return A vector of path elements.
 #'
 split_path <- function(path) {
-    if (dirname(path) %in% c(".", path)) return(basename(path))
-    return(c(split_path(dirname(path)),basename(path)))
+  # https://stackoverflow.com/questions/29214932/
+  # split-a-file-path-into-folder-names-vector
+  if (dirname(path) %in% c(".", path)) {
+    return(basename(path))
+  }
+  return(c(split_path(dirname(path)), basename(path)))
 }
 
 #' @title Create cache defaults
@@ -15,15 +18,17 @@ split_path <- function(path) {
 #' file
 #' @return A list with two elements \code{dir} and \code{path_file}
 #'
-cache_defaults <- function(){
-    # Set default cache dir location
-    default_cache_dir = rappdirs::user_data_dir(appname = "tuselecter")
-    default_cache_dir = do.call(file.path,
-                                as.list(split_path(path = default_cache_dir)))
+cache_defaults <- function() {
+  # Set default cache dir location
+  default_cache_dir <- rappdirs::user_data_dir(appname = "tuselecter")
+  default_cache_dir <- do.call(
+    file.path,
+    as.list(split_path(path = default_cache_dir))
+  )
 
-    # File that stores location of cache path
-    cache_path_file = file.path(default_cache_dir,"cache_path.txt")
-    return(list(dir = default_cache_dir,path_file=cache_path_file))
+  # File that stores location of cache path
+  cache_path_file <- file.path(default_cache_dir, "cache_path.txt")
+  return(list(dir = default_cache_dir, path_file = cache_path_file))
 }
 
 #' @title Create local cache
@@ -43,70 +48,75 @@ cache_defaults <- function(){
 #'
 #' @examples
 #' \dontrun{
-#'   #set a different cache path
-#'   set_cache_path('z:/transcript_db/tuselecter')
+#' # set a different cache path
+#' set_cache_path("z:/transcript_db/tuselecter")
 #' }
 #'
 #' @export
-cache_create_dir <- function(cache_dir = NULL){
-    defaults = cache_defaults()
-    # Set default cache dir location
-    default_cache_dir = defaults$dir
-    # File that stores location of cache path
-    cache_path_file = defaults$path_file
+cache_create_dir <- function(cache_dir = NULL) {
+  defaults <- cache_defaults()
+  # Set default cache dir location
+  default_cache_dir <- defaults$dir
+  # File that stores location of cache path
+  cache_path_file <- defaults$path_file
 
-    # Create cache_dir to serve as true cache dir or place to store
-    # cache path file to record cache location between sessions
-    if(!dir.exists(default_cache_dir)){
-        dir.create(default_cache_dir, recursive = TRUE)
+  # Create cache_dir to serve as true cache dir or place to store
+  # cache path file to record cache location between sessions
+  if (!dir.exists(default_cache_dir)) {
+    dir.create(default_cache_dir, recursive = TRUE)
+  }
+
+  # If cache_dir is unset use the default directory as the cache_dir
+  if (is.null(cache_dir)) {
+    cache_dir <- default_cache_dir
+  }
+
+  # Reparse cache_dir
+  cache_dir <- do.call(file.path, as.list(split_path(path = cache_dir)))
+
+  # Check to see if cache path file already exists, if so, require
+  # user input to overwrite/remove if set is different from recorded
+  # location
+  if (file.exists(cache_path_file)) {
+    cache_con <- file(cache_path_file)
+    cache_path_string <- readLines(cache_con,
+      n = 1,
+      warn = FALSE
+    )
+    close(cache_con)
+    counter <- 0
+    if (cache_dir != cache_path_string) {
+      usr_text <- paste0(
+        "Specified cache directory does not match previous",
+        " path directory:
+",
+        cache_path_string, " -> ", cache_dir
+      )
+      cat(usr_text)
+      overwrite_cache_string <- tolower(
+        readline(prompt = "Continue setting cache path [y/n]:")
+      )
+      while (counter < 10 && !overwrite_cache_string %in% c("y", "n")) {
+        cat("Invalid input. Input must be \'y\' or \'n\'")
+        overwrite_cache_string <- tolower(
+          readline(prompt = "Continue setting cache path [y/n]:")
+        )
+        counter <- counter + 1
+      }
+      # If not overwriting cache location set cache_dir to previous location
+      if (overwrite_cache_string == "n") {
+        cache_dir <- cache_path_string
+      }
     }
+  }
 
-    # If cache_dir is unset use the default directory as the cache_dir
-    if(is.null(cache_dir)){
-        cache_dir = default_cache_dir
-    }
+  # Create cache_dir if does not exist
+  if (!dir.exists(cache_dir)) {
+    dir.create(cache_dir, recursive = TRUE)
+  }
 
-    # Reparse cache_dir
-    cache_dir = do.call(file.path, as.list(split_path(path = cache_dir)))
-
-    # Check to see if cache path file already exists, if so, require
-    # user input to overwrite/remove if set is different from recorded
-    # location
-    if(file.exists(cache_path_file)){
-        cache_con = file(cache_path_file)
-        cache_path_string = readLines(cache_con, n = 1,
-                                      warn = FALSE)
-        close(cache_con)
-        counter = 0
-        if(cache_dir != cache_path_string){
-            usr_text = paste0('Specified cache directory does not match previous',
-                              ' path directory:\n',
-                              cache_path_string, ' -> ', cache_dir)
-            cat(usr_text)
-            overwrite_cache_string = tolower(
-                readline(prompt = 'Continue setting cache path [y/n]:')
-                )
-            while(counter < 10 && !overwrite_cache_string %in% c("y","n")){
-                cat("Invalid input. Input must be \'y\' or \'n\'")
-                overwrite_cache_string = tolower(
-                    readline(prompt = 'Continue setting cache path [y/n]:')
-                    )
-                counter = counter + 1
-            }
-            # If not overwriting cache location set cache_dir to previous location
-            if(overwrite_cache_string == "n") {
-                cache_dir = cache_path_string
-            }
-        }
-    }
-
-    # Create cache_dir if does not exist
-    if(!dir.exists(cache_dir)){
-        dir.create(cache_dir, recursive = TRUE)
-    }
-
-    # Record cache dir path
-    write(x = normalizePath(cache_dir,winslash = "/"), file = cache_path_file)
+  # Record cache dir path
+  write(x = normalizePath(cache_dir, winslash = "/"), file = cache_path_file)
 }
 
 
@@ -126,29 +136,31 @@ cache_create_dir <- function(cache_dir = NULL){
 #' @rdname cache_set_dir
 #' @examples
 #'
-#' \dontshow{cache_set_dir(temppath=TRUE)}
+#' \dontshow{
+#' cache_set_dir(temppath = TRUE)
+#' }
 #'
 #' print(cache_get_dir())
-#'
-#'
 #' @export
-cache_set_dir <- function(cache_dir = NULL){
-    defaults = cache_defaults()
-    # File that stores location of cache path
-    cache_path_file = defaults$path_file
+cache_set_dir <- function(cache_dir = NULL) {
+  defaults <- cache_defaults()
+  # File that stores location of cache path
+  cache_path_file <- defaults$path_file
 
-    # Run create cache dir function which will do nothing if it already
-    # exists
-    cache_create_dir(cache_dir)
+  # Run create cache dir function which will do nothing if it already
+  # exists
+  cache_create_dir(cache_dir)
 
-    # Get cache path
-    cache_con = file(cache_path_file)
-    cache_path_string = readLines(cache_con, n = 1,
-                                  warn = FALSE)
-    close(cache_con)
+  # Get cache path
+  cache_con <- file(cache_path_file)
+  cache_path_string <- readLines(cache_con,
+    n = 1,
+    warn = FALSE
+  )
+  close(cache_con)
 
-    # Set environmental variable CACHE_DIR_TUSEL to the cache file path
-    Sys.setenv("CACHE_DIR_TUSEL"= cache_path_string)
+  # Set environmental variable CACHE_DIR_TUSEL to the cache file path
+  Sys.setenv("CACHE_DIR_TUSEL" = cache_path_string)
 }
 
 
@@ -163,16 +175,20 @@ cache_set_dir <- function(cache_dir = NULL){
 #' @seealso \code{\link{cache_set_dir}}
 #'
 #' @export
-cache_get_dir <- function(){
-    cache_path = Sys.getenv(x = "CACHE_DIR_TUSEL",
-                          unset = "unset")
-    if(cache_path == "unset"){
-        stop("Cache directory not set. Run cache_set_dir()")
-    } else if (!dir.exists(cache_path)){
-        stop(paste("Cache directory does not exist:", cache_path,
-                   "Run set_cache_path(cache_directory) to fix."))
-    }
-    return(cache_path)
+cache_get_dir <- function() {
+  cache_path <- Sys.getenv(
+    x = "CACHE_DIR_TUSEL",
+    unset = "unset"
+  )
+  if (cache_path == "unset") {
+    stop("Cache directory not set. Run cache_set_dir()")
+  } else if (!dir.exists(cache_path)) {
+    stop(paste(
+      "Cache directory does not exist:", cache_path,
+      "Run set_cache_path(cache_directory) to fix."
+    ))
+  }
+  return(cache_path)
 }
 
 
@@ -194,62 +210,67 @@ cache_get_dir <- function(){
 #'
 #' @export
 save_txdb <- function(txdb, species_name = NULL, genome_name = NULL,
-                     annotation_version = NULL){
-    # Check that txdb is an actual transcript database object
-    if(!methods::is(txdb,"TxDb")){
-        stop("txdb is not a TxDb object")
-    }
-    # Get metadata from TxDb
-    txdb_metadata = S4Vectors::metadata(txdb)
-    txdb_metadata$name = tolower(gsub(" ", "_", txdb_metadata$name))
-    # Set defaults if options not specified
-    if(is.null(species_name)){
-        species_name=tolower(organism(txdb))
-    }
-    if(is.null(genome_name)){
-        genome_name=tolower(txdb_metadata[txdb_metadata$name ==
-                                      "biomart_dataset_version",]$value)
-    }
-    if(is.null(annotation_version)){
-        annotation_version=tolower(txdb_metadata[txdb_metadata$name ==
-                                             "biomart_database_version",]$value)
-    }
+                      annotation_version = NULL) {
+  # Check that txdb is an actual transcript database object
+  if (!methods::is(txdb, "TxDb")) {
+    stop("txdb is not a TxDb object")
+  }
+  # Get metadata from TxDb
+  txdb_metadata <- S4Vectors::metadata(txdb)
+  txdb_metadata$name <- tolower(gsub(" ", "_", txdb_metadata$name))
+  # Set defaults if options not specified
+  if (is.null(species_name)) {
+    species_name <- tolower(organism(txdb))
+  }
+  if (is.null(genome_name)) {
+    genome_name <- tolower(txdb_metadata[txdb_metadata$name ==
+      "biomart_dataset_version", ]$value)
+  }
+  if (is.null(annotation_version)) {
+    annotation_version <- tolower(txdb_metadata[txdb_metadata$name ==
+      "biomart_database_version", ]$value)
+  }
 
-    # Remove all spaces and '-' from names
-    species_name = gsub("-|\\s","_",species_name)
-    genome_name = gsub("-|\\s","_",genome_name)
-    annotation_version = gsub("-|\\s","_",annotation_version)
+  # Remove all spaces and '-' from names
+  species_name <- gsub("-|\\s", "_", species_name)
+  genome_name <- gsub("-|\\s", "_", genome_name)
+  annotation_version <- gsub("-|\\s", "_", annotation_version)
 
-    # Create output name
-    txdb_name = paste0(paste(species_name,genome_name,annotation_version,sep = "-")
-                       ,".txdb")
-    cache_dir = cache_get_dir()
-    out_path = do.call(file.path, as.list(split_path(path = cache_dir)))
-    out_path = file.path(out_path, txdb_name)
-    write = TRUE
-    # Check if file already exists
-    if(file.exists(out_path)){
-        counter = 0
-        usr_text = paste0('File already exists:\n',
-                          txdb_name)
-        cat(usr_text)
-        overwrite = tolower(
-            readline(prompt = 'Overwrite? [y/n]:')
-        )
-        while(counter < 10 && !overwrite %in% c("y","n")){
-            cat("Invalid input. Input must be \'y\' or \'n\'")
-            overwrite = tolower(
-                readline(prompt = 'Overwrite? [y/n]:')
-            )
-            counter = counter + 1
-        }
-        write = (overwrite=="y")
+  # Create output name
+  txdb_name <- paste0(
+    paste(species_name, genome_name, annotation_version, sep = "-"),
+    ".txdb"
+  )
+  cache_dir <- cache_get_dir()
+  out_path <- do.call(file.path, as.list(split_path(path = cache_dir)))
+  out_path <- file.path(out_path, txdb_name)
+  write <- TRUE
+  # Check if file already exists
+  if (file.exists(out_path)) {
+    counter <- 0
+    usr_text <- paste0(
+      "File already exists:
+",
+      txdb_name
+    )
+    cat(usr_text)
+    overwrite <- tolower(
+      readline(prompt = "Overwrite? [y/n]:")
+    )
+    while (counter < 10 && !overwrite %in% c("y", "n")) {
+      cat("Invalid input. Input must be \'y\' or \'n\'")
+      overwrite <- tolower(
+        readline(prompt = "Overwrite? [y/n]:")
+      )
+      counter <- counter + 1
     }
-    # If still okay to write, then do so
-    if(isTRUE(write)) {
-        message(paste("Saving db to", out_path))
-        invisible(AnnotationDbi::saveDb(txdb,file = out_path))
-    }
+    write <- (overwrite == "y")
+  }
+  # If still okay to write, then do so
+  if (isTRUE(write)) {
+    message(paste("Saving db to", out_path))
+    invisible(AnnotationDbi::saveDb(txdb, file = out_path))
+  }
 }
 
 
@@ -262,15 +283,18 @@ save_txdb <- function(txdb, species_name = NULL, genome_name = NULL,
 #' @seealso \code{\link{save_txdb}}
 #'
 #' @export
-list_cached_txdb <- function(){
-    cache_dir = cache_get_dir()
-    # List all txdb
-    txdb_list = dir(path = cache_dir, pattern = "*.txdb")
-    txdb_table = stringr::str_match(string = txdb_list,
-                                    pattern = "^(.*)-(.*)-(.*).txdb")
-    txdb_table = as.data.frame(txdb_table[,c(2:4,1),drop=FALSE])
-    colnames(txdb_table) = c("species","genome","annotation_version","file_name")
-    return(txdb_table)
+list_cached_txdb <- function() {
+  cache_dir <- cache_get_dir()
+  # List all txdb
+  txdb_list <- dir(path = cache_dir, pattern = "*.txdb")
+  txdb_table <- stringr::str_match(
+    string = txdb_list,
+    pattern = "^(.*)-(.*)-(.*).txdb"
+  )
+  txdb_table <- as.data.frame(txdb_table[, c(2:4, 1), drop = FALSE])
+  colnames(txdb_table) <- c("species", "genome", "annotation_version",
+                            "file_name")
+  return(txdb_table)
 }
 
 #' @title Load txdb from cache
@@ -284,14 +308,12 @@ list_cached_txdb <- function(){
 #' @seealso \code{\link{save_txdb}},\code{\link{list_cached_txdb}}
 #'
 #' @export
-load_txdb <- function(file_name){
-    cache_dir = cache_get_dir()
-    in_path = file.path(cache_dir,file_name)
-    if(file.exists(in_path)){
-        return(invisible(AnnotationDbi::loadDb(file = in_path)))
-    } else {
-        stop("TxDb does not exist. Run list_cached_txdb() to view available db.")
-    }
+load_txdb <- function(file_name) {
+  cache_dir <- cache_get_dir()
+  in_path <- file.path(cache_dir, file_name)
+  if (file.exists(in_path)) {
+    return(invisible(AnnotationDbi::loadDb(file = in_path)))
+  } else {
+    stop("TxDb does not exist. Run list_cached_txdb() to view available db.")
+  }
 }
-
-
