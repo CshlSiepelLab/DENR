@@ -1,4 +1,4 @@
 library(testthat)
 library(tuSelecter2)
 
-test_check(package = "tuSelecter2",filter = "test_")
+test_check(package = "tuSelecter2")

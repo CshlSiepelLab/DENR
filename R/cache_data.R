@@ -77,6 +77,7 @@ cache_create_dir <- function(cache_dir = NULL){
         cache_path_string = readLines(cache_con, n = 1,
                                       warn = FALSE)
         close(cache_con)
+        counter = 0
         if(cache_dir != cache_path_string){
             usr_text = paste0('Specified cache directory does not match previous',
                               ' path directory:\n',
@@ -85,11 +86,12 @@ cache_create_dir <- function(cache_dir = NULL){
             overwrite_cache_string = tolower(
                 readline(prompt = 'Continue setting cache path [y/n]:')
                 )
-            while(!overwrite_cache_string %in% c("y","n")){
+            while(counter < 10 && !overwrite_cache_string %in% c("y","n")){
                 cat("Invalid input. Input must be \'y\' or \'n\'")
                 overwrite_cache_string = tolower(
                     readline(prompt = 'Continue setting cache path [y/n]:')
                     )
+                counter = counter + 1
             }
             # If not overwriting cache location set cache_dir to previous location
             if(overwrite_cache_string == "n") {
@@ -202,21 +204,21 @@ save_txdb <- function(txdb, species_name = NULL, genome_name = NULL,
     txdb_metadata$name = tolower(gsub(" ", "_", txdb_metadata$name))
     # Set defaults if options not specified
     if(is.null(species_name)){
-        species_name=organism(txdb)
+        species_name=tolower(organism(txdb))
     }
     if(is.null(genome_name)){
-        genome_name=txdb_metadata[txdb_metadata$name ==
-                                      "biomart_dataset_version",]$value
+        genome_name=tolower(txdb_metadata[txdb_metadata$name ==
+                                      "biomart_dataset_version",]$value)
     }
     if(is.null(annotation_version)){
-        annotation_version=txdb_metadata[txdb_metadata$name ==
-                                             "biomart_database_version",]$value
+        annotation_version=tolower(txdb_metadata[txdb_metadata$name ==
+                                             "biomart_database_version",]$value)
     }
 
     # Remove all spaces and '-' from names
-    species_name = tolower(gsub("-|\\s","_",species_name))
-    genome_name = tolower(gsub("-|\\s","_",genome_name))
-    annotation_version = tolower(gsub("-|\\s","_",annotation_version))
+    species_name = gsub("-|\\s","_",species_name)
+    genome_name = gsub("-|\\s","_",genome_name)
+    annotation_version = gsub("-|\\s","_",annotation_version)
 
     # Create output name
     txdb_name = paste0(paste(species_name,genome_name,annotation_version,sep = "-")
@@ -224,8 +226,30 @@ save_txdb <- function(txdb, species_name = NULL, genome_name = NULL,
     cache_dir = cache_get_dir()
     out_path = do.call(file.path, as.list(split_path(path = cache_dir)))
     out_path = file.path(out_path, txdb_name)
-    message(paste("Saving db to", out_path))
-    invisible(AnnotationDbi::saveDb(txdb,file = out_path))
+    write = TRUE
+    # Check if file already exists
+    if(file.exists(out_path)){
+        counter = 0
+        usr_text = paste0('File already exists:\n',
+                          txdb_name)
+        cat(usr_text)
+        overwrite = tolower(
+            readline(prompt = 'Overwrite? [y/n]:')
+        )
+        while(counter < 10 && !overwrite %in% c("y","n")){
+            cat("Invalid input. Input must be \'y\' or \'n\'")
+            overwrite = tolower(
+                readline(prompt = 'Overwrite? [y/n]:')
+            )
+            counter = counter + 1
+        }
+        write = (overwrite=="y")
+    }
+    # If still okay to write, then do so
+    if(isTRUE(write)) {
+        message(paste("Saving db to", out_path))
+        invisible(AnnotationDbi::saveDb(txdb,file = out_path))
+    }
 }
 
 
