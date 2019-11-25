@@ -1,3 +1,14 @@
+#' @title Split path
+#'
+#' @description Splits path into vector of path elements
+#' @return A vector of path elements. From
+#' \url{https://stackoverflow.com/questions/29214932/split-a-file-path-into-folder-names-vector}
+#'
+split_path <- function(path) {
+    if (dirname(path) %in% c(".", path)) return(basename(path))
+    return(c(split_path(dirname(path)),basename(path)))
+}
+
 #' @title Create cache defaults
 #'
 #' @description Creates paths for default cache_dir and cache_path.txt
@@ -7,11 +18,13 @@
 cache_defaults <- function(){
     # Set default cache dir location
     default_cache_dir = rappdirs::user_data_dir(appname = "tuselecter")
+    default_cache_dir = do.call(file.path,
+                                as.list(split_path(path = default_cache_dir)))
+
     # File that stores location of cache path
     cache_path_file = file.path(default_cache_dir,"cache_path.txt")
     return(list(dir = default_cache_dir,path_file=cache_path_file))
 }
-
 
 #' @title Create local cache
 #'
@@ -53,6 +66,9 @@ cache_create_dir <- function(cache_dir = NULL){
         cache_dir = default_cache_dir
     }
 
+    # Reparse cache_dir
+    cache_dir = do.call(file.path, as.list(split_path(path = cache_dir)))
+
     # Check to see if cache path file already exists, if so, require
     # user input to overwrite/remove if set is different from recorded
     # location
@@ -61,7 +77,7 @@ cache_create_dir <- function(cache_dir = NULL){
         cache_path_string = readLines(cache_con, n = 1,
                                       warn = FALSE)
         close(cache_con)
-        if(suppressWarnings(normalizePath(cache_dir)) != cache_path_string){
+        if(cache_dir != cache_path_string){
             usr_text = paste0('Specified cache directory does not match previous',
                               ' path directory:\n',
                               cache_path_string, ' -> ', cache_dir)
@@ -88,7 +104,7 @@ cache_create_dir <- function(cache_dir = NULL){
     }
 
     # Record cache dir path
-    write(x = normalizePath(cache_dir), file = cache_path_file)
+    write(x = normalizePath(cache_dir,winslash = "/"), file = cache_path_file)
 }
 
 
@@ -171,11 +187,11 @@ cache_get_dir <- function(){
 #' @param annotation_version a version id (defaults to using the BioMart
 #' database version if none specified)
 #'
-#' @rdname cache_txdb
+#' @rdname save_txdb
 #' @seealso \code{\link{cache_get_dir}}
 #'
 #' @export
-cache_txdb <- function(txdb, species_name = NULL, genome_name = NULL,
+save_txdb <- function(txdb, species_name = NULL, genome_name = NULL,
                      annotation_version = NULL){
     # Check that txdb is an actual transcript database object
     if(!methods::is(txdb,"TxDb")){
@@ -206,7 +222,8 @@ cache_txdb <- function(txdb, species_name = NULL, genome_name = NULL,
     txdb_name = paste0(paste(species_name,genome_name,annotation_version,sep = "-")
                        ,".txdb")
     cache_dir = cache_get_dir()
-    out_path = file.path(cache_dir,txdb_name)
+    out_path = do.call(file.path, as.list(split_path(path = cache_dir)))
+    out_path = file.path(out_path, txdb_name)
     message(paste("Saving db to", out_path))
     invisible(AnnotationDbi::saveDb(txdb,file = out_path))
 }
