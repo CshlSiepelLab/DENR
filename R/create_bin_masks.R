@@ -11,6 +11,6 @@
 #' @rdname create_bin_masks
 #' @return A list of bit vectors
 #' @export
-create_bin_masks <- function(txdb, bins, mask_start_bins=0, mask_end_bins=0){
+create_bin_masks <- function(txdb, bins, mask_start_bins=0, mask_end_bins=0) {
     print(txdb)
 }
