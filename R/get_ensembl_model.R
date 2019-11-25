@@ -69,7 +69,7 @@ download_txdb <- function(species, ensembl_version = NULL, cache = TRUE){
   # Cache the downloaded txdb
   if(isTRUE(cache)){
     cache_set_dir()
-    cache_txdb(txdb = txdb)
+    save_txdb(txdb = txdb)
   }
   return(txdb)
 }
