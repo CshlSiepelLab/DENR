@@ -6,6 +6,10 @@
 \usage{
 cache_set_dir(cache_dir = NULL)
 }
+\arguments{
+\item{cache_dir}{Character path to new local files path. If null,
+path will be reset to default user data directory location.}
+}
 \description{
 Downloaded databases are cached locally. This function
 sets the R environmental variable \code{CACHE_DIR_TUSEL}
@@ -16,14 +20,6 @@ Otherwise it just uses the previously specified cache dir.
 If no cache directory has been created  and \code{cache_dir}
 is unspecified it creates one in the default location.
 }
-\examples{
-
-\dontshow{cache_set_dir(temppath=TRUE)}
-
-print(cache_get_dir())
-
-
-}
 \seealso{
-\code{\link{cache_set_dir}}
+\code{\link{cache_get_dir}}
 }

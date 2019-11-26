@@ -54,6 +54,9 @@ view_available_txdb <- function(species = NULL, ensembl_version = NULL) {
 #' hsapiens).
 #' @param ensembl_version The Ensembl release version. Defaults to current
 #' release.
+#' @param cache whether to automatically cache the downloaded TxDb (Default:
+#' TRUE)
+#'
 #' @return TxDb object
 #' @export
 download_txdb <- function(species, ensembl_version = NULL, cache = TRUE) {

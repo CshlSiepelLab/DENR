@@ -7,7 +7,7 @@
 create_bin_masks(txdb, bins, mask_start_bins = 0, mask_end_bins = 0)
 }
 \arguments{
-\item{txdb}{a \code{\link[GenomicFeatures]{Txdb-class}} object}
+\item{txdb}{a \code{\link[GenomicFeatures]{TxDb-class}} object}
 
 \item{bins}{a \code{\link[GenomicRanges]{GRangesList-class}} object}
 

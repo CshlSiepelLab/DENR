@@ -1,6 +1,9 @@
 #' @title Split path
 #'
 #' @description Splits path into vector of path elements
+#'
+#' @param path file path
+#'
 #' @return A vector of path elements.
 #'
 split_path <- function(path) {
@@ -39,9 +42,8 @@ cache_defaults <- function() {
 #' default user data directory for the package will be used. See
 #' \code{\link[rappdirs]{user_data_dir}} for details.
 #'
-#' @param path
-#' Character path to new local files path. If null, path will be
-#' reset to default user data directory location.
+#' @param cache_dir Character path to new local files path. If null,
+#' path will be reset to default user data directory location.
 #'
 #' @rdname cache_create_dir
 #' @seealso \code{\link{cache_set_dir}} \link{cache_get_dir}
@@ -132,15 +134,11 @@ cache_create_dir <- function(cache_dir = NULL) {
 #' If no cache directory has been created  and \code{cache_dir}
 #' is unspecified it creates one in the default location.
 #'
-#' @seealso \code{\link{cache_set_dir}}
+#' @param cache_dir Character path to new local files path. If null,
+#' path will be reset to default user data directory location.
+#'
+#' @seealso \code{\link{cache_get_dir}}
 #' @rdname cache_set_dir
-#' @examples
-#'
-#' \dontshow{
-#' cache_set_dir(temppath = TRUE)
-#' }
-#'
-#' print(cache_get_dir())
 #' @export
 cache_set_dir <- function(cache_dir = NULL) {
   defaults <- cache_defaults()
@@ -220,7 +218,7 @@ save_txdb <- function(txdb, species_name = NULL, genome_name = NULL,
   txdb_metadata$name <- tolower(gsub(" ", "_", txdb_metadata$name))
   # Set defaults if options not specified
   if (is.null(species_name)) {
-    species_name <- tolower(organism(txdb))
+    species_name <- tolower(GenomeInfoDb::organism(txdb))
   }
   if (is.null(genome_name)) {
     genome_name <- tolower(txdb_metadata[txdb_metadata$name ==
