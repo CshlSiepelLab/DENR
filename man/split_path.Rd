@@ -6,9 +6,11 @@
 \usage{
 split_path(path)
 }
+\arguments{
+\item{path}{file path}
+}
 \value{
-A vector of path elements. From
-\url{https://stackoverflow.com/questions/29214932/split-a-file-path-into-folder-names-vector}
+A vector of path elements.
 }
 \description{
 Splits path into vector of path elements

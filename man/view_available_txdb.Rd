@@ -8,13 +8,14 @@ view_available_txdb(species = NULL, ensembl_version = NULL)
 }
 \arguments{
 \item{species}{the species to download the TxDb for. Use the first letter
-of the genus and the full species as one string (e.g. homo sapiens -> 
-hsapiens)}
+of the genus and the full species as one string (e.g. homo sapiens ->
+hsapiens). If not specified will return all species.}
 
-\item{ensembl_version}{The Ensembl release version.}
+\item{ensembl_version}{The Ensembl release version. Defaults to current
+release.}
 }
 \value{
-A mart object.
+A data.frame of available datasets
 }
 \description{
 Convenience function for retrieving information about available ensembl marts

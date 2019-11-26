@@ -58,7 +58,7 @@ add_peak_count <- function(wig, start_pos, end_pos) {
     wig
 }
 
-# add pausing peak read counts 
+# add pausing peak read counts
 peak_se <- list(peak_starts = start(tx_subset_plus) - 100,
               peak_ends = start(tx_subset_plus) + 100)
 
@@ -84,7 +84,7 @@ wig <- wig %>%
     mutate(score = Reduce("+", .[c("base", "pausing_peak", "tx_sum")])) %>%
     dplyr::select(seqnames, start, width, score) %>%
     as_granges()
-    
+
 plot(start(wig), wig$score)
 
 rtracklayer::export.wig(wig, file.path(extdata_dir, "test_single_strand.wig"))

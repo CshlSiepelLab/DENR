@@ -7,8 +7,8 @@
 cache_create_dir(cache_dir = NULL)
 }
 \arguments{
-\item{path}{Character path to new local files path. If null, path will be
-reset to default user data directory location.}
+\item{cache_dir}{Character path to new local files path. If null,
+path will be reset to default user data directory location.}
 }
 \description{
 Creates local data file cache. If the directory does not exist, it
@@ -18,8 +18,8 @@ default user data directory for the package will be used. See
 }
 \examples{
 \dontrun{
-  #set a different cache path
-  set_cache_path('z:/transcript_db/tuselecter')
+# set a different cache path
+set_cache_path("z:/transcript_db/tuselecter")
 }
 
 }

@@ -4,19 +4,25 @@
 \alias{download_txdb}
 \title{Download transcript model from biomart}
 \usage{
-download_txdb(species = NULL, ensembl_version = NULL, cache = TRUE)
+download_txdb(species, ensembl_version = NULL, cache = TRUE)
 }
 \arguments{
 \item{species}{the species to download the TxDb for. Use the first letter
-of the genus and the full species as one string (e.g. homo sapiens -> 
-hsapiens)}
+of the genus and the full species as one string (e.g. homo sapiens ->
+hsapiens).}
 
-\item{ensembl_version}{The Ensembl release version.}
+\item{ensembl_version}{The Ensembl release version. Defaults to current
+release.}
+
+\item{cache}{whether to automatically cache the downloaded TxDb (Default:
+TRUE)}
 }
 \value{
-A mart object.
+TxDb object
 }
 \description{
 This function creates a TxDb object from the biomaRt ensembl database,
-converts it to a TxDb, and returns it.
+converts it to a TxDb, and returns it (WARNING: this may take a few
+minutes.) To view available species for a given ensembl version run
+view_available_txdb().
 }
