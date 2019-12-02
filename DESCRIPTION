@@ -23,9 +23,7 @@ Imports:
   foreach,
   snow,
   doSNOW,
-  utils,
-  plyranges,
-  tibble
+  utils
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true

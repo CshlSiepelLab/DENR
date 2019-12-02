@@ -6,7 +6,6 @@
 #' each element in the list contains transcripts from one gene or several genes
 #' which are overlapped.
 #' @param bin_size An integer, used to tail the gene region. Default is 50bp.
-#' @importFrom plyranges `%>%`
 #' @return A \code{\link[GenomicRanges]{GRangesList-class}} object, containing
 #' the binned region.
 #' @export
@@ -18,8 +17,8 @@ create_bins <- function(gr_ls, bin_size = 50) {
     } else if (!(methods::is(bin_size, "numeric") & bin_size > 0)) {
         stop("bin_size is not a positive number")
     }
-    gr_bin_ls <- lapply(gr_ls, get_gr_bin, bin_size = bin_size) %>%
-        methods::as("GRangesList")
+    gr_bin_ls <- methods::as(lapply(gr_ls, get_gr_bin, bin_size = bin_size),
+                             "GRangesList")
     return(gr_bin_ls)
 }
 
@@ -38,12 +37,12 @@ create_bins <- function(gr_ls, bin_size = 50) {
 get_gr_bin <- function(gr, bin_size) {
     g_start <- min(GenomicRanges::start(gr))
     g_end <- max(GenomicRanges::end(gr))
+    g_starts <- seq(g_start, g_end, by = bin_size)
     gr_binned <-
-        tibble::tibble(seqnames = runValue(GenomicRanges::seqnames(gr)),
-                                start = seq(g_start, g_end, by = bin_size),
-                                width = bin_size,
-                                strand = runValue(GenomicRanges::strand(gr))
-    ) %>%
-        plyranges::as_granges()
+        data.frame(seqnames = runValue(GenomicRanges::seqnames(gr)),
+                                start = g_starts,
+                                end = g_starts + bin_size - 1,
+                                strand = runValue(GenomicRanges::strand(gr)))
+    gr_binned <- GenomicRanges::makeGRangesFromDataFrame(gr_binned)
     return(gr_binned)
 }
