@@ -23,7 +23,7 @@ g1 <- tibble(
 
 g2 <- tibble(
     start = c(7000, 7000, 8000),
-    width = c(5000, 5000, 3000),
+    width = c(4000, 4000, 2000),
     seqnames = "1",
     strand = "+",
     type = c("gene", rep("transcript", 2)),
