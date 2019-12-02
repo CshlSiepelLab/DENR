@@ -6,6 +6,6 @@ testthat::test_that("Style should be lint-free", {
     )
     lintr::expect_lint_free(
         path = lint_path,
-        relative_path = FALSE
+        relative_path = TRUE
         )
 })
