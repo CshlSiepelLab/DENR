@@ -72,4 +72,6 @@ group_transcripts <- function(transcript_granges, distance = 0, threads = 1) {
 }
 
 ## Appease R CMD check
-if (getRversion() >= "2.15.1")  utils::globalVariables(c("tx"))
+if (getRversion() >= "2.15.1") {
+  utils::globalVariables(c("tx"))
+}
