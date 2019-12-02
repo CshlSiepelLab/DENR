@@ -35,12 +35,17 @@ group_transcripts <- function(transcript_granges, distance = 0, threads = 1) {
   # Create iterator over transcript_granges with chromosome_strand information
   tx_gr_iter <- iterators::isplit(transcript_granges,
                                   paste0(strand, "_", chrom))
-  # Create parallel cluster and register it with the foreach backend
-  cluster <- snow::makeCluster(threads)
-  doSNOW::registerDoSNOW(cluster)
+
+  if (threads > 1) {
+    # Create parallel cluster and register it with the foreach backend
+    cluster <- snow::makeCluster(threads)
+    doSNOW::registerDoSNOW(cluster)
+    `%doloop%` <- foreach::`%dopar%`
+  } else {
+    `%doloop%` <- foreach::`%do%`
+  }
   # Iterate over
-  `%dopar%` <- foreach::`%dopar%`
-  tx_groups <- foreach::foreach(tx = tx_gr_iter, .combine = "rbind") %dopar% {
+  tx_groups <- foreach::foreach(tx = tx_gr_iter, .combine = "rbind") %doloop% {
     # Get distance between end of transcript and start of following trans.
     # Negative values mean they overlap
     dist_to_next <- with(tx, GenomicRanges::start(value)[-1] -
@@ -63,7 +68,9 @@ group_transcripts <- function(transcript_granges, distance = 0, threads = 1) {
     return(uid_grouping)
   }
   # Stop cluster
-  snow::stopCluster(cluster)
+  if (threads > 1) {
+    snow::stopCluster(cluster)
+  }
   # Split the transcripting into their groups
   tx_groups <- tx_groups[order(tx_groups$uid), ]
   gr_groups <- GenomicRanges::split(transcript_granges,

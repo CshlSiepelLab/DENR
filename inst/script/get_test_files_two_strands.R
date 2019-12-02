@@ -34,7 +34,7 @@ g2 <- tibble(
 grng <- dplyr::bind_rows(g1, g2) %>% as_granges()
 txdb <- makeTxDbFromGRanges(grng)
 
-saveDb(txdb, file.path(extdata_dir, "txdb_test_two_strands"))
+saveDb(txdb, file.path(extdata_dir, "test_double_strand.txdb"))
 
 ################################################################################
 # generate test bigwig file
@@ -118,12 +118,12 @@ get_bigwig <- function(wig, name) {
     file.remove(file.path(extdata_dir, name))
 }
 
-get_bigwig(wig_plus, "test_two_strands_plus.wig")
-get_bigwig(wig_minus, "test_two_strands_minus.wig")
+get_bigwig(wig_plus, "test_double_strand_plus.wig")
+get_bigwig(wig_minus, "test_double_strand_minus.wig")
 
 ################################################################################
 # Use Gviz to visualize
-txdb <- AnnotationDbi::loadDb(file.path(extdata_dir, "txdb_test_two_strands"))
+txdb <- AnnotationDbi::loadDb(file.path(extdata_dir, "test_double_strand.txdb"))
 
 options(ucscChromosomeNames = FALSE)
 
@@ -132,11 +132,11 @@ proseq_ylim <- c(0, 600)
 axistrack <- GenomeAxisTrack()
 grtrack <- GeneRegionTrack(txdb, chromosome = 1, shape = "arrow")
 dtrack_plus <- DataTrack(range = file.path(extdata_dir,
-                                           "test_two_strands_plus.bw"),
+                                           "test_double_strand_plus.bw"),
                     type = "h", name = "PROseq_plus",
                     stream = T, ylim = proseq_ylim)
 dtrack_minus <- DataTrack(range = file.path(extdata_dir,
-                                            "test_two_strands_minus.bw"),
+                                            "test_double_strand_minus.bw"),
                          type = "h", name = "PROseq_minus",
                          stream = T, col = "red", ylim = rev(proseq_ylim))
 
