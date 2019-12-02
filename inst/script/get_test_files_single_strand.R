@@ -34,7 +34,7 @@ g2 <- tibble(
 grng <- dplyr::bind_rows(g1, g2) %>% as_granges()
 txdb <- makeTxDbFromGRanges(grng)
 
-saveDb(txdb, file.path(extdata_dir, "txdb_test_single_strand"))
+saveDb(txdb, file.path(extdata_dir, "test_single_strand.txdb"))
 
 ################################################################################
 # generate test bigwig file
