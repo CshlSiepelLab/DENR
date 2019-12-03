@@ -4,11 +4,14 @@
 \alias{cache_create_dir}
 \title{Create local cache}
 \usage{
-cache_create_dir(cache_dir = NULL)
+cache_create_dir(cache_dir = NULL, force = FALSE)
 }
 \arguments{
 \item{cache_dir}{Character path to new local files path. If null,
 path will be reset to default user data directory location.}
+
+\item{force}{boolean that forces overwriting of cache location (default:
+FALSE)}
 }
 \description{
 Creates local data file cache. If the directory does not exist, it

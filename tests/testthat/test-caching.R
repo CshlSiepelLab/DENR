@@ -19,7 +19,8 @@ test_that("TxDb can be cached and retrieved", {
     file_path <- paste0(file.path(cache_loc, db_string))
     expect_message(save_txdb(txdb = txdb,
                              annotation_version =
-                                 "ensembl_genes_96_test_Fh4Jf93l1"),
+                                 "ensembl_genes_96_test_Fh4Jf93l1",
+                             force = TRUE),
                    regexp = paste0("Saving db to ", file_path))
     expect_s4_class({
         txdb2 <<- load_txdb(db_string)},
