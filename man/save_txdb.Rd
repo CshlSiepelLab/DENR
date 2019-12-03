@@ -8,7 +8,8 @@ save_txdb(
   txdb,
   species_name = NULL,
   genome_name = NULL,
-  annotation_version = NULL
+  annotation_version = NULL,
+  force = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,9 @@ the BioMart dataset version from the txdb if none specified).}
 
 \item{annotation_version}{a version id (defaults to using the BioMart
 database version if none specified)}
+
+\item{force}{boolean that forces writing of txdb even if matching one
+already exists (default: FALSE)}
 }
 \description{
 Save a txdb in the local cache.

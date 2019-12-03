@@ -7,7 +7,7 @@
 group_transcripts(transcript_granges, distance = 0, threads = 1)
 }
 \arguments{
-\item{transcript_granges}{\code{\link[GenomicRanges]{GenomicRanges-class}}
+\item{transcript_granges}{\code{\link[GenomicRanges]{GRanges-class}}
 object}
 
 \item{distance}{the distance within which two transcripts are

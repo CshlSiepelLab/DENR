@@ -8,7 +8,7 @@
 #' group then consists of all transcripts that are connected to
 #' at least one other member.
 #'
-#' @param transcript_granges \code{\link[GenomicRanges]{GenomicRanges-class}}
+#' @param transcript_granges \code{\link[GenomicRanges]{GRanges-class}}
 #' object
 #' @param distance the distance within which two transcripts are
 #' considered connected

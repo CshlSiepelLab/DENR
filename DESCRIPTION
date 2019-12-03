@@ -29,5 +29,6 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.0.1
 Suggests: 
-    testthat,
-    lintr
+    testthat (>= 2.1.0),
+    lintr,
+    covr

@@ -44,6 +44,8 @@ cache_defaults <- function() {
 #'
 #' @param cache_dir Character path to new local files path. If null,
 #' path will be reset to default user data directory location.
+#' @param force boolean that forces overwriting of cache location (default:
+#' FALSE)
 #'
 #' @rdname cache_create_dir
 #' @seealso \code{\link{cache_set_dir}} \link{cache_get_dir}
@@ -55,7 +57,7 @@ cache_defaults <- function() {
 #' }
 #'
 #' @export
-cache_create_dir <- function(cache_dir = NULL) {
+cache_create_dir <- function(cache_dir = NULL, force = FALSE) {
   defaults <- cache_defaults()
   # Set default cache dir location
   default_cache_dir <- defaults$dir
@@ -87,7 +89,7 @@ cache_create_dir <- function(cache_dir = NULL) {
     )
     close(cache_con)
     counter <- 0
-    if (cache_dir != cache_path_string) {
+    if (isFALSE(force) && cache_dir != cache_path_string) {
       usr_text <- paste0(
         "Specified cache directory does not match previous",
         " path directory:
@@ -98,7 +100,7 @@ cache_create_dir <- function(cache_dir = NULL) {
       overwrite_cache_string <- tolower(
         readline(prompt = "Continue setting cache path [y/n]:")
       )
-      while (counter < 10 && !overwrite_cache_string %in% c("y", "n")) {
+      while (counter < 3 && !overwrite_cache_string %in% c("y", "n")) {
         cat("Invalid input. Input must be \'y\' or \'n\'")
         overwrite_cache_string <- tolower(
           readline(prompt = "Continue setting cache path [y/n]:")
@@ -202,13 +204,15 @@ cache_get_dir <- function() {
 #' the BioMart dataset version from the txdb if none specified).
 #' @param annotation_version a version id (defaults to using the BioMart
 #' database version if none specified)
+#' @param force boolean that forces writing of txdb even if matching one
+#' already exists (default: FALSE)
 #'
 #' @rdname save_txdb
 #' @seealso \code{\link{cache_get_dir}}
 #'
 #' @export
 save_txdb <- function(txdb, species_name = NULL, genome_name = NULL,
-                      annotation_version = NULL) {
+                      annotation_version = NULL, force = FALSE) {
   # Check that txdb is an actual transcript database object
   if (!methods::is(txdb, "TxDb")) {
     stop("txdb is not a TxDb object")
@@ -244,18 +248,17 @@ save_txdb <- function(txdb, species_name = NULL, genome_name = NULL,
   out_path <- file.path(out_path, txdb_name)
   write <- TRUE
   # Check if file already exists
-  if (file.exists(out_path)) {
+  if (isFALSE(force) && file.exists(out_path)) {
     counter <- 0
     usr_text <- paste0(
-      "File already exists:
-",
+      "File already exists:",
       txdb_name
     )
     cat(usr_text)
     overwrite <- tolower(
       readline(prompt = "Overwrite? [y/n]:")
     )
-    while (counter < 10 && !overwrite %in% c("y", "n")) {
+    while (counter < 3 && !overwrite %in% c("y", "n")) {
       cat("Invalid input. Input must be \'y\' or \'n\'")
       overwrite <- tolower(
         readline(prompt = "Overwrite? [y/n]:")
