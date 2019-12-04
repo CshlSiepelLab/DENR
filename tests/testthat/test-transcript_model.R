@@ -51,8 +51,52 @@ test_that("Transcripts are binned correctly", {
                ceiling((5999 - 1000) / 50))
   expect_equal(length(create_bins(tx_grp[1], bin_size = 17)[[1]]),
                ceiling((5999 - 1000) / 17))
+  # Check that the bins are the correct widths
+  expect_true(
+    all(S4Vectors::width(create_bins(tx_grp, bin_size = 17)[[1]]) == 17))
   # Check error catching
-  expect_error(create_bins(tx_grp[[1]]), "gr_ls is not a GRangesList object")
+  expect_error(create_bins(tx_grp[[1]]),
+               "transcript_groups is not a GRangesList object")
   expect_error(create_bins(tx_grp, bin_size = -1),
     "bin_size is not a positive number")
+})
+
+test_that("Transcript model generation", {
+  # Some simple test cases
+  test_tx <- GenomicRanges::GRangesList(
+    GenomicRanges::GRanges(c(1, 1), IRanges::IRanges(c(1, 26), c(100, 100))),
+    GenomicRanges::GRanges(c(2, 2), IRanges::IRanges(c(301, 351), c(500, 475)))
+  )
+  # Create bins at different sizes
+  tx_bins_25 <- create_bins(test_tx, bin_size = 25)
+  tx_bins_50 <- create_bins(test_tx, bin_size = 50)
+  # Create models
+  tx_models_25 <- create_transcript_models(test_tx, tx_bins_25)
+  tx_models_50 <- create_transcript_models(test_tx, tx_bins_50)
+  # The true models
+  true_models_25 <- list(
+    matrix(c(1, 1, 1, 1,
+             0, 1, 1, 1),
+           byrow = T, ncol = 4),
+    matrix(c(1, 1, 1, 1, 1, 1, 1, 1,
+             0, 0, 1, 1, 1, 1, 1, 0),
+           byrow = T, ncol = 8)
+  )
+  true_models_50 <- list(
+    matrix(c(1, 1,
+             0.5, 1),
+           byrow = T, ncol = 2),
+    matrix(c(1, 1, 1, 1,
+             0, 1, 1, 0.5),
+           byrow = T, ncol = 4)
+  )
+  # Test that the output is correct
+  tmp25 <- mapply(expect_equivalent,
+                 object = tx_models_25, expected = true_models_25)
+  tmp50 <- mapply(expect_equivalent,
+                  object = tx_models_50, expected = true_models_50)
+  # Test error catching
+  expect_error(create_transcript_models(test_tx[[1]], tx_bins_25))
+  expect_error(create_transcript_models(test_tx, tx_bins_25[[1]]))
+  expect_error(create_transcript_models(test_tx, tx_bins_25[1]))
 })

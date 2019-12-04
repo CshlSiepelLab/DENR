@@ -2,22 +2,24 @@
 #'
 #' Function for generating bins for mutiple groups of overlapped transcripts.
 #'
-#' @param gr_ls A \code{\link[GenomicRanges]{GRangesList-class}} object,
-#' each element in the list contains transcripts from one gene or several genes
-#' which are overlapped.
+#' @param transcript_groups A \code{\link[GenomicRanges]{GRangesList-class}}
+#' object,each element in the list contains transcripts from one gene or several
+#' genes which are overlapped.
 #' @param bin_size An integer, used to tail the gene region. Default is 50bp.
 #' @return A \code{\link[GenomicRanges]{GRangesList-class}} object, containing
 #' the binned region.
 #' @export
  
-create_bins <- function(gr_ls, bin_size = 50) {
+create_bins <- function(transcript_groups, bin_size = 50) {
     # check input class
-    if (!methods::is(gr_ls, "GRangesList")) {
-        stop("gr_ls is not a GRangesList object")
-    } else if (!(methods::is(bin_size, "numeric") & bin_size > 0)) {
+    if (!methods::is(transcript_groups, "GRangesList")) {
+        stop("transcript_groups is not a GRangesList object")
+    }
+    if (!methods::is(bin_size, "numeric") || bin_size < 0) {
         stop("bin_size is not a positive number")
     }
-    gr_bin_ls <- methods::as(lapply(gr_ls, get_gr_bin, bin_size = bin_size),
+    gr_bin_ls <- methods::as(lapply(transcript_groups,
+                                    get_gr_bin, bin_size = bin_size),
                              "GRangesList")
     return(gr_bin_ls)
 }

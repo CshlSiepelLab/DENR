@@ -15,6 +15,7 @@ Imports:
   GenomeInfoDb,
   GenomicFeatures,
   GenomicRanges,
+  IRanges,
   stringr,
   rappdirs,
   methods,
@@ -23,7 +24,8 @@ Imports:
   foreach,
   snow,
   doSNOW,
-  utils
+  utils,
+  reshape2
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
