@@ -41,3 +41,18 @@ test_that("Transcripts group correctly (double strand)", {
   # Check that there are the correct number of transcripts per group
   expect_equal(unlist(lapply(tx_grp, length), use.names = FALSE), c(2, 2))
 })
+
+test_that("Transcripts are binned correctly", {
+  tx_grp <- group_transcripts(gr_ss)
+  # Check correct output length
+  expect_equal(length(create_bins(tx_grp)), 2)
+  # Check for the correct number of bins with various bin sizes
+  expect_equal(length(create_bins(tx_grp[1], bin_size = 50)[[1]]),
+               ceiling((5999 - 1000) / 50))
+  expect_equal(length(create_bins(tx_grp[1], bin_size = 17)[[1]]),
+               ceiling((5999 - 1000) / 17))
+  # Check error catching
+  expect_error(create_bins(tx_grp[[1]]), "gr_ls is not a GRangesList object")
+  expect_error(create_bins(tx_grp, bin_size = -1),
+    "bin_size is not a positive number")
+})
