@@ -13,7 +13,7 @@
 create_bins <- function(gr_ls, bin_size = 50) {
     # check input class
     if (!methods::is(gr_ls, "GRangesList")) {
-        stop("input is not a GRangesList object")
+        stop("gr_ls is not a GRangesList object")
     } else if (!(methods::is(bin_size, "numeric") & bin_size > 0)) {
         stop("bin_size is not a positive number")
     }
