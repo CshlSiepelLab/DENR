@@ -72,27 +72,30 @@ test_that("Transcript model generation", {
   tx_bins_50 <- create_bins(test_tx, bin_size = 50)
   # Create models
   tx_models_25 <- create_transcript_models(test_tx, tx_bins_25)
+  tx_models_25_short <- create_transcript_models(test_tx[1], tx_bins_25[1])
   tx_models_50 <- create_transcript_models(test_tx, tx_bins_50)
   # The true models
   true_models_25 <- list(
-    matrix(c(1, 1, 1, 1,
+    t(matrix(c(1, 1, 1, 1,
              0, 1, 1, 1),
-           byrow = T, ncol = 4),
-    matrix(c(1, 1, 1, 1, 1, 1, 1, 1,
+           byrow = T, ncol = 4)),
+    t(matrix(c(1, 1, 1, 1, 1, 1, 1, 1,
              0, 0, 1, 1, 1, 1, 1, 0),
-           byrow = T, ncol = 8)
+           byrow = T, ncol = 8))
   )
   true_models_50 <- list(
-    matrix(c(1, 1,
+    t(matrix(c(1, 1,
              0.5, 1),
-           byrow = T, ncol = 2),
-    matrix(c(1, 1, 1, 1,
+           byrow = T, ncol = 2)),
+    t(matrix(c(1, 1, 1, 1,
              0, 1, 1, 0.5),
-           byrow = T, ncol = 4)
+           byrow = T, ncol = 4))
   )
   # Test that the output is correct
   tmp25 <- mapply(expect_equivalent,
                  object = tx_models_25, expected = true_models_25)
+  tmp25_short <- mapply(expect_equivalent,
+                  object = tx_models_25_short, expected = true_models_25[1])
   tmp50 <- mapply(expect_equivalent,
                   object = tx_models_50, expected = true_models_50)
   # Test error catching

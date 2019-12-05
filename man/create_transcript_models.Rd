@@ -17,7 +17,7 @@ transcripts}
 }
 \value{
 A list of matrices where each row in the matrix corresponds to a
-transcript and each column is a bin
+bin and each column is a transcript
 }
 \description{
 Function for generating binned transcript models given a set of bins
