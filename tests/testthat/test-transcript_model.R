@@ -103,3 +103,87 @@ test_that("Transcript model generation", {
   expect_error(create_transcript_models(test_tx, tx_bins_25[[1]]))
   expect_error(create_transcript_models(test_tx, tx_bins_25[1]))
 })
+
+test_that("Transcript mask construction", {
+  # Some simple test cases
+  test_tx <- GenomicRanges::GRangesList(
+    GenomicRanges::GRanges(c(2, 2), IRanges::IRanges(c(301, 356), c(500, 475)))
+  )
+  # Create bins at different sizes
+  tx_bins_25 <- create_bins(test_tx, bin_size = 25)
+  # Create models
+  tx_models_25 <- create_transcript_models(test_tx, tx_bins_25)
+  # Create masks
+  mask_0_0_plus <- create_model_masks(transcript_models = tx_models_25,
+                                      strand = "+")
+  mask_1_0_plus <- create_model_masks(transcript_models = tx_models_25,
+                                      strand = "+", 1, 0)
+  mask_0_1_plus <- create_model_masks(transcript_models = tx_models_25,
+                                      strand = "+", 0, 1)
+  mask_1_1_plus <- create_model_masks(transcript_models = tx_models_25,
+                                      strand = "+", 1, 1)
+  mask_0_0_minus <- create_model_masks(transcript_models = tx_models_25,
+                                      strand = "-")
+  mask_1_0_minus <- create_model_masks(transcript_models = tx_models_25,
+                                      strand = "-", 1, 0)
+  mask_0_1_minus <- create_model_masks(transcript_models = tx_models_25,
+                                      strand = "-", 0, 1)
+  mask_1_1_minus <- create_model_masks(transcript_models = tx_models_25,
+                                      strand = "-", 1, 1)
+  mask_1_0_star <- create_model_masks(transcript_models = tx_models_25,
+                                       strand = "*", 1, 0)
+  # Test that masks are correct
+  expect_equal(mask_0_0_plus, list(integer(0)))
+  expect_equal(mask_1_0_plus, list(c(1, 3)))
+  expect_equal(mask_0_1_plus, list(c(7, 8)))
+  expect_equal(mask_1_1_plus, list(c(1, 3, 7, 8)))
+  expect_equal(mask_0_0_minus, list(integer(0)))
+  expect_equal(mask_1_0_minus, list(c(7, 8)))
+  expect_equal(mask_0_1_minus, list(c(1, 3)))
+  expect_equal(mask_1_1_minus, list(c(1, 3, 7, 8)))
+  expect_equal(mask_1_0_star, list(c(1, 3, 7, 8)))
+  # Test errors
+  expect_error(create_model_masks(tx_models_25, "+", -1, 0),
+               "Number of bins to mask must be > 0")
+  expect_error(create_model_masks(tx_models_25[[1]], "+", 0, 1),
+               "transcript models must be a list of matricies")
+  expect_error(create_model_masks(tx_models_25, c("+", "+"), 0, 1),
+               "strand and transcript_models must be the same length")
+  expect_error(create_model_masks(tx_models_25, c("z"), 0, 1),
+               "strand must be a vector containing only '\\+','\\-', or '\\*'")
+})
+
+test_that("Transcript masking", {
+  # Some simple test cases
+  test_tx <- GenomicRanges::GRangesList(
+    GenomicRanges::GRanges(c(2, 2), IRanges::IRanges(c(301, 356), c(500, 475)))
+  )
+  # Create bins at different sizes
+  tx_bins_25 <- create_bins(test_tx, bin_size = 25)
+  # Create models
+  tx_models_25 <- create_transcript_models(test_tx, tx_bins_25)
+  # Create masks
+  mask_1_0_plus <- create_model_masks(transcript_models = tx_models_25,
+                                      strand = "+", 1, 0)
+  masked_1_0_p <- mask_transcripts(transcript_models = tx_models_25,
+                                   masks = mask_1_0_plus)
+  # The true masked model
+  true_masked_model <- list(
+    t(matrix(c(0, 1, 0, 1, 1, 1, 1, 1,
+               0, 0, 0, 1, 1, 1, 1, 0),
+             byrow = T, ncol = 8))
+  )
+
+  # Test for correct output
+  expect_equivalent(masked_1_0_p, true_masked_model)
+
+  # Test errors
+  expect_error(mask_transcripts(rep(tx_models_25, 2), mask_1_0_plus),
+               "masks and transcript_models must be the same length")
+  expect_error(mask_transcripts(tx_models_25[[1]], mask_1_0_plus),
+               "transcript models must be a list of matricies")
+  expect_error(create_model_masks(tx_models_25, c("+", "+"), 0, 1),
+               "strand and transcript_models must be the same length")
+  expect_error(create_model_masks(tx_models_25, c("z"), 0, 1),
+               "strand must be a vector containing only '\\+','\\-', or '\\*'")
+})

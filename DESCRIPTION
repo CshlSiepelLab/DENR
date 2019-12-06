@@ -34,3 +34,11 @@ Suggests:
     testthat (>= 2.1.0),
     lintr,
     covr
+Collate: 
+    'cache_data.R'
+    'create_bins.R'
+    'type_checkers.R'
+    'create_model_masks.R'
+    'create_transcript_models.R'
+    'get_ensembl_model.R'
+    'group_transcripts.R'
