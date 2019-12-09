@@ -13,5 +13,6 @@ is_matrix_list(l)
 boolean
 }
 \description{
-Checks that all elements of list are a matrix
+Checks that all elements of list are a matrix. Will return FALSE for empty
+list.
 }

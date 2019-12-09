@@ -29,7 +29,7 @@ Imports:
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.1
+RoxygenNote: 7.0.2
 Suggests: 
     testthat (>= 2.1.0),
     lintr,
@@ -42,3 +42,4 @@ Collate:
     'create_transcript_models.R'
     'get_ensembl_model.R'
     'group_transcripts.R'
+    'reduce_transcript_model.R'
