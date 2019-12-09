@@ -13,5 +13,6 @@ is_strand_vector(x)
 boolean
 }
 \description{
-Checks that all elements are valid strand values ("+","-","*")
+Checks that all elements are valid strand values ("+","-","*"). Returns FALSE
+for empty vector.
 }
