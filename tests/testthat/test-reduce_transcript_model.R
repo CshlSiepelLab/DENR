@@ -88,21 +88,21 @@ test_that("Transcript models are reduced correctly", {
 test_that("Transcript groupings are correct", {
     true_group_1r <-
         data.frame(
-            TXNAME = c("t1.1", "t1.3", "t1.2", "t2.1", "t2.3", "t2.2"),
+            tx_name = c("t1.1", "t1.3", "t1.2", "t2.1", "t2.3", "t2.2"),
             group = c(rep(1, 3), rep(2, 3)),
             model = c(1, 1, 2, 1, 1, 2)
         )
 
     true_group_1f <-
         data.frame(
-            TXNAME = c("t1.1", "t1.3", "t1.2", "t2.1", "t2.2", "t2.3"),
+            tx_name = c("t1.1", "t1.3", "t1.2", "t2.1", "t2.2", "t2.3"),
             group = c(rep(1, 3), rep(2, 3)),
             model = c(1, 1, 2, 1, 2, 2)
         )
 
     true_group_4 <-
         data.frame(
-            TXNAME = c("t1.1", "t1.3", "t2.1", "t2.3", "t1.2", "t2.2"),
+            tx_name = c("t1.1", "t1.3", "t2.1", "t2.3", "t1.2", "t2.2"),
             group = c(rep(1, 6)),
             model = c(1, 1, 1, 1, 2, 3)
         )

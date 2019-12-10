@@ -45,7 +45,7 @@ reduce_transcript_models <-
         # create group and model identifier for each transcript
         group_len <- lapply(tx_groups, lengths)
         tx_num <- sapply(group_len, sum)
-        tx_group_model <- data.frame(TXNAME = unlist(tx_groups),
+        tx_group_model <- data.frame(tx_name = unlist(tx_groups),
                    group = rep(seq_along(tx_num), tx_num),
                    model = unlist(mapply(rep, lapply(group_len, seq_along),
                                          group_len, SIMPLIFY = FALSE)))
