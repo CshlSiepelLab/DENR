@@ -8,10 +8,13 @@
 #' @param bins A \code{\link[GenomicRanges]{GRangesList-class}} object,
 #' each element in the list contains the bins for each corresponding group of
 #' transcripts
+#' @param transcript_name_column A string that indicates which column in the
+#' GRanges object contain the transcript names
 #' @return A list of matrices where each row in the matrix corresponds to a
 #' bin and each column is a transcript
 #' @export
-create_transcript_models <- function(transcript_groups, bins) {
+create_transcript_models <- function(transcript_groups, bins,
+                                     transcript_name_column) {
   # check input class
   if (!methods::is(transcript_groups, "GRangesList")) {
     stop("transcript_groups is not a GRangesList object")
@@ -41,7 +44,8 @@ create_transcript_models <- function(transcript_groups, bins) {
         value.var = "percent_overlap",
         fill = 0
     )
-    colnames(po_matrix) <- tx_grp$TXNAME
+    colnames(po_matrix) <-
+      S4Vectors::elementMetadata(tx_grp)[, transcript_name_column]
     return(po_matrix)
   }, tx_grp = transcript_groups, group_bins = bins, SIMPLIFY = F)
   return(tx_matrix_models)
