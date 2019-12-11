@@ -10,6 +10,18 @@ is_matrix_list <- function(l) {
   return(out)
 }
 
+#' is_vector_list
+#'
+#' Checks that all elements of list are a matrix. Will return FALSE for empty
+#' list.
+#' @param l a list
+#'
+#' @return boolean
+is_vector_list <- function(l) {
+  out <- all(unlist(lapply(l, is.vector))) && length(l) > 0
+  return(out)
+}
+
 #' is_strand_vector
 #'
 #' Checks that all elements are valid strand values ("+","-","*"). Returns FALSE

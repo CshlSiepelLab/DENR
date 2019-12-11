@@ -43,3 +43,4 @@ Collate:
     'get_ensembl_model.R'
     'group_transcripts.R'
     'reduce_transcript_model.R'
+    'transcript_quantifier-class.R'

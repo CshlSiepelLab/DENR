@@ -1,4 +1,4 @@
-context("Test transcriptModel construction")
+context("Test transcript_quantifier construction")
 
 # Load in test txdb
 txdb_path_ss <- system.file("extdata", "test_single_strand.txdb",
@@ -193,4 +193,44 @@ test_that("Transcript masking", {
                "strand and transcript_models must be the same length")
   expect_error(create_model_masks(tx_models_25, c("z"), 0, 1),
                "strand must be a vector containing only '\\+','\\-', or '\\*'")
+})
+
+test_that("Transcripts group correctly (single strand)", {
+  tx_grp <- group_transcripts(gr_ss)
+  # check that two groups are produced
+  expect_equal(length(tx_grp), 2)
+  # Check that there are the correct number of transcripts per group
+  expect_equal(unlist(lapply(tx_grp, length), use.names = FALSE), c(4, 2))
+  # Check that every member of the group overlaps at least one other member
+  expect_equal({
+    over_df <- as.data.frame(GenomicRanges::findOverlaps(tx_grp[[1]]))
+    over_df <- over_df[over_df$queryHits != over_df$subjectHits, ]
+    length(unique(over_df$queryHits))
+  }, 4)
+  # Create new groups with a non-zero distance option
+  tx_grp_expand_1 <- group_transcripts(gr_ss, distance = 1000)
+  tx_grp_expand_2 <- group_transcripts(gr_ss, distance = 1001)
+  # Check that the correct number of groups are formed
+  expect_equal(length(tx_grp_expand_1), 2)
+  expect_equal(length(tx_grp_expand_2), 1)
+})
+
+test_that("transcript_quantifier object construction", {
+  # Check that models can be constructed correctly
+  expect_s4_class(transcript_quantifier(transcripts = gr_ss,
+                                   transcript_name_column = "tx_name"),
+                  "transcript_quantifier")
+  # check for errors
+  expect_error(transcript_quantifier(transcripts = gr_ss,
+                                transcript_name_column = "tx_name",
+                                bin_size = -1))
+  expect_error(transcript_quantifier(transcripts = gr_ss,
+                                transcript_name_column = "tx_name",
+                                distance = -1))
+  expect_error(transcript_quantifier(transcripts = gr_ss,
+                                transcript_name_column = "foo"),
+               "transcripts does not have a column matching foo")
+  # Try some illegal object modifications
+  tq <- transcript_quantifier(transcripts = gr_ss,
+                   transcript_name_column = "tx_name")
 })
