@@ -18,9 +18,8 @@ create_bins <- function(transcript_groups, bin_size = 50) {
     if (!methods::is(bin_size, "numeric") || bin_size < 0) {
         stop("bin_size is not a positive number")
     }
-    gr_bin_ls <- methods::as(lapply(transcript_groups,
-                                    get_gr_bin, bin_size = bin_size),
-                             "GRangesList")
+    gr_bin_ls <- GenomicRanges::GRangesList(lapply(transcript_groups,
+                                    get_gr_bin, bin_size = bin_size))
     return(gr_bin_ls)
 }
 
@@ -41,10 +40,9 @@ get_gr_bin <- function(gr, bin_size) {
     g_end <- max(GenomicRanges::end(gr))
     g_starts <- seq(g_start, g_end, by = bin_size)
     gr_binned <-
-        data.frame(seqnames = runValue(GenomicRanges::seqnames(gr)),
-                                start = g_starts,
-                                end = g_starts + bin_size - 1,
+        GenomicRanges::GRanges(seqnames = runValue(GenomicRanges::seqnames(gr)),
+                                IRanges::IRanges(start = g_starts,
+                                end = g_starts + bin_size - 1),
                                 strand = runValue(GenomicRanges::strand(gr)))
-    gr_binned <- GenomicRanges::makeGRangesFromDataFrame(gr_binned)
     return(gr_binned)
 }

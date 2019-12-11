@@ -42,7 +42,8 @@ create_transcript_models <- function(transcript_groups, bins,
         cbind(S4Vectors::as.data.frame(hits), percent_overlap),
         formula = queryHits ~ subjectHits,
         value.var = "percent_overlap",
-        fill = 0
+        fill = 0,
+        drop = FALSE
     )
     colnames(po_matrix) <-
       S4Vectors::elementMetadata(tx_grp)[, transcript_name_column]
