@@ -1,5 +1,3 @@
-context("Test txdb caching")
-
 # Load in test txdb
 txdb_path <- system.file("extdata", "hsapiens_gene_ensembl_96_txdb_test",
                         package = "tuSelecter2")
