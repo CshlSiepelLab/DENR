@@ -1,0 +1,50 @@
+---
+title: "Introduction"
+author: "[Noah Dukler](https://github.com/ndukler)"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+mail: "ndukler@cshl.edu"
+twitter: "ndukler"
+github: "ndukler"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+TuSelecter2 quantifies nascent transcript abundance based on reference
+annotations. Those annotations can be from anywhere as long as they can be placed
+in a `GRanges` object. Here we obtain our transcript annotations from a `Txdb`
+object.
+
+```{r, message=FALSE}
+library(tuSelecter2)
+txdb_path_ds <- system.file("extdata", "test_double_strand.txdb",
+                         package = "tuSelecter2")
+txdb_ds <- AnnotationDbi::loadDb(file = txdb_path_ds)
+gr_ds <- GenomicFeatures::transcripts(txdb_ds, c("tx_name", "gene_id"))
+```
+
+```{r setup, include = TRUE}
+print(gr_ds)
+```
+
+`Txdb` objects provide a convienent way to obtain such annotations from a variety
+of species and assemblies through `biomaRt`. We have implemented some convenience
+functions for retrieving and locally caching `Txdb` objects from the ensembl
+biomart which will be shown later in this vignette.
+
+Once we have a list of transcripts we can contruct a `transcript_quantification`
+object which will hold all data for further analysis. In order to do this we must
+specify a bin size which will define the resolution of the transcript models.
+Bin sizes that are too small are computationally expensive and may provide a false
+sense of precision while bin sizes that are too large will result in a loss of
+ability to differentiate signal from distinct transcripts. As a reasonable
+midground we select a bin size of 50bp. We also must specify the metadata column
+corresponding to a unique transcript id. Another column for a unique gene id may
+be specified but is not required.
+
+```{r create_transcript_quantifier}
+tq <- transcript_quantifier(gr_ds, bin_size = 50,
+                            transcript_name_column = "tx_name")
+```
