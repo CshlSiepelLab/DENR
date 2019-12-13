@@ -1,6 +1,3 @@
-context("Test type checkers")
-
-
 test_that("Matrix list checker", {
   ml <- list(matrix(1))
   expect_true(is_matrix_list(ml))

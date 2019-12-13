@@ -1,4 +1,3 @@
-testthat::context("Test style (lintr)")
 testthat::test_that("Style should be lint-free", {
     testthat::skip_if_not(
         requireNamespace("lintr", quietly = TRUE),

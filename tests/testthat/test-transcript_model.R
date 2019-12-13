@@ -1,5 +1,3 @@
-context("Test transcript_quantifier construction")
-
 # Load in test txdb
 txdb_path_ss <- system.file("extdata", "test_single_strand.txdb",
                          package = "tuSelecter2")

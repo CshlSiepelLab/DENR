@@ -25,7 +25,9 @@ Imports:
   snow,
   doSNOW,
   utils,
-  reshape2
+  reshape2,
+  BiocGenerics,
+  rtracklayer
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
@@ -42,5 +44,6 @@ Collate:
     'create_transcript_models.R'
     'get_ensembl_model.R'
     'group_transcripts.R'
+    'process_data.R'
     'reduce_transcript_model.R'
     'transcript_quantifier-class.R'
