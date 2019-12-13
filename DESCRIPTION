@@ -35,7 +35,9 @@ RoxygenNote: 7.0.2
 Suggests: 
     testthat (>= 2.1.0),
     lintr,
-    covr
+    covr,
+    knitr,
+    rmarkdown
 Collate: 
     'cache_data.R'
     'create_bins.R'
@@ -47,3 +49,4 @@ Collate:
     'process_data.R'
     'reduce_transcript_model.R'
     'transcript_quantifier-class.R'
+VignetteBuilder: knitr
