@@ -39,6 +39,8 @@ Suggests:
     knitr,
     rmarkdown
 Collate: 
+    'transcript_quantifier-class.R'
+    'add_data.R'
     'cache_data.R'
     'create_bins.R'
     'type_checkers.R'
@@ -48,5 +50,4 @@ Collate:
     'group_transcripts.R'
     'process_data.R'
     'reduce_transcript_model.R'
-    'transcript_quantifier-class.R'
 VignetteBuilder: knitr
