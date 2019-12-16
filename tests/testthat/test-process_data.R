@@ -52,3 +52,21 @@ test_that("summarize_bigwig error catching", {
   expect_error(summarize_bigwig(bigwig_file = bw_ss, bins = tx_seqnames_mix),
                "One or more groups of contained multiple chromosomes")
 })
+
+# A simple two chromosome (1, Z) bigwig where [1:1000] = 1 and [1:500] = 1
+# respectively
+multichrom_bw <- system.file("extdata", "test_multichrom.bw",
+                             package = "tuSelecter2")
+multichrom_gr <- GenomicRanges::GRanges(c(1, "Z"),
+                                        IRanges::IRanges(1, 1e3))
+multichrom_gr_ls <- GenomicRanges::split(multichrom_gr,
+                                      GenomicRanges::seqnames(multichrom_gr))
+
+test_that("multichrom bigwig sum correct values", {
+  true_values <- as.list(c(1e3, 500))
+  expect_equivalent(summarize_bigwig(bigwig_file = multichrom_bw,
+                                     bins = multichrom_gr_ls,
+                                     summary_operation = "sum"),
+                    true_values
+  )
+})

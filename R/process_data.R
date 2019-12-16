@@ -93,10 +93,10 @@ methods::setMethod("summarize_bigwig", signature(bins = "GRanges"),
 
   # ** End checks **
 
-  # Read in bigwig region
+  # Read in bigwig region and keep only the relevant chromosome
   import_range <- GenomicRanges::reduce(bins)
   imported_bw <- rtracklayer::import.bw(con = bigwig_file, which = import_range,
-                                          as = "RleList")
+                                          as = "RleList")[bin_chrom]
   # Lookup correct method
   operation <- methods::selectMethod(summary_operation, signature = "RleViews")
   # Summarize reads across bins
