@@ -70,3 +70,25 @@ test_that("multichrom bigwig sum correct values", {
                     true_values
   )
 })
+
+# A test for adding data to the transcript_quantifier object
+bw_plus <- system.file("extdata",
+                       "test_double_strand_plus.bw", package = "tuSelecter2")
+bw_minus <- system.file("extdata",
+                        "test_double_strand_minus.bw", package = "tuSelecter2")
+
+txdb_path_ds <- system.file("extdata", "test_double_strand.txdb",
+                            package = "tuSelecter2")
+txdb_ds <- AnnotationDbi::loadDb(file = txdb_path_ds)
+gr_ds <-
+    GenomicFeatures::transcripts(txdb_ds, c("tx_name", "gene_id"))
+
+tq <- transcript_quantifier(gr_ds,
+                            bin_size = 50,
+                            transcript_name_column = "tx_name")
+
+test_that("counts are added correctly and in the same order as bins", {
+    tq_added_data <-
+        add_data(tq, bigwig_plus = bw_plus, bigwig_minus = bw_minus)
+    expect_equal(names(tq_added_data@counts), names(tq@bins))
+})
