@@ -94,7 +94,7 @@ methods::setClass("transcript_quantifier",
 transcript_quantifier <- function(transcripts, transcript_name_column,
                              gene_name_column = NULL,
                              bin_size = 100, distance = 0,
-                             mask_start_bins = 0, mask_end_bins = 0,
+                             mask_start_bins = NULL, mask_end_bins = NULL,
                              bin_operation = c("round", "floor", "ceiling"),
                              threads = 1) {
   # **Some checks prior to beginning construction**

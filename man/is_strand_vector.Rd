@@ -4,10 +4,12 @@
 \alias{is_strand_vector}
 \title{is_strand_vector}
 \usage{
-is_strand_vector(x)
+is_strand_vector(x, allow_star = TRUE)
 }
 \arguments{
 \item{x}{a vector}
+
+\item{allow_star}{is star allowed in the strand?}
 }
 \value{
 boolean

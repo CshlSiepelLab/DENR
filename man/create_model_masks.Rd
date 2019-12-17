@@ -7,22 +7,25 @@
 create_model_masks(
   transcript_models,
   strand,
-  mask_start_bins = 0,
-  mask_end_bins = 0
+  mask_start_bins = NULL,
+  mask_end_bins = NULL
 )
 }
 \arguments{
-\item{transcript_models}{A list of matricies containing transcript models}
+\item{transcript_models}{A list of matricies containing transcript models.}
 
 \item{strand}{a vector containing one entry per group of transcript models
-indicating the strand}
+indicating the strand.}
 
-\item{mask_start_bins}{the number of bins with non-zero entries at the start
-of a transcript that should be masked (Used for masking both start and end if
-strand is \'*\')}
+\item{mask_start_bins}{A numeric vertor with length two which giving the
+number of bins should be masked near the start of a transcript. The first
+integer is the number of bins will be masked inside the transcript, while
+the second interger is the number outside the transcript. Default c(0, 0).}
 
-\item{mask_end_bins}{the number of bins with non-zero entries at the end
-of a transcript that should be masked (Ignored if strand is \'*\')}
+\item{mask_end_bins}{A numeric vertor with length two which giving the
+number of bins should be masked near the end of a transcript. The first
+integer is the number of bins will be masked inside the transcript, while
+the second interger is the number outside the transcript. Default c(0, 0).}
 }
 \value{
 A list of vectors, where each vector indicates the bins that should
