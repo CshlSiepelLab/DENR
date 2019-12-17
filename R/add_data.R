@@ -1,6 +1,7 @@
 #' @title Add data
 #'
-#' @description adds data from bigwig to a \code{tramscript_quantifier} object
+#' @description adds data from bigwig to a \link{transcript_quantifier-class}
+#' object
 #'
 #' @inheritParams summarize_bigwig
 #' @param transcript_quantifier A \link{transcript_quantifier-class} object

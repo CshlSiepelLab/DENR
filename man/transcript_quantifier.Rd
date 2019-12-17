@@ -49,7 +49,7 @@ Either "ceiling", "floor", or "round" (default: "round").}
 \item{threads}{number of threads that can be used}
 }
 \value{
-an transcript_quantifier object
+an \code{\link{transcript_quantifier-class}} object
 }
 \description{
 Contructs an object that holds the transcript models

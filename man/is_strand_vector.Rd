@@ -9,7 +9,7 @@ is_strand_vector(x, allow_star = TRUE)
 \arguments{
 \item{x}{a vector}
 
-\item{allow_star}{is star allowed in the strand?}
+\item{allow_star}{Is "*" allowed in the vector, default TRUE.}
 }
 \value{
 boolean

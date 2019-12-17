@@ -35,6 +35,9 @@ assert_chromosome_exists <- function(chromosome, bigwig_file) {
 #' sum, mean, median, etc.) Defaults to "sum"
 #' @param threads number of threads to use
 #'
+#' @return A list of vectors with each one corresponding to one set of bins and
+#' each element of a vector corresponding to a bin
+#'
 #' @name summarize_bigwig
 #' @rdname summarize_bigwig
 #'
@@ -65,7 +68,7 @@ methods::setMethod("summarize_bigwig", signature(bins = "GRangesList"),
   sum_list <- foreach::foreach(chrom_bins = bins_iter,
                                .noexport = c("bins"),
                                .errorhandling = "stop") %doloop% {
-          summarize_bigwig(bigwig_file, chrom_bins, summary_operation)
+          unlist(summarize_bigwig(bigwig_file, chrom_bins, summary_operation))
   }
 
   # Set names

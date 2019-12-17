@@ -34,10 +34,10 @@ that are used to modify the models}
 \item{\code{transcript_model_key}}{A three column \code{data.frame} that maps
 transcripts to their group and model}
 
-\item{\code{counts}}{a list of matrices containing the read counts per bin where the
-columns are the strand and the rows are the bins. Column 1 is the plus strand
-and column 2 is the minus strand. May be empty.}
+\item{\code{counts}}{a list of vectors containing the read counts per bin.
+Initialized empty.}
 
-\item{\code{transcript_abundance}}{a vector of transcript abundances. May be empty.}
+\item{\code{model_abundance}}{A list of vectors corresponding to \code{models}
+of transcript abundances. Initialized at 0.}
 }}
 

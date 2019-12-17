@@ -51,10 +51,10 @@ transcript_quantifier_valid <- function(object) {
 #' that are used to modify the models
 #' @slot transcript_model_key A three column \code{data.frame} that maps
 #' transcripts to their group and model
-#' @slot counts a list of matrices containing the read counts per bin where the
-#' columns are the strand and the rows are the bins. Column 1 is the plus strand
-#' and column 2 is the minus strand. May be empty.
-#' @slot transcript_abundance a vector of transcript abundances. May be empty.
+#' @slot counts a list of vectors containing the read counts per bin.
+#' Initialized empty.
+#' @slot model_abundance A list of vectors corresponding to \code{models}
+#' of transcript abundances. Initialized at 0.
 #'
 #' @name transcript_quantifier-class
 #' @rdname transcript_quantifier-class
@@ -69,7 +69,7 @@ methods::setClass("transcript_quantifier",
                             masks = "list",
                             transcript_model_key = "data.frame",
                             counts = "list",
-                            transcript_abundance = "numeric"),
+                            model_abundance = "list"),
                   validity = transcript_quantifier_valid
 )
 
@@ -88,7 +88,7 @@ methods::setClass("transcript_quantifier",
 #' @inheritParams create_transcript_models
 #' @param threads number of threads that can be used
 #'
-#' @return an transcript_quantifier object
+#' @return an \code{\link{transcript_quantifier-class}} object
 #'
 #' @export
 transcript_quantifier <- function(transcripts, transcript_name_column,
@@ -152,6 +152,9 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
     gene_name_column <- NA
   }
 
+  # Initialize model_abundances
+  abundance <- lapply(reduced_models[[1]], function(x) return(numeric(ncol(x))))
+
   # Return transcript model object
   return(methods::new(Class = "transcript_quantifier",
                 transcripts = transcripts,
@@ -162,6 +165,6 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
                 masks = model_masks,
                 transcript_model_key = reduced_models[[2]],
                 counts = list(),
-                transcript_abundance = numeric()
+                model_abundance = abundance
                ))
 }
