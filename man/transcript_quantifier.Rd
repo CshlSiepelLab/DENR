@@ -10,8 +10,8 @@ transcript_quantifier(
   gene_name_column = NULL,
   bin_size = 100,
   distance = 0,
-  mask_start_bins = 0,
-  mask_end_bins = 0,
+  mask_start_bins = NULL,
+  mask_end_bins = NULL,
   bin_operation = c("round", "floor", "ceiling"),
   threads = 1
 )
@@ -32,12 +32,15 @@ GRanges object contains the gene names (not required)}
 \item{distance}{the distance within which two transcripts are
 considered connected}
 
-\item{mask_start_bins}{the number of bins with non-zero entries at the start
-of a transcript that should be masked (Used for masking both start and end if
-strand is \'*\')}
+\item{mask_start_bins}{A numeric vertor with length two which giving the
+number of bins should be masked near the start of a transcript. The first
+integer is the number of bins will be masked inside the transcript, while
+the second interger is the number outside the transcript. Default c(0, 0).}
 
-\item{mask_end_bins}{the number of bins with non-zero entries at the end
-of a transcript that should be masked (Ignored if strand is \'*\')}
+\item{mask_end_bins}{A numeric vertor with length two which giving the
+number of bins should be masked near the end of a transcript. The first
+integer is the number of bins will be masked inside the transcript, while
+the second interger is the number outside the transcript. Default c(0, 0).}
 
 \item{bin_operation}{Three different modes to deal with decimals in the
 transript model (due to partial overlap of the first or last exon and bins).

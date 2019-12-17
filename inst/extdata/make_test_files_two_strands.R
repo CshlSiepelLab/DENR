@@ -49,6 +49,7 @@ get_wig_template <- function(strand) {
                   start = 1:13000,
                   width = 1,
                   strand = strand,
+                  # set the base expression
                   base = rbinom(n = 13000, size = 1, prob = 0.3),
                   pausing_peak = 0,
                   tx_sum = 0)
@@ -61,6 +62,7 @@ wig_minus <- get_wig_template("-")
 # generate read count near TSS region
 add_peak_count <- function(wig, start_pos, end_pos) {
     wig[(wig$start >= start_pos & wig$start < end_pos), ] %<>%
+        # set the height of the peak
         mutate(pausing_peak = abs(rnorm(200, mean = 200, sd = 20)))
     return(wig)
 }
@@ -103,6 +105,7 @@ get_tx_wig <- function(tx_subset, wig, bin_height_vec) {
     return(wig)
 }
 
+#
 wig_plus <- get_tx_wig(tx_subset_plus, wig_plus, c(150))
 wig_minus <- get_tx_wig(tx_subset_minus, wig_minus, c(200))
 

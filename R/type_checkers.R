@@ -27,12 +27,16 @@ is_vector_list <- function(l) {
 #' Checks that all elements are valid strand values ("+","-","*"). Returns FALSE
 #' for empty vector.
 #' @param x a vector
+#' @param allow_star Is "*" allowed in the vector, default TRUE.
 #'
 #' @return boolean
-is_strand_vector <- function(x) {
-  return(is.vector(x) &&
-           length(x) > 0 &&
-           all(as.character(x) %in% c("+", "-", "*")))
+is_strand_vector <- function(x, allow_star = TRUE) {
+    step_one <- (is.vector(x) && length(x) > 0)
+    if (allow_star == TRUE) {
+        return(step_one && all(as.character(x) %in% c("+", "-", "*")))
+    } else {
+        return(step_one && all(as.character(x) %in% c("+", "-")))
+    }
 }
 
 #' matrix_list_dim_equal
@@ -53,4 +57,17 @@ matrix_list_dim_equal <- function(l1, l2) {
   l2_dim <- lapply(l2, dim)
   all_dim_equal <- all(mapply(identical, l1_dim, l2_dim, SIMPLIFY = T))
   return(all_dim_equal)
+}
+
+#' is_length_two_vector
+#'
+#' Checks that all elements in the vector is integer and the vector length is 2.
+#' @param x a vector
+#'
+#' @return boolean
+is_length_two_vector <- function(x) {
+    out <-
+        all(!is.na(x)) &&
+        length(x) == 2 && all(x >= 0) && all(x - floor(x) == 0)
+    return(out)
 }
