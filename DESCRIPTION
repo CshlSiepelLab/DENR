@@ -40,6 +40,7 @@ Suggests:
     rmarkdown
 Collate: 
     'transcript_quantifier-class.R'
+    'abundance_table.R'
     'add_data.R'
     'cache_data.R'
     'create_bins.R'
@@ -48,6 +49,7 @@ Collate:
     'create_transcript_models.R'
     'get_ensembl_model.R'
     'group_transcripts.R'
+    'model_fitting.R'
     'process_data.R'
     'reduce_transcript_model.R'
 VignetteBuilder: knitr

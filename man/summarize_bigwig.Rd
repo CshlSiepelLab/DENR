@@ -24,6 +24,10 @@ sum, mean, median, etc.) Defaults to "sum"}
 
 \item{threads}{number of threads to use}
 }
+\value{
+A list of vectors with each one corresponding to one set of bins and
+each element of a vector corresponding to a bin
+}
 \description{
 Summarizes a bigwig over a set of ranges in a
 \code{\link[GenomicRanges]{GRangesList-class}}

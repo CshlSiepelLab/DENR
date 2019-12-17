@@ -46,5 +46,35 @@ be specified but is not required.
 
 ```{r create_transcript_quantifier}
 tq <- transcript_quantifier(gr_ds, bin_size = 50,
-                            transcript_name_column = "tx_name")
+                            transcript_name_column = "tx_name",
+                            mask_start_bins = c(5, 5))
 ```
+
+To add a specific data set to the `transcript_quantifier` object we use the
+`add_data()` function using the `sum` summary operation.
+
+```{r add_data}
+# The paths to relevant bigwig files
+bwp <- system.file("extdata", "test_double_strand_plus.bw",
+                         package = "tuSelecter2")
+bwm <- system.file("extdata", "test_double_strand_minus.bw",
+                         package = "tuSelecter2")
+# Add the data
+tq <- add_data(transcript_quantifier = tq,
+               bigwig_plus = bwp,
+               bigwig_minus = bwm,
+               summary_operation = "mean")
+```
+
+All we need to do now to estimate transcript abundances is call the `fit()`
+function.
+
+```{r fit}
+tq <- fit(tq)
+```
+
+To view the results we can all the `abundance_table()` function.
+```{r}
+abundance_table(tq)
+```
+

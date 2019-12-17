@@ -37,5 +37,6 @@ sum, mean, median, etc.) Defaults to "sum"}
 A \link{transcript_quantifier-class} object with count data added.
 }
 \description{
-adds data from bigwig to a \code{tramscript_quantifier} object
+adds data from bigwig to a \link{transcript_quantifier-class}
+object
 }
