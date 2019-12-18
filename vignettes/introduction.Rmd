@@ -47,7 +47,8 @@ be specified but is not required.
 ```{r create_transcript_quantifier}
 tq <- transcript_quantifier(gr_ds, bin_size = 50,
                             transcript_name_column = "tx_name",
-                            mask_start_bins = c(5, 5))
+                            gene_name_column = "gene_id", mask_start_bins = c(1, 0),
+                            mask_end_bins = c(0, 0))
 ```
 
 To add a specific data set to the `transcript_quantifier` object we use the
@@ -76,5 +77,10 @@ tq <- fit(tq)
 To view the results we can all the `abundance_table()` function.
 ```{r}
 abundance_table(tq)
+```
+
+We can also create plots for specific transcripts or genomic regions
+```{r}
+plot_model(tq, chrom = 1, start = 1, end= 11000)
 ```
 
