@@ -15,116 +15,180 @@
 #' @include transcript_quantifier-class.R
 #' @name plot_model
 #' @export
-plot_model <- function(transcript_quantifier, gene_name = NULL,
-                       chrom = NULL, start = NULL, end = NULL,
+
+plot_model <- function(transcript_quantifier,
+                       gene_name = NULL,
+                       chrom = NULL,
+                       start = NULL,
+                       end = NULL,
                        strand = NULL) {
-  # Alias for easier use
-  tq <- transcript_quantifier
-  # Check that only gene name or position information is specified
-  if (!is.null(gene_name) & (!is.null(chrom) | ! is.null(start) |
-                            !is.null(end))) {
-    stop("Only gene name OR positional information can be specified")
-  }
+    # Alias for easier use
+    tq <- transcript_quantifier
+    # Check that only gene name or position information is specified
+    if (!is.null(gene_name) & (!is.null(chrom) | !is.null(start) |
+                               !is.null(end))) {
+        stop("Only gene name OR positional information can be specified")
+    }
 
-  # Check for gene name specification
-  if (!is.null(gene_name)) {
+    # Check for gene name specification
+    if (!is.null(gene_name)) {
+        gid_col <- tq@column_identifiers[2]
+        if (is.na(gid_col)) {
+            stop("transcript_quantifier object not built with gene ids")
+        }
+        if (!gene_name %in%
+            S4Vectors::elementMetadata(tq@transcripts)[, gid_col]) {
+            stop(paste("Gene", gene_name, "does not exist"))
+        }
+    } else if (!is.null(chrom) &
+               is.numeric(start) & is.numeric(end)) {
+        if (length(chrom) > 1 | length(start) > 1 | length(end) > 1) {
+            stop("Only one value may be specified for each positional option")
+        }
+        # Check that position overlaps with one or more transcripts
+        query_range <-
+            GenomicRanges::GRanges(chrom, IRanges::IRanges(start, end),
+                                   strand = strand)
+        query_inter <-
+            GenomicRanges::intersect(query_range, tq@transcripts,
+                                     ignore.strand = is.null(strand))
+        if (length(query_inter) == 0) {
+            stop("Positional query does not intersect any transcripts")
+        }
+    } else {
+        stop("Incorrect positional specification")
+    }
+
+    ## ** End checking **
+
+    # Get target transcripts
+    target_tx <-
+        get_transcripts(tq, gene_name, chrom, start, end, strand)
+
+    # Define bounds of plot range
+    if (is.null(start)) {
+        chrom <- GenomicRanges::seqnames(target_tx)[1]
+        start <- min(GenomicRanges::start(target_tx))
+        end <- max(GenomicRanges::end(target_tx))
+    }
+
+    # genome coordination track
+    axis_track <- Gviz::GenomeAxisTrack()
+
+    # Get masks
+    tx_col <- tq@column_identifiers[1]
     gid_col <- tq@column_identifiers[2]
-    if (is.na(gid_col)) {
-      stop("transcript_quantifier object not built with gene ids")
+    transcripts <- S4Vectors::elementMetadata(target_tx)[, tx_col]
+    target_masks <- get_masks(tq, transcripts)
+
+    # Transcripts track
+    if (!is.na(gid_col)) {
+        gene_names <- S4Vectors::elementMetadata(target_tx)[, gid_col]
+    } else {
+        gene_names <- rep("placeholder", length(target_tx))
     }
-    if (!gene_name %in%
-       S4Vectors::elementMetadata(tq@transcripts)[, gid_col]) {
-      stop(paste("Gene", gene_name, "does not exist"))
+    unique_gene_names <- unique(unlist(gene_names))
+
+    tx_track <- Gviz::AnnotationTrack(
+        target_tx,
+        name = "transcripts",
+        id = transcripts,
+        showFeatureId = TRUE,
+        feature = unlist(target_tx$gene_id)
+    )
+
+    # Masks track
+    masks_track <- Gviz::AnnotationTrack(target_masks,
+                                         name = "masks",
+                                         feature = strand(target_masks))
+
+    # Get count data
+    data <- get_data(tq, chrom, start, end)
+    ylim_max <- max(data$value) * 1.05
+
+    # plot datatrack for read count
+    d_track_plus <- NULL
+    d_track_minus <- NULL
+    if (length(data[GenomicRanges::strand(data) == "+"]) > 0) {
+        d_track_plus <-
+            Gviz::DataTrack(
+                data[GenomicRanges::strand(data) == "+"],
+                type = "h",
+                name = "Summarized read counts (+)",
+                col = "blue",
+                ylim = c(0, ylim_max)
+            )
     }
-  } else if (!is.null(chrom) & is.numeric(start) & is.numeric(end)) {
-    if (length(chrom) > 1 | length(start) > 1 | length(end) > 1) {
-      stop("Only one value may be specified for each positional option")
+    if (length(data[GenomicRanges::strand(data) == "-"]) > 0) {
+        d_track_minus <-
+            Gviz::DataTrack(
+                data[GenomicRanges::strand(data) == "-"],
+                type = "h",
+                name = "Summarized read counts (-)",
+                col = "red",
+                ylim = c(ylim_max, 0)
+            )
     }
-    # Check that position overlaps with one or more transcripts
-    query_range <- GenomicRanges::GRanges(chrom, IRanges::IRanges(start, end),
-                                          strand = strand)
-    query_inter <- GenomicRanges::intersect(query_range, tq@transcripts,
-                                            ignore.strand = is.null(strand))
-    if (length(query_inter) == 0) {
-      stop("Positional query does not intersect any transcripts")
+
+    # Get abundance data
+    abundance <- get_abundance(tq, chrom, start, end)
+
+    # plot datatrack for read count
+    abd_track_plus <- NULL
+    abd_track_minus <- NULL
+    if (length(abundance[GenomicRanges::strand(abundance) == "+"]) > 0) {
+        abd_track_plus <-
+            Gviz::DataTrack(
+                abundance[GenomicRanges::strand(abundance) == "+"],
+                type = "histogram",
+                name = "Predicted abundance (+)",
+                groups = transcripts,
+                legend = FALSE,
+                col = "blue",
+                ylim = c(0, ylim_max)
+            )
     }
-  } else {
-    stop("Incorrect positional specification")
-  }
+    if (length(abundance[GenomicRanges::strand(abundance) == "-"]) > 0) {
+        abd_track_minus <-
+            Gviz::DataTrack(
+                abundance[GenomicRanges::strand(abundance) == "-"],
+                type = "histogram",
+                name = "Predicted abundance (-)",
+                groups = transcripts,
+                legend = FALSE,
+                col = "red",
+                ylim = c(ylim_max, 0)
+            )
+    }
 
-  ## ** End checking **
+    # Plot tracks
+    args <- list(
+        trackList = list(
+            axis_track,
+            tx_track,
+            masks_track,
+            d_track_plus,
+            d_track_minus,
+            abd_track_plus,
+            abd_track_minus
+        ),
+        from = start,
+        to = end,
+        transcriptAnnotation = "transcript"
+    )
 
-  # Get target transcripts
-  target_tx <- get_transcripts(tq, gene_name, chrom, start, end, strand)
+    args$trackList <- #nolint
+        args$trackList[!unlist(lapply(args$trackList, is.null))] #nolint
+    # Add colors for genes and masks
+    gene_colors <- viridisLite::viridis(length(unique_gene_names))
+    names(gene_colors) <- unique_gene_names
 
-  # Define bounds of plot range
-  if (is.null(start)) {
-    chrom <- GenomicRanges::seqnames(target_tx)[1]
-    start <- min(GenomicRanges::start(target_tx))
-    end <- max(GenomicRanges::end(target_tx))
-  }
+    mask_colors <- c("blue", "red")
+    names(mask_colors) <- c("+", "-")
 
-  # Get masks
-  tx_col <- tq@column_identifiers[1]
-  gid_col <- tq@column_identifiers[2]
-  transcripts <- S4Vectors::elementMetadata(target_tx)[, tx_col]
-  target_masks <- get_masks(tq, transcripts)
-  GenomicRanges::strand(target_masks) <- "*"
+    args <- c(args, gene_colors, mask_colors)
 
-  # Get count data
-  data <- get_data(tq, chrom, start, end)
-  data <- data[data$value > 0]
-
-  # Transcripts track
-  if (!is.na(gid_col)) {
-    gene_names <- S4Vectors::elementMetadata(target_tx)[, gid_col]
-  } else {
-    gene_names <- rep("placeholder", length(target_tx))
-  }
-  unique_gene_names <- unique(unlist(gene_names))
-
-  tx_track <- Gviz::AnnotationTrack(target_tx, name = "transcripts",
-                                    id = transcripts,
-                                    feature = unlist(tq@transcripts$gene_id))
-  Gviz::feature(tx_track)
-
-  # Masks track
-  masks_track <- Gviz::AnnotationTrack(target_masks, name = "masks")
-
-  # Data plotting track
-  d_track_plus <- NULL
-  d_track_minus <- NULL
-  if (length(data[GenomicRanges::strand(data) == "+"]) > 0) {
-    d_track_plus <- Gviz::DataTrack(data[GenomicRanges::strand(data) == "+"],
-                                    type = "h",
-                                    name = "Summarized read counts (+)",
-                                    col = "red"
-                                    )
-  }
-  if (length(data[GenomicRanges::strand(data) == "-"]) > 0) {
-    data[GenomicRanges::strand(data) == "-"]$value <-
-      -abs(data[GenomicRanges::strand(data) == "-"]$value)
-    d_track_minus <- Gviz::DataTrack(data[GenomicRanges::strand(data) == "-"],
-                                     type = "h",
-                                     name = "Summarized read counts (-)",
-                                     col = "blue"
-                                     )
-  }
-
-  # Plot tracks
-  args <- list(trackList = list(tx_track,
-                                masks_track,
-                                d_track_plus,
-                                d_track_minus),
-               from = start, to = end,
-               featureAnnotation = "feature")
-  args$trackList <- #nolint
-    args$trackList[!unlist(lapply(args$trackList, is.null))] #nolint
-  gene_color_list <- viridisLite::viridis(length(unique_gene_names))
-  names(gene_color_list) <- unique_gene_names
-  args <- c(args, gene_color_list)
-
-  return(do.call(Gviz::plotTracks, args))
+    return(do.call(Gviz::plotTracks, args))
 }
 
 #' @title Get target transcripts
@@ -135,25 +199,29 @@ plot_model <- function(transcript_quantifier, gene_name = NULL,
 #'
 #' @return a \link[GenomicRanges]{GRanges-class} object
 #' @name get_transcripts
-get_transcripts <- function(transcript_quantifier, gene_name = NULL,
-                            chrom = NULL, start = NULL,
-                            end = NULL, strand = NULL) {
-  # Alias for ease of use
-  tq <- transcript_quantifier
-  # Look up transcripts
-  if (!is.null(gene_name)) {
-    gid_col <- tq@column_identifiers[2]
-    genes <- S4Vectors::elementMetadata(tq@transcripts)[, gid_col]
-    out <- tq@transcripts[genes == gene_name]
-  } else {
-    query_range <- GenomicRanges::GRanges(chrom,
-                                          IRanges::IRanges(start, end),
-                                          strand)
-    overlaps <- GenomicRanges::findOverlaps(query_range, tq@transcripts,
-                                            ignore.strand = is.null(strand))
-    out <- tq@transcripts[S4Vectors::subjectHits(overlaps)]
-  }
-  return(out)
+get_transcripts <- function(transcript_quantifier,
+                            gene_name = NULL,
+                            chrom = NULL,
+                            start = NULL,
+                            end = NULL,
+                            strand = NULL) {
+    # Alias for ease of use
+    tq <- transcript_quantifier
+    # Look up transcripts
+    if (!is.null(gene_name)) {
+        gid_col <- tq@column_identifiers[2]
+        genes <- S4Vectors::elementMetadata(tq@transcripts)[, gid_col]
+        out <- tq@transcripts[genes == gene_name]
+    } else {
+        query_range <- GenomicRanges::GRanges(chrom,
+                                              IRanges::IRanges(start, end),
+                                              strand)
+        overlaps <-
+            GenomicRanges::findOverlaps(query_range, tq@transcripts,
+                                        ignore.strand = is.null(strand))
+        out <- tq@transcripts[S4Vectors::subjectHits(overlaps)]
+    }
+    return(out)
 }
 
 #' @title Get target masks
@@ -167,14 +235,14 @@ get_transcripts <- function(transcript_quantifier, gene_name = NULL,
 #' @return a \link[GenomicRanges]{GRanges-class} object
 #' @name get_masks
 get_masks <- function(transcript_quantifier, transcripts) {
-  tq <- transcript_quantifier
-  key <- tq@transcript_model_key
-  target_group <- unique(key[key$tx_name %in% transcripts, ]$group)
-  target_masks <- GenomicRanges::GRanges()
-  for (g in target_group) {
-    target_masks <- c(target_masks, tq@bins[[g]][tq@masks[[g]]])
-  }
-  return(target_masks)
+    tq <- transcript_quantifier
+    key <- tq@transcript_model_key
+    target_group <- unique(key[key$tx_name %in% transcripts, ]$group)
+    target_masks <- GenomicRanges::GRanges()
+    for (g in target_group) {
+        target_masks <- c(target_masks, tq@bins[[g]][tq@masks[[g]]])
+    }
+    return(target_masks)
 }
 
 #' @title Get data
@@ -193,43 +261,94 @@ get_masks <- function(transcript_quantifier, transcripts) {
 #' @rdname get_data
 methods::setGeneric("get_data",
                     function(data_source, chrom, start, end) {
-                      standardGeneric("get_data")
+                        standardGeneric("get_data")
                     })
 
 #' @rdname get_data
 methods::setMethod("get_data",
                    signature(data_source = "transcript_quantifier"),
                    function(data_source, chrom, start, end) {
-                     #Get the target transcripts
-                     target_tx <- get_transcripts(data_source, chrom = chrom,
-                                                  start = start,
-                                                  end = end)
-                     # Lookup the relevant groups
-                     tx_col <- data_source@column_identifiers[1]
-                     transcripts <-
-                       S4Vectors::elementMetadata(target_tx)[, tx_col]
-                     key <- data_source@transcript_model_key
-                     target_group <-
-                       unique(key[key$tx_name %in% transcripts, ]$group)
+                       #Get the target transcripts
+                       target_tx <-
+                           get_transcripts(data_source,
+                                           chrom = chrom,
+                                           start = start,
+                                           end = end)
+                       # Lookup the relevant groups
+                       tx_col <- data_source@column_identifiers[1]
+                       transcripts <-
+                           S4Vectors::elementMetadata(target_tx)[, tx_col]
+                       key <- data_source@transcript_model_key
+                       target_group <-
+                           unique(key[key$tx_name %in% transcripts, ]$group)
 
-                     # Combine the data and the GRanges object
-                     value_granges <- BiocGenerics::Reduce("c", mapply(
-                       function(bins, counts) {
-                         bins$value <- counts
-                         return(bins)
-                       },
-                       data_source@bins[target_group],
-                       data_source@counts[target_group],
-                       SIMPLIFY = FALSE)
-                     )
-                     return(value_granges)
-                   }
-)
+                       # Combine the data and the GRanges object
+                       value_granges <-
+                           BiocGenerics::Reduce(
+                               "c",
+                               mapply(
+                                   function(bins, counts) {
+                                       bins$value <- counts
+                                       return(bins)
+                                   },
+                                   data_source@bins[target_group],
+                                   data_source@counts[target_group],
+                                   SIMPLIFY = FALSE
+                               )
+                           )
+                       return(value_granges)
+                   })
 
 #' @rdname get_data
 methods::setMethod("get_data",
                    signature(data_source = "character"),
                    function(data_source, chrom, start, end) {
-                     stop("Not implemented")
-                   }
-)
+                       stop("Not implemented")
+                   })
+
+#' @title retrieve abundance for plotting
+#'
+#' @inheritParams plot_model
+#'
+#' @return a \link[GenomicRanges]{GRanges-class} objects with the adbundance in
+#' the metadate column(s).
+#'
+#' @include transcript_quantifier-class.R
+#' @name get_abundance
+#'
+get_abundance <-
+    function(transcript_quantifier, chrom, start, end) {
+        tq <- transcript_quantifier
+        target_tx <- get_transcripts(tq,
+                                     chrom = chrom,
+                                     start = start,
+                                     end = end)
+        # Lookup the relevant groups
+        tx_col <- tq@column_identifiers[1]
+        transcripts <-
+            S4Vectors::elementMetadata(target_tx)[, tx_col]
+        key <- tq@transcript_model_key
+        target_group <-
+            unique(key[key$tx_name %in% transcripts, ]$group)
+
+        tx_models <- tq@models[target_group]
+        tx_bins <- tq@bins[target_group]
+        tx_abundances <- tq@model_abundance[target_group]
+
+        tx_meta <-
+            mapply(function(tx_model, tx_abundance) {
+                t(t(tx_model) * tx_abundance)
+            },
+            tx_models,
+            tx_abundances, SIMPLIFY = FALSE)
+
+        value_granges <-
+            BiocGenerics::Reduce("c", mapply(function(tx_bin, tx_meta) {
+                GenomicRanges::values(tx_bin) <- tx_meta
+                return(tx_bin)
+            },
+            tx_bins,
+            tx_meta, SIMPLIFY = FALSE))
+
+        return(value_granges)
+    }
