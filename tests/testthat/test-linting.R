@@ -16,10 +16,13 @@ testthat::test_that("Style should be lint-free", {
         list.files(file.path(lint_path, "vignettes"),
                    recursive = TRUE, full.names = TRUE)
     )
+    my_linters <- lintr::with_defaults(cyclocomp_linter =
+                                           lintr::cyclocomp_linter(20))
     # Check for lint
     lintr::expect_lint_free(
         path = lint_path,
         relative_path = TRUE,
-        exclusions = excluded_files
+        exclusions = excluded_files,
+        linters = my_linters
     )
 })
