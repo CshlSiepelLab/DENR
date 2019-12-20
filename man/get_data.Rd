@@ -27,5 +27,7 @@ a \link[GenomicRanges]{GRanges-class} objects with the read counts in
 the \code{value} column
 }
 \description{
-Retrives data for plotting
+Retrives data for plotting. Returned ranges may go a bit outside
+the queried ones if the overlapping bins do not perfectly align with the
+user provided boundries
 }

@@ -104,11 +104,27 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
     stop(paste("transcripts does not have a column matching",
                transcript_name_column))
   }
-  if (!is.null(gene_name_column) &&
-      !transcript_name_column %in%
-        colnames(S4Vectors::elementMetadata(transcripts))) {
-    stop(paste("transcripts does not have a column matching", gene_name_column))
+  if (!is.character(
+    S4Vectors::elementMetadata(transcripts)[, transcript_name_column])) {
+    stop(paste("transcripts column", transcript_name_column,
+               "must be of class 'character'"))
   }
+  if (!is.null(gene_name_column)) {
+    # Alias for easier use
+    gnc <- gene_name_column
+    if (!gnc %in%
+       colnames(S4Vectors::elementMetadata(transcripts))) {
+      stop(paste("transcripts does not have a column matching",
+                 gnc))
+    }
+    if (!is.character(
+      S4Vectors::elementMetadata(transcripts)[, gnc])) {
+      stop(paste("transcripts column", gnc, "is class", paste0("'",
+                 class(S4Vectors::elementMetadata(transcripts)[, gnc]), "'"),
+                 "must be of class 'character'"))
+    }
+  }
+
   # Check binsize
   if (bin_size < 1) {
     stop("Binsize must be >= 1")

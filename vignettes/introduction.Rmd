@@ -23,6 +23,7 @@ txdb_path_ds <- system.file("extdata", "test_double_strand.txdb",
                          package = "tuSelecter2")
 txdb_ds <- AnnotationDbi::loadDb(file = txdb_path_ds)
 gr_ds <- GenomicFeatures::transcripts(txdb_ds, c("tx_name", "gene_id"))
+gr_ds$gene_id <- as.character(gr_ds$gene_id)
 ```
 
 ```{r setup, include = TRUE}
@@ -47,7 +48,7 @@ be specified but is not required.
 ```{r create_transcript_quantifier}
 tq <- transcript_quantifier(gr_ds, bin_size = 50,
                             transcript_name_column = "tx_name",
-                            gene_name_column = "gene_id", mask_start_bins = c(1, 0),
+                            gene_name_column = "gene_id", mask_start_bins = c(2, 4),
                             mask_end_bins = c(0, 0))
 ```
 

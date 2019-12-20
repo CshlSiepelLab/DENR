@@ -7,8 +7,10 @@ txdb_path_ds <- system.file("extdata", "test_double_strand.txdb",
 txdb_ds <- AnnotationDbi::loadDb(file = txdb_path_ds)
 
 ## Convert txdb to granges
-gr_ss <- GenomicFeatures::transcripts(txdb_ss)
-gr_ds <- GenomicFeatures::transcripts(txdb_ds)
+gr_ss <- GenomicFeatures::transcripts(txdb_ss, c("tx_name", "gene_id"))
+gr_ds <- GenomicFeatures::transcripts(txdb_ds, c("tx_name", "gene_id"))
+gr_ss$gene_id <- as.character(gr_ss$gene_id)
+gr_ss$tx_name <- as.character(gr_ss$tx_name)
 
 test_that("Transcripts group correctly (single strand)", {
   tx_grp <- group_transcripts(gr_ss)
@@ -229,9 +231,22 @@ test_that("Transcripts group correctly (single strand)", {
 test_that("transcript_quantifier object construction", {
   # Check that models can be constructed correctly
   expect_s4_class(transcript_quantifier(transcripts = gr_ss,
-                                   transcript_name_column = "tx_name"),
+                                        transcript_name_column = "tx_name",
+                                        gene_name_column = "gene_id"),
                   "transcript_quantifier")
   # check for errors
+  gr_ss_err <- gr_ss
+  gr_ss_err$tx_name <- as.list(gr_ss_err$tx_name)
+  gr_ss_err2 <- gr_ss
+  gr_ss_err2$gene_id <- as.list(gr_ss_err$gene_id)
+  expect_error(transcript_quantifier(transcripts = gr_ss_err,
+                                        transcript_name_column = "tx_name",
+                                        gene_name_column = "gene_id"),
+                  "must be of class 'character'")
+  expect_error(transcript_quantifier(transcripts = gr_ss_err2,
+                                     transcript_name_column = "tx_name",
+                                     gene_name_column = "gene_id"),
+               "must be of class 'character'")
   expect_error(transcript_quantifier(transcripts = gr_ss,
                                 transcript_name_column = "tx_name",
                                 bin_size = -1))
@@ -240,6 +255,10 @@ test_that("transcript_quantifier object construction", {
                                 distance = -1))
   expect_error(transcript_quantifier(transcripts = gr_ss,
                                 transcript_name_column = "foo"),
+               "transcripts does not have a column matching foo")
+  expect_error(transcript_quantifier(transcripts = gr_ss,
+                                     transcript_name_column = "tx_name",
+                                     gene_name_column = "foo"),
                "transcripts does not have a column matching foo")
   # Try some illegal object modifications
   tq <- transcript_quantifier(transcripts = gr_ss,

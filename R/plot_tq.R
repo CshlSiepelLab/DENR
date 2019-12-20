@@ -36,8 +36,8 @@ plot_model <- function(transcript_quantifier,
         if (is.na(gid_col)) {
             stop("transcript_quantifier object not built with gene ids")
         }
-        if (!gene_name %in%
-            S4Vectors::elementMetadata(tq@transcripts)[, gid_col]) {
+        if (!all(gene_name %in%
+            S4Vectors::elementMetadata(tq@transcripts)[, gid_col])) {
             stop(paste("Gene", gene_name, "does not exist"))
         }
     } else if (!is.null(chrom) &
@@ -80,6 +80,7 @@ plot_model <- function(transcript_quantifier,
     gid_col <- tq@column_identifiers[2]
     transcripts <- S4Vectors::elementMetadata(target_tx)[, tx_col]
     target_masks <- get_masks(tq, transcripts)
+    target_masks <- GenomicRanges::reduce(target_masks)
 
     # Transcripts track
     if (!is.na(gid_col)) {
@@ -100,65 +101,53 @@ plot_model <- function(transcript_quantifier,
     # Masks track
     masks_track <- Gviz::AnnotationTrack(target_masks,
                                          name = "masks",
-                                         feature = strand(target_masks))
+                                         feature = strand(target_masks),
+                                         shape = "box")
 
-    # Get count data
-    data <- get_data(tq, chrom, start, end)
-    ylim_max <- max(data$value) * 1.05
+    # Get count data it it exists
+    data_tracks <- list()
+    if (length(tq@counts) > 0) {
+      data <- get_data(tq, chrom, start, end)
+      ylim_max <- max(data$value) * 1.05
 
-    # plot datatrack for read count
-    d_track_plus <- NULL
-    d_track_minus <- NULL
-    if (length(data[GenomicRanges::strand(data) == "+"]) > 0) {
-        d_track_plus <-
-            Gviz::DataTrack(
-                data[GenomicRanges::strand(data) == "+"],
-                type = "h",
-                name = "Summarized read counts (+)",
-                col = "blue",
-                ylim = c(0, ylim_max)
-            )
-    }
-    if (length(data[GenomicRanges::strand(data) == "-"]) > 0) {
-        d_track_minus <-
-            Gviz::DataTrack(
-                data[GenomicRanges::strand(data) == "-"],
-                type = "h",
-                name = "Summarized read counts (-)",
-                col = "red",
-                ylim = c(ylim_max, 0)
-            )
+      # plot datatrack for read count
+      for (s in unique(GenomicRanges::strand(data))) {
+        s <- factor(as.character(s), levels = c("+", "-", "*"))
+        fill <- c("blue", "red")[as.numeric(s)]
+        scale <- do.call(c(I, rev)[as.numeric(s)][[1]],
+                         list(c(0, ylim_max)))
+        data_tracks[[as.character(s)]] <-
+          Gviz::DataTrack(
+            data[GenomicRanges::strand(data) == s],
+            type = "h",
+            name = paste0("Summarized read counts (", s, ")"),
+            col = fill,
+            ylim = scale
+          )
+      }
     }
 
-    # Get abundance data
-    abundance <- get_abundance(tq, chrom, start, end)
+    abundance_tracks <- list()
+    if (any(unlist(tq@model_abundance) != 0)) {
+      # Get abundance data
+      abundance <- get_abundance(tq, chrom, start, end)
 
-    # plot datatrack for read count
-    abd_track_plus <- NULL
-    abd_track_minus <- NULL
-    if (length(abundance[GenomicRanges::strand(abundance) == "+"]) > 0) {
-        abd_track_plus <-
-            Gviz::DataTrack(
-                abundance[GenomicRanges::strand(abundance) == "+"],
-                type = "histogram",
-                name = "Predicted abundance (+)",
-                groups = transcripts,
-                legend = FALSE,
-                col = "blue",
-                ylim = c(0, ylim_max)
-            )
-    }
-    if (length(abundance[GenomicRanges::strand(abundance) == "-"]) > 0) {
-        abd_track_minus <-
-            Gviz::DataTrack(
-                abundance[GenomicRanges::strand(abundance) == "-"],
-                type = "histogram",
-                name = "Predicted abundance (-)",
-                groups = transcripts,
-                legend = FALSE,
-                col = "red",
-                ylim = c(ylim_max, 0)
-            )
+      # plot datatrack for read count
+      for (s in unique(GenomicRanges::strand(abundance))) {
+        s <- factor(as.character(s), levels = c("+", "-", "*"))
+        fill <- c("blue", "red")[as.numeric(s)]
+        scale <- do.call(c(I, rev)[as.numeric(s)][[1]],
+                         list(c(0, ylim_max)))
+        abundance_tracks[[as.character(s)]] <- Gviz::DataTrack(
+          abundance[GenomicRanges::strand(abundance) == s],
+          type = "histogram",
+          name = paste0("Predicted abundance (", s, ")"),
+          groups = transcripts,
+          legend = FALSE,
+          col = fill,
+          ylim = scale
+        )
+      }
     }
 
     # Plot tracks
@@ -167,10 +156,10 @@ plot_model <- function(transcript_quantifier,
             axis_track,
             tx_track,
             masks_track,
-            d_track_plus,
-            d_track_minus,
-            abd_track_plus,
-            abd_track_minus
+            data_tracks[["+"]],
+            data_tracks[["-"]],
+            abundance_tracks[["+"]],
+            abundance_tracks[["-"]]
         ),
         from = start,
         to = end,
@@ -211,7 +200,7 @@ get_transcripts <- function(transcript_quantifier,
     if (!is.null(gene_name)) {
         gid_col <- tq@column_identifiers[2]
         genes <- S4Vectors::elementMetadata(tq@transcripts)[, gid_col]
-        out <- tq@transcripts[genes == gene_name]
+        out <- tq@transcripts[genes %in% gene_name]
     } else {
         query_range <- GenomicRanges::GRanges(chrom,
                                               IRanges::IRanges(start, end),
@@ -247,7 +236,9 @@ get_masks <- function(transcript_quantifier, transcripts) {
 
 #' @title Get data
 #'
-#' @description Retrives data for plotting
+#' @description Retrives data for plotting. Returned ranges may go a bit outside
+#' the queried ones if the overlapping bins do not perfectly align with the
+#' user provided boundries
 #'
 #' @param data_source a \link{transcript_quantifier-class} object or string
 #' giving the path to a bigwig file
@@ -294,7 +285,7 @@ methods::setMethod("get_data",
                                    data_source@bins[target_group],
                                    data_source@counts[target_group],
                                    SIMPLIFY = FALSE
-                               )
+                               ), init = GenomicRanges::GRanges(),
                            )
                        return(value_granges)
                    })
@@ -348,7 +339,7 @@ get_abundance <-
                 return(tx_bin)
             },
             tx_bins,
-            tx_meta, SIMPLIFY = FALSE))
+            tx_meta, SIMPLIFY = FALSE), init = GenomicRanges::GRanges())
 
         return(value_granges)
     }
