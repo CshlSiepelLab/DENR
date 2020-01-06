@@ -150,7 +150,8 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
                 bin_size = bin_size)
 
   # Create transcript models
-  tx_models <- create_transcript_models(tx_grps, grp_bins,
+  tx_models <- create_transcript_models(transcript_groups = tx_grps,
+                                        bins = grp_bins,
                                         transcript_name_column)
 
   # Create masks

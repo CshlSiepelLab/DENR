@@ -27,27 +27,20 @@ create_transcript_models <- function(transcript_groups, bins,
   }
   # Compute percent overlap of each transcript per bin and cast to matrix
   tx_matrix_models <- mapply(FUN = function(tx_grp, group_bins) {
-    # Get which transcripts intersect which bins
-    hits <- GenomicRanges::findOverlaps(group_bins, tx_grp)
-    # Compute number of bases the intersect the trancript per bin
+    # Get intersection of all bins against all transcripts
     overlaps <- GenomicRanges::pintersect(
-      group_bins[S4Vectors::queryHits(hits)],
-      tx_grp[S4Vectors::subjectHits(hits)]
+      rep(group_bins, length(tx_grp)),
+      rep(tx_grp, each = length(group_bins))
     )
+
     # Compute percent overlap
-    percent_overlap <- IRanges::width(overlaps) /
-                        IRanges::width(group_bins[S4Vectors::queryHits(hits)])
-    # Reshape into matrix
-    po_matrix <- reshape2::acast(
-        cbind(S4Vectors::as.data.frame(hits), percent_overlap),
-        formula = queryHits ~ subjectHits,
-        value.var = "percent_overlap",
-        fill = 0,
-        drop = FALSE
-    )
-    colnames(po_matrix) <-
+    percent_overlap <- matrix(IRanges::width(overlaps) /
+                        IRanges::width(group_bins)[1],
+                        nrow = length(group_bins),
+                        byrow = FALSE)
+    colnames(percent_overlap) <-
       S4Vectors::elementMetadata(tx_grp)[, transcript_name_column]
-    return(po_matrix)
+    return(percent_overlap)
   }, tx_grp = transcript_groups, group_bins = bins, SIMPLIFY = F)
   return(tx_matrix_models)
 }
