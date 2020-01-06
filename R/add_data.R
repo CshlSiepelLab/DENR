@@ -40,6 +40,6 @@ methods::setMethod("add_data",
           )
       # reorder the counts as the order in bins
       transcript_quantifier@counts <-
-          bw_counts[match(names(bw_counts), names(bins))]
+          bw_counts[names(transcript_quantifier@models)]
       return(transcript_quantifier)
 })
