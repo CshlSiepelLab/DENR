@@ -28,14 +28,19 @@ create_transcript_models <- function(transcript_groups, bins,
   # Compute percent overlap of each transcript per bin and cast to matrix
   tx_matrix_models <- mapply(FUN = function(tx_grp, group_bins) {
     # Get intersection of all bins against all transcripts
-    overlaps <- GenomicRanges::pintersect(
-      rep(group_bins, length(tx_grp)),
-      rep(tx_grp, each = length(group_bins))
+    overlaps <- IRanges::pintersect(
+      IRanges::IRanges(rep(GenomicRanges::start(group_bins), length(tx_grp)),
+                       width = GenomicRanges::width(group_bins)),
+      IRanges::IRanges(start = rep(GenomicRanges::start(tx_grp),
+                           each = length(group_bins)),
+                       end = rep(GenomicRanges::end(tx_grp),
+                                   each = length(group_bins))),
+      resolve.empty = "start.x"
     )
 
     # Compute percent overlap
     percent_overlap <- matrix(IRanges::width(overlaps) /
-                        IRanges::width(group_bins)[1],
+                        IRanges::width(group_bins),
                         nrow = length(group_bins),
                         byrow = FALSE)
     colnames(percent_overlap) <-
