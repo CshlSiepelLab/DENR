@@ -90,13 +90,17 @@ plot_model <- function(transcript_quantifier,
     }
     unique_gene_names <- unique(unlist(gene_names))
 
-    tx_track <- Gviz::AnnotationTrack(
+    # Add columns for gene region track
+    target_tx$gene <- unlist(GenomicRanges::values(target_tx)[[gid_col]])
+    target_tx$feature <- target_tx$gene
+    target_tx$transcript <- unlist(GenomicRanges::values(target_tx)[[tx_col]])
+
+    tx_track <- Gviz::GeneRegionTrack(
         target_tx,
-        name = "transcripts",
-        id = transcripts,
-        showFeatureId = TRUE,
-        feature = unlist(target_tx$gene_id)
+        name = "transcripts"
     )
+
+    tx_track@dp@pars$shape <- "arrow"
 
     # Masks track
     masks_track <- Gviz::AnnotationTrack(target_masks,
@@ -108,7 +112,7 @@ plot_model <- function(transcript_quantifier,
     data_tracks <- list()
     if (length(tq@counts) > 0) {
       data <- get_data(tq, chrom, start, end)
-      ylim_max <- max(data$value) * 1.05
+      ylim_max <- stats::quantile(data$value, 0.99) * 1.05
 
       # plot datatrack for read count
       for (s in unique(GenomicRanges::strand(data))) {
@@ -116,6 +120,7 @@ plot_model <- function(transcript_quantifier,
         fill <- c("blue", "red")[as.numeric(s)]
         scale <- do.call(c(I, rev)[as.numeric(s)][[1]],
                          list(c(0, ylim_max)))
+        data$value[data$value == 0] <- NA
         data_tracks[[as.character(s)]] <-
           Gviz::DataTrack(
             data[GenomicRanges::strand(data) == s],
@@ -132,7 +137,7 @@ plot_model <- function(transcript_quantifier,
       # Get abundance data
       abundance <- get_abundance(tq, chrom, start, end)
 
-      # plot datatrack for read count
+      # plot datatrack for abundance
       for (s in unique(GenomicRanges::strand(abundance))) {
         s <- factor(as.character(s), levels = c("+", "-", "*"))
         fill <- c("blue", "red")[as.numeric(s)]
@@ -142,7 +147,9 @@ plot_model <- function(transcript_quantifier,
           abundance[GenomicRanges::strand(abundance) == s],
           type = "histogram",
           name = paste0("Predicted abundance (", s, ")"),
-          groups = transcripts,
+          groups = colnames(
+            S4Vectors::elementMetadata(
+              abundance[GenomicRanges::strand(abundance) == s])),
           legend = FALSE,
           col = fill,
           ylim = scale
@@ -176,7 +183,6 @@ plot_model <- function(transcript_quantifier,
     names(mask_colors) <- c("+", "-")
 
     args <- c(args, gene_colors, mask_colors)
-
     return(do.call(Gviz::plotTracks, args))
 }
 
@@ -340,6 +346,14 @@ get_abundance <-
             },
             tx_bins,
             tx_meta, SIMPLIFY = FALSE), init = GenomicRanges::GRanges())
-
+        # Set NA to zero
+        GenomicRanges::values(value_granges) <- apply(
+          GenomicRanges::values(value_granges),
+          2,
+          function(x) {
+            x[is.na(x)] <- 0
+            return(x)
+          }
+        )
         return(value_granges)
     }
