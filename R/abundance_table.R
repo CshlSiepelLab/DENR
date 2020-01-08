@@ -38,6 +38,11 @@ methods::setMethod("abundance_table",
     ord <- match(abundance_tab$transcript_name,
         S4Vectors::elementMetadata(tq@transcripts)[[tq@column_identifiers[1]]])
     abundance_tab <- abundance_tab[ord, ]
+    # Add gene names if they exist
+    if (!is.na(tq@column_identifiers[2])) {
+      abundance_tab$gene_name <- # nolint
+        GenomicRanges::values(tq@transcripts)[, tq@column_identifiers[2]]
+    }
     return(abundance_tab)
   }
 )
