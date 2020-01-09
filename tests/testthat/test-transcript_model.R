@@ -30,6 +30,14 @@ test_that("Transcripts group correctly (single strand)", {
   # Check that the correct number of groups are formed
   expect_equal(length(tx_grp_expand_1), 2)
   expect_equal(length(tx_grp_expand_2), 1)
+  # Additional test case for granges where there are three transcripts
+  # where two non-overlapping transcripts are nested within a third
+  gr_3 <- GenomicRanges::GRanges(1,
+                                 IRanges::IRanges(
+                                   c(1, 1, 500),
+                                   c(1000, 200, 700)
+                                 ))
+  expect_equal(length(group_transcripts(gr_3)), 1)
 })
 
 test_that("Transcripts group correctly (double strand)", {
