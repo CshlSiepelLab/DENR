@@ -78,6 +78,16 @@ test_that("get_data", {
   expect_equivalent(tq@counts$`1_+:1`[1:27], test_counts$`1_+:1`)
 })
 
+test_that("set_datatrack_ylim", {
+    dtrack_plus <- Gviz::DataTrack(rtracklayer::import(bwp), strand = "+")
+    dtrack_plus <- set_datatrack_ylim(dtrack_plus, ylim = c(0, 10))
+    dtrack_minus <- Gviz::DataTrack(rtracklayer::import(bwm), strand = "-")
+    dtrack_minus <- set_datatrack_ylim(dtrack_minus, ylim = c(0, 10))
+    # compare the ylim and see if it has been set
+    expect_equivalent(as.vector(Gviz::displayPars(dtrack_plus)$ylim), c(0, 10))
+    expect_equivalent(as.vector(Gviz::displayPars(dtrack_minus)$ylim), c(10, 0))
+})
+
 test_that("plot_model", {
   tmp <- tempfile()
   grDevices::pdf(tmp)
@@ -87,6 +97,10 @@ test_that("plot_model", {
   tq_fitted <- fit(tq)
   expect_silent({
     pt2 <- plot_model(tq_fitted, gene_name = c("g1", "g2"))
+  })
+  expect_silent({
+    pt3 <- plot_model(tq_fitted, gene_name = "g1",
+                      bigwig_plus = bwp, bigwig_minus = bwm)
   })
   # Test errors
   tq_err <- tq
@@ -107,6 +121,9 @@ test_that("plot_model", {
                "Incorrect positional specification")
   expect_error(plot_model(tq, chrom = 1, start = 1),
                "Incorrect positional specification")
+  expect_error(plot_model(tq_fitted, gene_name = "g1",
+                          bigwig_plus = "A"),
+               "File A does not exist")
   grDevices::dev.off()
   unlink(tmp, TRUE)
 })

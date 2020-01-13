@@ -83,5 +83,5 @@ abundance_table(tq)
 We can also create plots for specific transcripts or genomic regions
 ```{r}
 plot_model(tq, chrom = 1, start = 1, end= 11000)
+plot_model(tq, gene_name = "g1")
 ```
-
