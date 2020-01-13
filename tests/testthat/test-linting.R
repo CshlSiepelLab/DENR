@@ -17,7 +17,7 @@ testthat::test_that("Style should be lint-free", {
                    recursive = TRUE, full.names = TRUE)
     )
     my_linters <- lintr::with_defaults(cyclocomp_linter =
-                                           lintr::cyclocomp_linter(20))
+                                           lintr::cyclocomp_linter(30))
     # Check for lint
     lintr::expect_lint_free(
         path = lint_path,

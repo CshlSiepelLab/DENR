@@ -9,6 +9,7 @@
 #' @param start the start position of your query region (single value)
 #' @param end the end position of your query region (single value)
 #' @param strand the strand specificity of your query region (default: ANY)
+#' @param ymax maximum value of y-axis when plotting
 #'
 #' @return plotted tracks of transcripts and masks of your query gene
 #'
@@ -21,7 +22,10 @@ plot_model <- function(transcript_quantifier,
                        chrom = NULL,
                        start = NULL,
                        end = NULL,
-                       strand = NULL) {
+                       strand = NULL,
+                       bigwig_plus = NULL,
+                       bigwig_minus = NULL,
+                       ymax = NULL) {
     # Alias for easier use
     tq <- transcript_quantifier
     # Check that only gene name or position information is specified
@@ -67,7 +71,7 @@ plot_model <- function(transcript_quantifier,
 
     # Define bounds of plot range
     if (is.null(start)) {
-        chrom <- GenomicRanges::seqnames(target_tx)[1]
+        chrom <- droplevels(GenomicRanges::seqnames(target_tx)[1])
         start <- min(GenomicRanges::start(target_tx))
         end <- max(GenomicRanges::end(target_tx))
     }
@@ -107,42 +111,59 @@ plot_model <- function(transcript_quantifier,
                                          name = "masks",
                                          feature = strand(target_masks),
                                          shape = "box")
-
-    # Get count data it it exists
+    # Some objects for data retrieval
     data_tracks <- list()
-    if (length(tq@counts) > 0) {
-      data <- get_data(tq, chrom, start, end)
-      ylim_max <- stats::quantile(data$value, 0.99) * 1.05
+    bw_files <- c(`+` = bigwig_plus, `-` = bigwig_minus)
+    strand_col <- c(`+` = "blue", `-` = "red")
+    bw_max <- 0
+    # Get count data it it exists
+    if (any(!is.null(bw_files))) {
+        for (s in names(bw_files)) {
+            file <- bw_files[s]
+            if (!file.exists(file)) {
+                stop(paste("File", file, "does not exist"))
+            }
+            bw <- rtracklayer::import(file,
+                       which = GenomicRanges::GRanges(
+                           seqnames = chrom,
+                           ranges = IRanges::IRanges(start = start, end = end)
+                       ))
+            # Get potential ymax
+            bw_max <-
+                max(bw_max, max(stats::quantile(abs(bw$score), 0.99))) * 1.05
+            data_tracks[[s]] <- Gviz::DataTrack(
+                                 range = bw,
+                                 type = "h",
+                                 name = paste0("PRO-seq (", s, ")"),
+                                 col = strand_col[s],
+                                 strand = s)
 
-      # plot datatrack for read count
-      for (s in unique(GenomicRanges::strand(data))) {
-        s <- factor(as.character(s), levels = c("+", "-", "*"))
-        fill <- c("blue", "red")[as.numeric(s)]
-        scale <- do.call(c(I, rev)[as.numeric(s)][[1]],
-                         list(c(0, ylim_max)))
-        data$value[data$value == 0] <- NA
-        data_tracks[[as.character(s)]] <-
-          Gviz::DataTrack(
-            data[GenomicRanges::strand(data) == s],
-            type = "h",
-            name = paste0("Summarized read counts (", s, ")"),
-            col = fill,
-            ylim = scale
-          )
-      }
+        }
+    } else {
+        if (length(tq@counts) > 0) {
+            data <- get_data(tq, chrom, start, end)
+            bw_max <- stats::quantile(data$value, 0.99) * 1.05
+            # plot datatrack for read count
+            for (s in unique(GenomicRanges::strand(data))) {
+                data$value[data$value == 0] <- NA
+                data_tracks[[as.character(s)]] <-
+                    Gviz::DataTrack(
+                        data[GenomicRanges::strand(data) == s],
+                        type = "h",
+                        name = paste0("Summarized read counts (", s, ")"),
+                        col = strand_col[as.character(s)],
+                        strand = as.character(s)
+                    )
+            }
+        }
     }
 
     abundance_tracks <- list()
     if (any(unlist(tq@model_abundance) != 0)) {
       # Get abundance data
       abundance <- get_abundance(tq, chrom, start, end)
-
       # plot datatrack for abundance
       for (s in unique(GenomicRanges::strand(abundance))) {
-        s <- factor(as.character(s), levels = c("+", "-", "*"))
-        fill <- c("blue", "red")[as.numeric(s)]
-        scale <- do.call(c(I, rev)[as.numeric(s)][[1]],
-                         list(c(0, ylim_max)))
         abundance_tracks[[as.character(s)]] <- Gviz::DataTrack(
           abundance[GenomicRanges::strand(abundance) == s],
           type = "histogram",
@@ -151,8 +172,8 @@ plot_model <- function(transcript_quantifier,
             S4Vectors::elementMetadata(
               abundance[GenomicRanges::strand(abundance) == s])),
           legend = FALSE,
-          col = fill,
-          ylim = scale
+          col = strand_col[s],
+          strand = s
         )
       }
     }
@@ -170,8 +191,24 @@ plot_model <- function(transcript_quantifier,
         ),
         from = start,
         to = end,
+        chromosome = 1,
         transcriptAnnotation = "transcript"
     )
+
+    # Override default ymax with user specification if given
+    if (!is.null(ymax)) {
+        bw_max <- ymax
+    }
+
+    # Set max for all valid data tracks
+    for (track in seq_along(args$trackList)) {
+        if (class(args$trackList[[track]]) == "DataTrack") {
+            args$trackList[[track]] <- set_datatrack_ylim(
+                args$trackList[[track]],
+                c(0, bw_max)
+            )
+        }
+    }
 
     args$trackList <- #nolint
         args$trackList[!unlist(lapply(args$trackList, is.null))] #nolint
@@ -291,7 +328,7 @@ methods::setMethod("get_data",
                                    data_source@bins[target_group],
                                    data_source@counts[target_group],
                                    SIMPLIFY = FALSE
-                               ), init = GenomicRanges::GRanges(),
+                               ), init = GenomicRanges::GRanges()
                            )
                        return(value_granges)
                    })
@@ -357,3 +394,21 @@ get_abundance <-
         )
         return(value_granges)
     }
+
+#' @title Set datatrack ylim
+#'
+#' @description Set ylim of the \link[Gviz]{DataTrack-class} object
+#' @param data_track a \link[Gviz]{DataTrack-class} object
+#' @param ylim a length two numeric vector holding the ylim boundaries.
+#'
+#' @return a \link[Gviz]{DataTrack-class} object
+#' @name set_datatrack_ylim
+
+set_datatrack_ylim <- function(data_track, ylim) {
+    s <- Gviz::strand(data_track)
+    s <- factor(as.character(s), levels = c("+", "-", "*"))
+    scale <- do.call(c(I, rev, I)[as.numeric(s)][[1]],
+                     list(ylim))
+    Gviz::displayPars(data_track)$ylim <- scale
+    return(data_track)
+}

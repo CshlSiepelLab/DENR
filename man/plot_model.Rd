@@ -10,7 +10,10 @@ plot_model(
   chrom = NULL,
   start = NULL,
   end = NULL,
-  strand = NULL
+  strand = NULL,
+  bigwig_plus = NULL,
+  bigwig_minus = NULL,
+  ymax = NULL
 )
 }
 \arguments{
@@ -26,6 +29,12 @@ to the \link{transcript_quantifier-class} object}
 \item{end}{the end position of your query region (single value)}
 
 \item{strand}{the strand specificity of your query region (default: ANY)}
+
+\item{bigwig_plus}{the path to a bigwig for reads on the plus strand}
+
+\item{bigwig_minus}{the path to a bigwig for reads on the minus strand}
+
+\item{ymax}{maximum value of y-axis when plotting}
 }
 \value{
 plotted tracks of transcripts and masks of your query gene
