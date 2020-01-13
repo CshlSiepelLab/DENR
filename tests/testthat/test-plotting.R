@@ -79,6 +79,8 @@ test_that("get_data", {
 })
 
 test_that("plot_model", {
+  tmp <- tempfile()
+  grDevices::pdf(tmp)
   expect_silent({
     pt1 <- plot_model(tq, gene_name = c("g1", "g2"))
   })
@@ -105,4 +107,6 @@ test_that("plot_model", {
                "Incorrect positional specification")
   expect_error(plot_model(tq, chrom = 1, start = 1),
                "Incorrect positional specification")
+  grDevices::dev.off()
+  unlink(tmp, TRUE)
 })
