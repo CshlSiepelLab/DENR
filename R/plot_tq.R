@@ -71,7 +71,8 @@ plot_model <- function(transcript_quantifier,
 
     # Define bounds of plot range
     if (is.null(start)) {
-        chrom <- droplevels(GenomicRanges::seqnames(target_tx)[1])
+        chrom <-
+          S4Vectors::runValue(droplevels(GenomicRanges::seqnames(target_tx)[1]))
         start <- min(GenomicRanges::start(target_tx))
         end <- max(GenomicRanges::end(target_tx))
     }
@@ -110,7 +111,8 @@ plot_model <- function(transcript_quantifier,
     masks_track <- Gviz::AnnotationTrack(target_masks,
                                          name = "masks",
                                          feature = strand(target_masks),
-                                         shape = "box")
+                                         shape = "box",
+                                         chromosome = chrom)
     # Some objects for data retrieval
     data_tracks <- list()
     bw_files <- c(`+` = bigwig_plus, `-` = bigwig_minus)
@@ -136,7 +138,8 @@ plot_model <- function(transcript_quantifier,
                                  type = "h",
                                  name = paste0("PRO-seq (", s, ")"),
                                  col = strand_col[s],
-                                 strand = s)
+                                 strand = s,
+                                 chromosome = chrom)
 
         }
     } else {
@@ -152,7 +155,8 @@ plot_model <- function(transcript_quantifier,
                         type = "h",
                         name = paste0("Summarized read counts (", s, ")"),
                         col = strand_col[as.character(s)],
-                        strand = as.character(s)
+                        strand = as.character(s),
+                        chromosome = chrom
                     )
             }
         }
@@ -173,7 +177,8 @@ plot_model <- function(transcript_quantifier,
               abundance[GenomicRanges::strand(abundance) == s])),
           legend = FALSE,
           col = strand_col[s],
-          strand = s
+          strand = s,
+          chromosome = chrom
         )
       }
     }
@@ -191,7 +196,7 @@ plot_model <- function(transcript_quantifier,
         ),
         from = start,
         to = end,
-        chromosome = 1,
+        chromosome = chrom,
         transcriptAnnotation = "transcript"
     )
 
@@ -220,6 +225,7 @@ plot_model <- function(transcript_quantifier,
     names(mask_colors) <- c("+", "-")
 
     args <- c(args, gene_colors, mask_colors)
+
     return(do.call(Gviz::plotTracks, args))
 }
 
