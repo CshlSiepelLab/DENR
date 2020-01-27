@@ -35,8 +35,10 @@ methods::setMethod("abundance_table",
     abundance_tab[i] <- lapply(abundance_tab[i], as.character)
     rownames(abundance_tab) <- NULL
     # Sort to match transcripts
-    ord <- match(abundance_tab$transcript_name,
-        S4Vectors::elementMetadata(tq@transcripts)[[tq@column_identifiers[1]]])
+    ord <- base::match(
+      S4Vectors::elementMetadata(tq@transcripts)[[tq@column_identifiers[1]]],
+      abundance_tab$transcript_name
+    )
     abundance_tab <- abundance_tab[ord, ]
     # Add gene names if they exist
     if (!is.na(tq@column_identifiers[2])) {

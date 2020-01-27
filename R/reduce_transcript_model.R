@@ -49,6 +49,7 @@ reduce_transcript_models <-
                    group = rep(seq_along(tx_num), tx_num),
                    model = unlist(mapply(rep, lapply(group_len, seq_along),
                                          group_len, SIMPLIFY = FALSE)))
+        rownames(tx_group_model) <- NULL
         return(list(reduced_tx_models, tx_group_model))
 }
 
