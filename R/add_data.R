@@ -16,8 +16,7 @@
 methods::setGeneric("add_data",
                     function(transcript_quantifier,
                              bigwig_plus = NULL, bigwig_minus = NULL,
-                             summary_operation = "sum",
-                             threads = 1) {
+                             summary_operation = "sum") {
                       standardGeneric("add_data")
                     })
 
@@ -26,17 +25,16 @@ methods::setMethod("add_data",
   signature(transcript_quantifier = "transcript_quantifier"),
   function(transcript_quantifier,
            bigwig_plus = NULL, bigwig_minus = NULL,
-           summary_operation = "sum",
-           threads = 1) {
+           summary_operation = "sum") {
       bins <- transcript_quantifier@bins
       strands <- runValue(GenomicRanges::strand(bins))
       # summarize bigwig files by strands
       bw_counts <-
           c(
               summarize_bigwig(bigwig_plus, bins[unlist(strands == "+")],
-                               summary_operation, threads),
+                               summary_operation),
               summarize_bigwig(bigwig_minus, bins[unlist(strands == "-")],
-                               summary_operation, threads)
+                               summary_operation)
           )
       # reorder the counts as the order in bins
       transcript_quantifier@counts <-

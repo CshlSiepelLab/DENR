@@ -17,7 +17,10 @@ assert_chromosome_exists <- function(chromosome, bigwig_file) {
   )
   pass <- all(chromosome %in% bw_seqnames)
   if (!pass) {
-    stop(paste("chromosome", chromosome, "does not exist in", bigwig_file))
+    not_incl <- setdiff(chromosome, bw_seqnames)
+    stop(paste("chromosome",
+               paste(not_incl, collapse = ", "),
+               "does not exist in", bigwig_file))
   }
 }
 
@@ -33,7 +36,6 @@ assert_chromosome_exists <- function(chromosome, bigwig_file) {
 #' given GRanges (or GRangesList element) are from the same chromosome
 #' @param summary_operation the summary opperation to apply per bin (e.g.
 #' sum, mean, median, etc.) Defaults to "sum"
-#' @param threads number of threads to use
 #'
 #' @return A list of vectors with each one corresponding to one set of bins and
 #' each element of a vector corresponding to a bin
@@ -43,75 +45,74 @@ assert_chromosome_exists <- function(chromosome, bigwig_file) {
 #'
 #' @export
 methods::setGeneric("summarize_bigwig",
-                    function(bigwig_file, bins, summary_operation = "sum",
-                             threads = 1) {
+                    function(bigwig_file, bins, summary_operation = "sum") {
                       standardGeneric("summarize_bigwig")
 })
 
 #' @rdname summarize_bigwig
 methods::setMethod("summarize_bigwig", signature(bins = "GRangesList"),
-                   function(bigwig_file, bins, summary_operation = "sum",
-                            threads = 1) {
-  # Create iterator over bins
-  bins_iter <- iterators::iter(bins)
+                   function(bigwig_file, bins, summary_operation = "sum") {
+  # Flatten GRangesList
+  flat_bins <- BiocGenerics::unlist(bins, use.names = TRUE)
 
-  if (threads > 1) {
-    # Create parallel cluster and register it with the foreach backend
-    cluster <- snow::makeCluster(threads)
-    doSNOW::registerDoSNOW(cluster)
-    `%doloop%` <- foreach::`%dopar%`
-  } else {
-    `%doloop%` <- foreach::`%do%`
-  }
+  # Get the values back as flat
+  sum_flat <- unlist(summarize_bigwig(
+    bigwig_file,
+    flat_bins,
+    summary_operation
+  ))
 
-  # Iterate over bin groups and get read sums
-  sum_list <- foreach::foreach(chrom_bins = bins_iter,
-                               .noexport = c("bins"),
-                               .errorhandling = "stop") %doloop% {
-          unlist(summarize_bigwig(bigwig_file, chrom_bins, summary_operation))
-  }
-
-  # Set names
-  names(sum_list) <- names(bins)
+  # Re-list the values
+  sum_list <- split(sum_flat, attr(sum_flat, "names"))
   return(sum_list)
 })
 
 #' @rdname summarize_bigwig
 methods::setMethod("summarize_bigwig", signature(bins = "GRanges"),
-                   function(bigwig_file, bins, summary_operation = "sum",
-                            threads = 1) {
+                   function(bigwig_file, bins, summary_operation = "sum") {
   # ** Checks **
   if (!file.exists(bigwig_file)) {
     stop("bigwig_file path does not exist")
   }
 
-  # Check if more than one unique seqname in bins
-  bin_chrom <- S4Vectors::runValue(GenomicRanges::seqnames(bins))
-  if (length(bin_chrom) > 1) {
-    stop("One or more groups of contained multiple chromosomes")
-  }
+  # Get unique chromosome names in bins
+  bin_chrom <- unique(S4Vectors::runValue(GenomicRanges::seqnames(bins)))
 
   # Check that query chromosome is present in bigwig
   assert_chromosome_exists(chromosome = bin_chrom, bigwig_file)
 
   # ** End checks **
-
-  # Read in bigwig region and keep only the relevant chromosome
+  # Read in the relevant bigwig regions
   import_range <- GenomicRanges::reduce(bins)
-  imported_bw <- rtracklayer::import.bw(con = bigwig_file, which = import_range,
-                                          as = "RleList")[bin_chrom]
-  # Lookup correct method
-  operation <- methods::selectMethod(summary_operation, signature = "RleViews")
-  # Summarize reads across bins
-  tryCatch({
-    .Generic <<- summary_operation # nolint
-    read_summary <- BiocGenerics::do.call(what = operation,
-      list(x = IRanges::Views(imported_bw, IRanges::ranges(bins))[[1]]))
-    .Generic <<- NULL # nolint
-  }, error = function(e) {
-    err_string <- stringr::str_match(as.character(e), ":\\s*(.*)")[, 2]
-    stop(paste0("Bigwig summarization with '", summary_operation, "' failed, ",
-               err_string))
-  })
-  return(list(read_summary))
+  imported_bw <- rtracklayer::import.bw(
+    con = bigwig_file, which = import_range,
+    as = "RleList")
+  # Pre-allocate vector to store scores in
+  scores <- numeric(length = length(bins))
+  for (chrom in bin_chrom) {
+    # Get bins that are relevant for that chromosome
+    incl_bins <- as.logical(GenomicRanges::seqnames(bins) == chrom)
+    # Lookup correct method
+    operation <- methods::selectMethod(summary_operation,
+                                       signature = "RleViews")
+    # Summarize reads across bins
+    tryCatch({
+      .Generic <<- summary_operation # nolint
+      scores[incl_bins] <- unlist(BiocGenerics::do.call(
+        what = operation,
+        args = list(
+          x = IRanges::Views(
+            subject = imported_bw[chrom],
+            IRanges::ranges(bins[incl_bins]))
+          )
+        ))
+      .Generic <<- NULL # nolint
+    }, error = function(e) {
+      err_string <- stringr::str_match(as.character(e), ":\\s*(.*)")[, 2]
+      stop(paste0("Bigwig summarization with '", summary_operation,
+                  "' failed, ", err_string))
+    })
+  }
+  names(scores) <- names(bins)
+  return(scores)
 })

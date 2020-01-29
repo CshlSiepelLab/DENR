@@ -6,11 +6,11 @@
 \alias{summarize_bigwig,ANY,GRanges-method}
 \title{Summarize bigwig}
 \usage{
-summarize_bigwig(bigwig_file, bins, summary_operation = "sum", threads = 1)
+summarize_bigwig(bigwig_file, bins, summary_operation = "sum")
 
-\S4method{summarize_bigwig}{ANY,GRangesList}(bigwig_file, bins, summary_operation = "sum", threads = 1)
+\S4method{summarize_bigwig}{ANY,GRangesList}(bigwig_file, bins, summary_operation = "sum")
 
-\S4method{summarize_bigwig}{ANY,GRanges}(bigwig_file, bins, summary_operation = "sum", threads = 1)
+\S4method{summarize_bigwig}{ANY,GRanges}(bigwig_file, bins, summary_operation = "sum")
 }
 \arguments{
 \item{bigwig_file}{a string pointing to a bigwig file}
@@ -21,8 +21,6 @@ given GRanges (or GRangesList element) are from the same chromosome}
 
 \item{summary_operation}{the summary opperation to apply per bin (e.g.
 sum, mean, median, etc.) Defaults to "sum"}
-
-\item{threads}{number of threads to use}
 }
 \value{
 A list of vectors with each one corresponding to one set of bins and

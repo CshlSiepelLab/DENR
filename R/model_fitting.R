@@ -23,6 +23,7 @@ sum_squares_lasso <- function(x, models, data, lambda = 0) {
 #' @description Estimates trancript abundances for a given
 #' \code{\link{transcript_quantifier-class}} object under a lasso penalty
 #'
+#' @param threads number of threads to use in model fitting
 #' @inheritParams add_data
 #' @inheritParams sum_squares
 #'
