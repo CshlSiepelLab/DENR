@@ -9,16 +9,14 @@ add_data(
   transcript_quantifier,
   bigwig_plus = NULL,
   bigwig_minus = NULL,
-  summary_operation = "sum",
-  threads = 1
+  summary_operation = "sum"
 )
 
 \S4method{add_data}{transcript_quantifier}(
   transcript_quantifier,
   bigwig_plus = NULL,
   bigwig_minus = NULL,
-  summary_operation = "sum",
-  threads = 1
+  summary_operation = "sum"
 )
 }
 \arguments{
@@ -30,8 +28,6 @@ add_data(
 
 \item{summary_operation}{the summary opperation to apply per bin (e.g.
 sum, mean, median, etc.) Defaults to "sum"}
-
-\item{threads}{number of threads to use}
 }
 \value{
 A \link{transcript_quantifier-class} object with count data added.

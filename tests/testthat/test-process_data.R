@@ -17,6 +17,7 @@ test_that("assert_chromosome_exists", {
   expect_silent(assert_chromosome_exists(1, bigwig_file = bw_ss))
   expect_silent(assert_chromosome_exists("1", bigwig_file = bw_ss))
   expect_error(assert_chromosome_exists(2, bigwig_file = bw_ss))
+  expect_error(assert_chromosome_exists(c(1, 2), bigwig_file = bw_ss))
 })
 
 test_that("bigwig summaries have the correct type/dimensions", {
@@ -25,18 +26,14 @@ test_that("bigwig summaries have the correct type/dimensions", {
   expect_type(summarize_bigwig(bigwig_file = bw_ss, bins = tx_bins_25,
                    summary_operation = "mean"), "list")
   expect_type(summarize_bigwig(bigwig_file = bw_ss, bins = tx_bins_25[[1]],
-                   summary_operation = "median"), "list")
+                   summary_operation = "median"), "double")
   expect_type(summarize_bigwig(bigwig_file = bw_ss, bins = tx_bins_25[[1]],
-                               summary_operation = "min"), "list")
+                               summary_operation = "min"), "double")
   expect_length(summarize_bigwig(bigwig_file = bw_ss, bins = tx_bins_25,
                                summary_operation = "sum"), 2)
   expect_length(summarize_bigwig(bigwig_file = bw_ss, bins = tx_bins_25[[1]],
-                               summary_operation = "median"), 1)
-})
-
-test_that("summarize_bigwig parallel implementations", {
-  expect_type(summarize_bigwig(bigwig_file = bw_ss, bins = tx_bins_25,
-                               summary_operation = "sum", threads = 2), "list")
+                               summary_operation = "median"),
+                length(tx_bins_25[[1]]))
 })
 
 test_that("summarize_bigwig error catching", {
@@ -49,8 +46,6 @@ test_that("summarize_bigwig error catching", {
   tx_seqnames_mix <- tx_bins_25[[1]]
   GenomeInfoDb::seqlevels(tx_seqnames_mix) <- c("1", "2")
   GenomicRanges::seqnames(tx_seqnames_mix) <- rep(c(1, 2), each = 100)
-  expect_error(summarize_bigwig(bigwig_file = bw_ss, bins = tx_seqnames_mix),
-               "One or more groups of contained multiple chromosomes")
 })
 
 # A simple two chromosome (1, Z) bigwig where [1:1000] = 1 and [1:500] = 1
