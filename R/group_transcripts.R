@@ -44,10 +44,11 @@ group_transcripts <- function(transcript_granges, distance = 0, threads = 1) {
   # groups are not merged
   GenomicRanges::end(tx_granges_expand) <-
     GenomicRanges::end(tx_granges_expand) - 1
-  tx_reduce <- GenomicRanges::reduce(tx_granges_expand)
+  tx_reduce <- GenomicRanges::reduce(tx_granges_expand, ignore.strand = FALSE)
   GenomicRanges::end(tx_reduce) <- GenomicRanges::end(tx_reduce) + 1
   # Get the group assignments
-  group_assignment <- GenomicRanges::findOverlaps(transcript_granges, tx_reduce)
+  group_assignment <- GenomicRanges::findOverlaps(query = transcript_granges,
+                                                  subject = tx_reduce)
   # Create group vector string
   uid <- paste0(S4Vectors::subjectHits(group_assignment), "_",
                 GenomicRanges::strand(transcript_granges))
@@ -55,5 +56,6 @@ group_transcripts <- function(transcript_granges, distance = 0, threads = 1) {
   # Split the transcripting into their groups
   gr_groups <- GenomicRanges::split(transcript_granges,
                                     f = uid)
+
   return(gr_groups)
 }

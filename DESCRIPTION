@@ -29,7 +29,8 @@ Imports:
   BiocGenerics,
   rtracklayer,
   Gviz,
-  viridisLite
+  viridisLite,
+  data.table
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true

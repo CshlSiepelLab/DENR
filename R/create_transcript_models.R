@@ -32,17 +32,17 @@ create_transcript_models <- function(transcript_groups, bins,
       IRanges::IRanges(rep(GenomicRanges::start(group_bins), length(tx_grp)),
                        width = GenomicRanges::width(group_bins)),
       IRanges::IRanges(start = rep(GenomicRanges::start(tx_grp),
-                           each = length(group_bins)),
+                                   each = length(group_bins)),
                        end = rep(GenomicRanges::end(tx_grp),
-                                   each = length(group_bins))),
+                                 each = length(group_bins))),
       resolve.empty = "start.x"
     )
 
     # Compute percent overlap
     percent_overlap <- matrix(IRanges::width(overlaps) /
-                        IRanges::width(group_bins),
-                        nrow = length(group_bins),
-                        byrow = FALSE)
+                                IRanges::width(group_bins),
+                              nrow = length(group_bins),
+                              byrow = FALSE)
     colnames(percent_overlap) <-
       S4Vectors::elementMetadata(tx_grp)[, transcript_name_column]
     return(percent_overlap)
