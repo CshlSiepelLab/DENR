@@ -21,30 +21,33 @@ methods::setMethod("abundance_table",
   function(transcript_quantifier) {
     # Alias for ease of use
     tq <- transcript_quantifier
-    # Reformat abundance estimates
-    abundance_tab <- apply(tq@transcript_model_key, 1, function(x) {
-      a <- tq@model_abundance[[as.integer(x[2])]][as.integer(x[3])]
-      data.frame(transcript_name = as.character(x[1]),
-               abundance = as.numeric(a),
-               model = paste0(as.integer(x[2]), "_", as.integer(x[3])))
-    })
-    abundance_tab <- do.call("rbind",
-                            args = c(abundance_tab, stringsAsFactors = FALSE))
-    # Clean up the output
-    i <- sapply(abundance_tab, is.factor)
-    abundance_tab[i] <- lapply(abundance_tab[i], as.character)
-    rownames(abundance_tab) <- NULL
+    # Unlist abundance table for ease of access
+    abundance_vector <- unlist(tq@model_abundance)
+    # Compute final index to match transcripts to indices
+    abundance_lookup_index <-
+      cumsum(!duplicated(with(tq@transcript_model_key,
+                              paste0(group, "_", model))))
+    # Add abundances to table
+    abundance_dt <- data.table::data.table(
+      transcript_name = tq@transcript_model_key$tx_name,
+      abundance = abundance_vector[abundance_lookup_index],
+      model = with(tq@transcript_model_key, paste0(group, "_", model))
+    )
     # Sort to match transcripts
     ord <- base::match(
       S4Vectors::elementMetadata(tq@transcripts)[[tq@column_identifiers[1]]],
-      abundance_tab$transcript_name
+      abundance_dt$transcript_name
     )
-    abundance_tab <- abundance_tab[ord, ]
+    abundance_dt <- abundance_dt[ord, ]
     # Add gene names if they exist
     if (!is.na(tq@column_identifiers[2])) {
-      abundance_tab$gene_name <- # nolint
-        GenomicRanges::values(tq@transcripts)[, tq@column_identifiers[2]]
+      abundance_dt[, gene_name := GenomicRanges::values(tq@transcripts)[, tq@column_identifiers[2]]] #nolint
     }
-    return(abundance_tab)
+    return(abundance_dt)
   }
 )
+
+## Appease R CMD check
+if (getRversion() >= "2.15.1") {
+  utils::globalVariables(c("gene_name"))
+}
