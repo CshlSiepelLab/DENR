@@ -72,10 +72,10 @@ test_that("Transcripts are binned correctly", {
 test_that("Transcript model generation", {
   # Some simple test cases
   test_tx <- GenomicRanges::GRangesList(
-    GenomicRanges::GRanges(c(1, 1),
+    grp1 = GenomicRanges::GRanges(c(1, 1),
                            IRanges::IRanges(c(1, 26), c(100, 100)),
                            tx_name = c("t1", "t2")),
-    GenomicRanges::GRanges(c(2, 2),
+    grp2 = GenomicRanges::GRanges(c(2, 2),
                            IRanges::IRanges(c(301, 351), c(500, 475)),
                            tx_name = c("t3", "t4"))
   )
@@ -120,8 +120,9 @@ test_that("Transcript model generation", {
 test_that("Transcript mask construction", {
   # Some simple test cases
   test_tx <- GenomicRanges::GRangesList(
-    GenomicRanges::GRanges(c(2, 2), IRanges::IRanges(c(301, 356), c(500, 475)),
-                           tx_name = c("t1", "t2"))
+    grp1 = GenomicRanges::GRanges(c(2, 2),
+                                  IRanges::IRanges(c(301, 356), c(500, 475)),
+                                  tx_name = c("t1", "t2"))
   )
   # Create bins at different sizes
   tx_bins_25 <- create_bins(test_tx, bin_size = 25)
@@ -151,16 +152,16 @@ test_that("Transcript mask construction", {
                                           strand = "-", c(1, 2), c(3, 4))
 
   # Test that masks are correct
-  expect_equal(mask_0_0_plus, list(integer(0)))
-  expect_equal(mask_1_0_plus, list(c(1, 3)))
-  expect_equal(mask_0_1_plus, list(c(7, 8)))
-  expect_equal(mask_1_1_plus, list(c(1, 3, 7, 8)))
-  expect_equal(mask_1_2_3_4_plus, list(c(1:3, 5:8)))
-  expect_equal(mask_0_0_minus, list(integer(0)))
-  expect_equal(mask_1_0_minus, list(c(7, 8)))
-  expect_equal(mask_0_1_minus, list(c(1, 3)))
-  expect_equal(mask_1_1_minus, list(c(1, 3, 7, 8)))
-  expect_equal(mask_1_2_3_4_minus, list(c(1:5, 7, 8)))
+  expect_equivalent(mask_0_0_plus, list(integer(0)))
+  expect_equivalent(mask_1_0_plus, list(c(1, 3)))
+  expect_equivalent(mask_0_1_plus, list(c(7, 8)))
+  expect_equivalent(mask_1_1_plus, list(c(1, 3, 7, 8)))
+  expect_equivalent(mask_1_2_3_4_plus, list(c(1:3, 5:8)))
+  expect_equivalent(mask_0_0_minus, list(integer(0)))
+  expect_equivalent(mask_1_0_minus, list(c(7, 8)))
+  expect_equivalent(mask_0_1_minus, list(c(1, 3)))
+  expect_equivalent(mask_1_1_minus, list(c(1, 3, 7, 8)))
+  expect_equivalent(mask_1_2_3_4_minus, list(c(1:5, 7, 8)))
 
   # Test errors
   expect_error(create_model_masks(tx_models_25, "+", c(-1, 0), c(0, 0)),
@@ -176,7 +177,8 @@ test_that("Transcript mask construction", {
 test_that("Transcript masking", {
   # Some simple test cases
   test_tx <- GenomicRanges::GRangesList(
-    GenomicRanges::GRanges(c(2, 2), IRanges::IRanges(c(301, 356), c(500, 475)),
+    grp1 = GenomicRanges::GRanges(c(2, 2),
+                                  IRanges::IRanges(c(301, 356), c(500, 475)),
                            tx_name = c("t1", "t2"))
   )
   # Create bins at different sizes

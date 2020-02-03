@@ -27,7 +27,7 @@ methods::setMethod("add_data",
            bigwig_plus = NULL, bigwig_minus = NULL,
            summary_operation = "sum") {
       bins <- transcript_quantifier@bins
-      strands <- runValue(GenomicRanges::strand(bins))
+      strands <- S4Vectors::runValue(GenomicRanges::strand(bins))
       # summarize bigwig files by strands
       bw_counts <-
           c(

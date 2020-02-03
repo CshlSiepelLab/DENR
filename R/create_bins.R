@@ -8,6 +8,7 @@
 #' @param bin_size An integer, used to tail the gene region. Default is 50bp.
 #' @return A \code{\link[GenomicRanges]{GRangesList-class}} object, containing
 #' the binned region.
+#' @importFrom data.table :=
 #' @export
  
 create_bins <- function(transcript_groups, bin_size = 50) {
@@ -18,8 +19,20 @@ create_bins <- function(transcript_groups, bin_size = 50) {
     if (!methods::is(bin_size, "numeric") || bin_size < 0) {
         stop("bin_size is not a positive number")
     }
-    gr_bin_ls <- GenomicRanges::GRangesList(lapply(transcript_groups,
-                                    get_gr_bin, bin_size = bin_size))
+    gr <- BiocGenerics::unlist(transcript_groups, use.names = TRUE)
+    gr_dt <- data.table::as.data.table(gr)
+    gr_dt[, select_groups := names(gr)]
+    gr_bin_ls <- with(
+        gr_dt[, bin_seq(seqnames[1],
+                       start[1],
+                       max(end),
+                       strand[1],
+                       bin_size), by = "select_groups"],
+        GenomicRanges::split(
+            GenomicRanges::GRanges(seqname, IRanges::IRanges(start, end),
+                                   strand = strand),
+            select_groups)
+    )
     return(gr_bin_ls)
 }
 
@@ -27,22 +40,28 @@ create_bins <- function(transcript_groups, bin_size = 50) {
 #'
 #' Function for generating bins for a group of overlapped transcripts.
 #'
-#' @param gr A \code{\link[GenomicRanges]{GRanges-class}} object,
-#' it contains transcripts from one gene or several genes
-#' which are overlapped.
-#' @param bin_size An integer, used to tail the gene region. Default is 50bp.
-#' @importFrom S4Vectors runValue
-#' @return A \code{\link[GenomicRanges]{GRanges-class}} object, containing
+#' @param seqname chromsome name
+#' @param start start (single value)
+#' @param end end (single value)
+#' @param strand strand (single value)
+#' @inheritParams create_bins
+#' @return A \code{\link[data.table]{data.table}} object, containing
 #' the binned region.
 
-get_gr_bin <- function(gr, bin_size) {
-    g_start <- min(GenomicRanges::start(gr))
-    g_end <- max(GenomicRanges::end(gr))
-    g_starts <- seq(g_start, g_end, by = bin_size)
+bin_seq <- function(seqname, start, end, strand, bin_size) {
+    g_starts <- seq(start,
+                    length.out = ceiling((end - start) / bin_size),
+                    by = bin_size)
     gr_binned <-
-        GenomicRanges::GRanges(seqnames = runValue(GenomicRanges::seqnames(gr)),
-                                IRanges::IRanges(start = g_starts,
-                                end = g_starts + bin_size - 1),
-                                strand = runValue(GenomicRanges::strand(gr)))
+        data.table::data.table(seqname,
+                               start = g_starts,
+                                end = g_starts + bin_size - 1,
+                                strand = strand)
     return(gr_binned)
+}
+
+## Appease R CMD check
+if (getRversion() >= "2.15.1") {
+    utils::globalVariables(c("select_groups", "seqnames", "start",
+                             "end", "strand"))
 }
