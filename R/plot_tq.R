@@ -211,11 +211,14 @@ plot_model <- function(transcript_quantifier,
         abundance_max <- ymax
     }
 
+    datatrack_names <- c("Summarized read counts (+)",
+                         "Summarized read counts (-)",
+                         "PRO-seq (+)", "PRO-seq (-)")
+
     # Set max for all valid data tracks
     for (track in seq_along(args$trackList)) {
         if (class(args$trackList[[track]]) == "DataTrack") {
-            if (args$trackList[[track]]@name %in%
-                c("Summarized read counts (+)", "Summarized read counts (-)")) {
+            if (args$trackList[[track]]@name %in% datatrack_names) {
                 args$trackList[[track]] <-
                     set_datatrack_ylim(args$trackList[[track]],
                                        c(0, bw_max))
