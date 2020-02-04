@@ -162,6 +162,7 @@ plot_model <- function(transcript_quantifier,
         }
     }
 
+    abundance_max <- 0
     abundance_tracks <- list()
     if (any(unlist(tq@model_abundance) != 0)) {
       # Get abundance data
@@ -181,7 +182,11 @@ plot_model <- function(transcript_quantifier,
           chromosome = chrom
         )
       }
+      abundance_max <-
+          ceiling(abs(max(as.matrix(S4Vectors::mcols(abundance)))))
     }
+
+
 
     # Plot tracks
     args <- list(
@@ -203,15 +208,24 @@ plot_model <- function(transcript_quantifier,
     # Override default ymax with user specification if given
     if (!is.null(ymax)) {
         bw_max <- ymax
+        abundance_max <- ymax
     }
 
     # Set max for all valid data tracks
     for (track in seq_along(args$trackList)) {
         if (class(args$trackList[[track]]) == "DataTrack") {
-            args$trackList[[track]] <- set_datatrack_ylim(
-                args$trackList[[track]],
-                c(0, bw_max)
-            )
+            if (args$trackList[[track]]@name %in%
+                c("Summarized read counts (+)", "Summarized read counts (-)")) {
+                args$trackList[[track]] <-
+                    set_datatrack_ylim(args$trackList[[track]],
+                                       c(0, bw_max))
+            }
+            if (args$trackList[[track]]@name %in%
+                c("Predicted abundance (+)", "Predicted abundance (-)")) {
+                args$trackList[[track]] <-
+                    set_datatrack_ylim(args$trackList[[track]],
+                                       c(0, abundance_max))
+            }
         }
     }
 
