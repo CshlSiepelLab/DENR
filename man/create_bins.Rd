@@ -4,14 +4,14 @@
 \alias{create_bins}
 \title{Create bins for multiple groups of overlapped transcripts}
 \usage{
-create_bins(transcript_groups, bin_size = 50)
+create_bins(transcript_groups, bin_size = 250)
 }
 \arguments{
 \item{transcript_groups}{A \code{\link[GenomicRanges]{GRangesList-class}}
 object,each element in the list contains transcripts from one gene or several
 genes which are overlapped.}
 
-\item{bin_size}{An integer, used to tail the gene region. Default is 50bp.}
+\item{bin_size}{An integer, used to tile the gene region. Default is 250bp.}
 }
 \value{
 A \code{\link[GenomicRanges]{GRangesList-class}} object, containing

@@ -12,7 +12,7 @@ can be augmented to include data and transcript abundance estimates using the
 \section{Slots}{
 
 \describe{
-\item{\code{transcripts}}{a  \code{\link[GenomicRanges]{GRanges-class}} that holds
+\item{\code{transcripts}}{a \code{\link[GenomicRanges]{GRanges-class}} that holds
 all the transcript coordinates}
 
 \item{\code{column_identifiers}}{a two element character vector that holds the column
@@ -22,6 +22,8 @@ missing gene identifiers are set to NA.}
 
 \item{\code{bins}}{a \code{\link[GenomicRanges]{GRangesList-class}} object that
 records the bins for each group of transcripts}
+
+\item{\code{bin_size}}{width of bins used to create transcript models}
 
 \item{\code{models}}{a list of matrices with numeric values between 0 and 1
 representing the fractional overlap of per transcript per bin where the rows

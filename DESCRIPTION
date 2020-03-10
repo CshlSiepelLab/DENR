@@ -30,7 +30,8 @@ Imports:
   rtracklayer,
   Gviz,
   viridisLite,
-  data.table
+  data.table,
+  ggplot2
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
@@ -56,4 +57,5 @@ Collate:
     'plot_tq.R'
     'process_data.R'
     'reduce_transcript_model.R'
+    'transcript_shape_profile-class.R'
 VignetteBuilder: knitr

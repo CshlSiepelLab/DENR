@@ -16,13 +16,15 @@ transcript_quantifier_valid <- function(object) {
   # If counts are specified
   if (length(object@counts) != 0) {
     # Check that it is a list of matricies
-    if (!is_matrix_list(object@counts)) {
+    if (!is_vector_list(object@counts)) {
       errors <- c(errors, "All elements of counts must be matricies")
     }
     # Check that counts has the same number of rows per element as models has
     # columns if counts exist
-    if (!all(mapply(nrow, object@counts, SIMPLIFY = T) ==
-            mapply(ncol, object@models, SIMPLIFY = T))) {
+    data_mod_dim_equal <- mapply(function(counts, models) {
+      length(counts) == nrow(models)
+    }, counts = object@counts, models = object@models)
+    if (!all(data_mod_dim_equal)) {
       errors <- c(errors, "Number of model and count bins differ")
     }
   }
@@ -35,7 +37,7 @@ transcript_quantifier_valid <- function(object) {
 #' can be augmented to include data and transcript abundance estimates using the
 #' \code{fit()} function
 #'
-#' @slot transcripts a  \code{\link[GenomicRanges]{GRanges-class}} that holds
+#' @slot transcripts a \code{\link[GenomicRanges]{GRanges-class}} that holds
 #' all the transcript coordinates
 #' @slot column_identifiers a two element character vector that holds the column
 #' names in \code{transcripts} for the trancript and gene identifiers
@@ -43,6 +45,7 @@ transcript_quantifier_valid <- function(object) {
 #' missing gene identifiers are set to NA.
 #' @slot bins a \code{\link[GenomicRanges]{GRangesList-class}} object that
 #' records the bins for each group of transcripts
+#' @slot bin_size width of bins used to create transcript models
 #' @slot models a list of matrices with numeric values between 0 and 1
 #' representing the fractional overlap of per transcript per bin where the rows
 #' are the transcripts and the columns are the bins. Rownames are the
@@ -65,6 +68,7 @@ methods::setClass("transcript_quantifier",
                   slots = c(transcripts = "GRanges",
                             column_identifiers = "character",
                             bins = "CompressedGRangesList",
+                            bin_size = "integer",
                             models = "list",
                             masks = "list",
                             transcript_model_key = "data.frame",
@@ -93,7 +97,7 @@ methods::setClass("transcript_quantifier",
 #' @export
 transcript_quantifier <- function(transcripts, transcript_name_column,
                              gene_name_column = NULL,
-                             bin_size = 100, distance = 0,
+                             bin_size = 250, distance = 0,
                              mask_start_bins = NULL, mask_end_bins = NULL,
                              bin_operation = c("round", "floor", "ceiling"),
                              threads = 1) {
@@ -178,6 +182,7 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
                 column_identifiers = c(transcript_id = transcript_name_column,
                                 gene_id = gene_name_column),
                 bins = grp_bins,
+                bin_size = as.integer(bin_size),
                 models = reduced_models[[1]],
                 masks = model_masks,
                 transcript_model_key = reduced_models[[2]],
