@@ -15,7 +15,7 @@ bin_seq(seqname, start, end, strand, bin_size)
 
 \item{strand}{strand (single value)}
 
-\item{bin_size}{An integer, used to tail the gene region. Default is 50bp.}
+\item{bin_size}{An integer, used to tile the gene region. Default is 250bp.}
 }
 \value{
 A \code{\link[data.table]{data.table}} object, containing

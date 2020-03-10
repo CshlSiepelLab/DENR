@@ -8,7 +8,7 @@ transcript_quantifier(
   transcripts,
   transcript_name_column,
   gene_name_column = NULL,
-  bin_size = 100,
+  bin_size = 250,
   distance = 0,
   mask_start_bins = NULL,
   mask_end_bins = NULL,
@@ -27,7 +27,7 @@ GRanges object contain the transcript names}
 \item{gene_name_column}{a string that indicates which column in the
 GRanges object contains the gene names (not required)}
 
-\item{bin_size}{An integer, used to tail the gene region. Default is 50bp.}
+\item{bin_size}{An integer, used to tile the gene region. Default is 250bp.}
 
 \item{distance}{the distance within which two transcripts are
 considered connected}

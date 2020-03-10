@@ -5,13 +5,13 @@
 #' @param transcript_groups A \code{\link[GenomicRanges]{GRangesList-class}}
 #' object,each element in the list contains transcripts from one gene or several
 #' genes which are overlapped.
-#' @param bin_size An integer, used to tail the gene region. Default is 50bp.
+#' @param bin_size An integer, used to tile the gene region. Default is 250bp.
 #' @return A \code{\link[GenomicRanges]{GRangesList-class}} object, containing
 #' the binned region.
 #' @importFrom data.table :=
 #' @export
  
-create_bins <- function(transcript_groups, bin_size = 50) {
+create_bins <- function(transcript_groups, bin_size = 250) {
     # check input class
     if (!methods::is(transcript_groups, "GRangesList")) {
         stop("transcript_groups is not a GRangesList object")
@@ -50,7 +50,7 @@ create_bins <- function(transcript_groups, bin_size = 50) {
 
 bin_seq <- function(seqname, start, end, strand, bin_size) {
     g_starts <- seq(start,
-                    length.out = ceiling((end - start) / bin_size),
+                    length.out = ceiling((end - start + 1) / bin_size),
                     by = bin_size)
     gr_binned <-
         data.table::data.table(seqname,

@@ -56,9 +56,9 @@ test_that("Transcripts are binned correctly", {
   expect_equal(length(create_bins(tx_grp)), 2)
   # Check for the correct number of bins with various bin sizes
   expect_equal(length(create_bins(tx_grp[1], bin_size = 50)[[1]]),
-               ceiling((5999 - 1000) / 50))
+               ceiling((5999 - 1000 + 1) / 50))
   expect_equal(length(create_bins(tx_grp[1], bin_size = 17)[[1]]),
-               ceiling((5999 - 1000) / 17))
+               ceiling((5999 - 1000 + 1) / 17))
   # Check that the bins are the correct widths
   expect_true(
     all(S4Vectors::width(create_bins(tx_grp, bin_size = 17)[[1]]) == 17))

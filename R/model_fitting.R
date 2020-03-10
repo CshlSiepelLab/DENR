@@ -71,7 +71,7 @@ methods::setMethod("fit",
 
     # Handle transform option
     transform_opts <- c("identity", "log")
-    if (length(transform > 1)) {
+    if (length(transform) > 1) {
       warning("Multiple transform options specified, using the first")
       transform <- transform[1]
     }
