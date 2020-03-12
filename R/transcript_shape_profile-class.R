@@ -155,6 +155,10 @@ transcript_shape_profile <- function(transcripts,
   ma_dt[, group := names(mod_agree)]
   ma_dt <- ma_dt[percent_transcribed >= min_percent_transcribed &
                    percent_match >= percent_model_match]
+  message("Groups remaining: ", length(unique(ma_dt$group)))
+  if (nrow(ma_dt) == 0) {
+    stop("No transcripts passed filters to be used for model fitting")
+  }
   message("Selecting best fitting transcript per group ...")
   final_tx <- ma_dt[, .SD[which.max(percent_match)], by = "group"]
 

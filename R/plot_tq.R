@@ -110,7 +110,7 @@ plot_model <- function(transcript_quantifier,
     # Masks track
     masks_track <- Gviz::AnnotationTrack(target_masks,
                                          name = "masks",
-                                         feature = strand(target_masks),
+                                         feature = Gviz::strand(target_masks),
                                          shape = "box",
                                          chromosome = chrom)
     # Some objects for data retrieval
