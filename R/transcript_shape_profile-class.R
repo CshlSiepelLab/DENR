@@ -570,10 +570,12 @@ methods::setMethod("apply_shape_profile",
 
     message("Calculating transcript positional statistics ...")
     # Store group starts
-    grp_start <- unlist(lapply(GenomicRanges::start(tq@bins), function(x)
-      x[1]))
-    grp_strand <- unlist(lapply(GenomicRanges::strand(tq@bins), function(x)
-      as.character(x@values[1])))
+    bin_starts <- GenomicRanges::start(tq@bins)
+    start_idx <- c(1, cumsum(S4Vectors::elementNROWS(bin_starts)) + 1)
+    start_idx <- start_idx[-length(start_idx)]
+    grp_start <- BiocGenerics::unlist(bin_starts)[start_idx]
+    # Store strands
+    grp_strand <- unlist(S4Vectors::runValue(GenomicRanges::strand(tq@bins)))
 
     # Store transcript info
     tx_info <- data.table::data.table(
