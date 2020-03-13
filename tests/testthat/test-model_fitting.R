@@ -6,9 +6,6 @@ test_that("Model fitting", {
   expect_s4_class({
     tq_fitted <<- fit(tq)
   }, "transcript_quantifier")
-  expect_s4_class({
-    tq_fitted <<- fit(tq, threads = 2)
-  }, "transcript_quantifier")
   # Check that return output has correct dimensionality
   expect_equal(c(length(tq_fitted@model_abundance),
                  length(tq_fitted@model_abundance[[1]]),

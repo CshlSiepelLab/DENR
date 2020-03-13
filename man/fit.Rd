@@ -5,18 +5,18 @@
 \alias{fit,transcript_quantifier-method}
 \title{Fit model}
 \usage{
-fit(transcript_quantifier, lambda = 0, threads = 1, transform = "log")
+fit(transcript_quantifier, lambda = 0, transform = "log", verbose = FALSE)
 
-\S4method{fit}{transcript_quantifier}(transcript_quantifier, lambda = 0, threads = 1, transform = "log")
+\S4method{fit}{transcript_quantifier}(transcript_quantifier, lambda = 0, transform = "log", verbose = FALSE)
 }
 \arguments{
 \item{transcript_quantifier}{A \link{transcript_quantifier-class} object}
 
 \item{lambda}{the weight of the lasso penalty}
 
-\item{threads}{number of threads to use in model fitting}
-
 \item{transform}{how to transform the data (either "identity" or "log")}
+
+\item{verbose}{if TRUE shows progress bar for fitting (default: FALSE)}
 }
 \description{
 Estimates trancript abundances for a given

@@ -45,7 +45,7 @@ sum_squares_lasso <- function(x, models, data, lambda = 0,
 #' @description Estimates trancript abundances for a given
 #' \code{\link{transcript_quantifier-class}} object under a lasso penalty
 #'
-#' @param threads number of threads to use in model fitting
+#' @param verbose if TRUE shows progress bar for fitting (default: FALSE)
 #' @inheritParams add_data
 #' @inheritParams sum_squares_lasso
 #'
@@ -55,18 +55,22 @@ sum_squares_lasso <- function(x, models, data, lambda = 0,
 #'
 #' @export
 methods::setGeneric("fit",
-                    function(transcript_quantifier, lambda = 0, threads = 1,
-                             transform = "log") {
+                    function(transcript_quantifier, lambda = 0,
+                             transform = "log", verbose = FALSE) {
                       standardGeneric("fit")
                     })
 
 #' @rdname fit
 methods::setMethod("fit",
   signature(transcript_quantifier = "transcript_quantifier"),
-  function(transcript_quantifier, lambda = 0, threads = 1,
-           transform = "log") {
+  function(transcript_quantifier, lambda = 0, transform = "log",
+           verbose = FALSE) {
     if (lambda < 0) {
       stop("lambda must be positive")
+    }
+
+    if (!is.logical(verbose)) {
+      stop("verbose most be either TRUE or FALSE")
     }
 
     # Handle transform option
@@ -86,41 +90,32 @@ methods::setMethod("fit",
     sufficient_values <- mapply(function(x, y, z, za) {
       list(abundance = x, models = y, counts = z, masks = za)
     }, tq@model_abundance, tq@models, tq@counts, tq@masks, SIMPLIFY = FALSE)
-    # Create iterator over list of abundances
-    sv_iter <- iterators::iter(sufficient_values)
 
-    if (threads > 1) {
-      # Create parallel cluster and register it with the foreach backend
-      cluster <- snow::makeCluster(threads)
-      doSNOW::registerDoSNOW(cluster)
-      `%doloop%` <- foreach::`%dopar%`
-    } else {
-      `%doloop%` <- foreach::`%do%`
+    estim <- list()
+    if (verbose) {
+      message("Estimating abundance ...")
+      pb <- utils::txtProgressBar(min = 1,
+                                  max = length(sufficient_values),
+                                  style = 3)
     }
 
-    estim <- foreach::foreach(sv = sv_iter) %doloop% {
+    for (i in seq_along(sufficient_values)) {
+      sv <- sufficient_values[[i]]
       opt_result <- stats::optim(sv$abundance, fn = sum_squares_lasso,
-                          models = sv$models,
-                          data = mask_data(sv$counts, sv$masks),
-                          lambda = lambda,
-                          transform = transform,
-                          lower = rep(0, length(sv$abundance)),
-                          method = "L-BFGS-B")
-      abundance_est <- opt_result$par
-      names(abundance_est) <- colnames(sv$models)
-      return(abundance_est)
-    }
-
-    if (threads > 1) {
-      snow::stopCluster(cluster)
+                                 models = sv$models,
+                                 data = mask_data(sv$counts, sv$masks),
+                                 lambda = lambda,
+                                 transform = transform,
+                                 lower = rep(0, length(sv$abundance)),
+                                 method = "L-BFGS-B")
+      estim[[i]] <- opt_result$par
+      names(estim[[i]]) <- colnames(sv$models)
+      if (verbose) {
+        utils::setTxtProgressBar(pb, i)
+      }
     }
 
     tq@model_abundance <- estim
     return(tq)
   }
 )
-
-## Appease R CMD check
-if (getRversion() >= "2.15.1") {
-  utils::globalVariables(c("sv"))
-}
