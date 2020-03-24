@@ -64,7 +64,6 @@ plot_model <- function(transcript_quantifier,
     }
 
     ## ** End checking **
-
     # Get target transcripts
     target_tx <-
         get_transcripts(tq, gene_name, chrom, start, end, strand)
@@ -186,8 +185,6 @@ plot_model <- function(transcript_quantifier,
           ceiling(abs(max(as.matrix(S4Vectors::mcols(abundance)))))
     }
 
-
-
     # Plot tracks
     args <- list(
         trackList = list(
@@ -262,20 +259,23 @@ get_transcripts <- function(transcript_quantifier,
                             strand = NULL) {
     # Alias for ease of use
     tq <- transcript_quantifier
-    # Look up transcripts
+    # Look up transcripts for given gene name and assign chrom, start and end
     if (!is.null(gene_name)) {
         gid_col <- tq@column_identifiers[2]
         genes <- S4Vectors::elementMetadata(tq@transcripts)[, gid_col]
-        out <- tq@transcripts[genes %in% gene_name]
-    } else {
-        query_range <- GenomicRanges::GRanges(chrom,
+        tx <- tq@transcripts[genes %in% gene_name]
+        chrom <- S4Vectors::runValue(GenomeInfoDb::seqnames(tx))[[1]]
+        start <- min(BiocGenerics::start(tx))
+        end <- max(BiocGenerics::end(tx))
+    }
+
+    query_range <- GenomicRanges::GRanges(chrom,
                                               IRanges::IRanges(start, end),
                                               strand)
-        overlaps <-
-            GenomicRanges::findOverlaps(query_range, tq@transcripts,
+    overlaps <- GenomicRanges::findOverlaps(query_range, tq@transcripts,
                                         ignore.strand = is.null(strand))
-        out <- tq@transcripts[S4Vectors::subjectHits(overlaps)]
-    }
+    out <- tq@transcripts[S4Vectors::subjectHits(overlaps)]
+
     return(out)
 }
 

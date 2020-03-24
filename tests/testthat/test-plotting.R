@@ -27,15 +27,12 @@ tq <- add_data(transcript_quantifier = tq,
 test_that("get_transcripts", {
   expect_equivalent(tuSelecter2:::get_transcripts(transcript_quantifier = tq,
                                 gene_name = "g1"),
-                    gr_ds[gr_ds$gene_id == "g1"])
+                    gr_ds[gr_ds$tx_name %in% c("t1.1", "t1.2", "t2.1")])
   expect_equivalent(tuSelecter2:::get_transcripts(transcript_quantifier = tq,
                                                   chrom = 1,
                                                   start = 1000,
                                                   end = 10000),
                     gr_ds)
-  expect_equivalent(tuSelecter2:::get_transcripts(transcript_quantifier = tq,
-                                                  gene_name = "g1"),
-                    gr_ds[gr_ds$gene_id == "g1"])
   expect_equivalent(tuSelecter2:::get_transcripts(transcript_quantifier = tq,
                                                   chrom = 1,
                                                   start = 1000,
