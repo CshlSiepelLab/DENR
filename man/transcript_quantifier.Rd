@@ -9,7 +9,7 @@ transcript_quantifier(
   transcript_name_column,
   gene_name_column = NULL,
   bin_size = 250,
-  distance = 0,
+  distance = NULL,
   mask_start_bins = NULL,
   mask_end_bins = NULL,
   bin_operation = c("round", "floor", "ceiling"),
@@ -30,7 +30,10 @@ GRanges object contains the gene names (not required)}
 \item{bin_size}{An integer, used to tile the gene region. Default is 250bp.}
 
 \item{distance}{the distance within which two transcripts are
-considered connected}
+considered connected (must be at least bin size, defaults to bin size). The
+smaller this value is the more efficiently the model can be fit. Only
+increase this if you are masking large regions at the starts and ends of
+genes.}
 
 \item{mask_start_bins}{A numeric vertor with length two which giving the
 number of bins should be masked near the start of a transcript. The first

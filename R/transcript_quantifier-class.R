@@ -85,6 +85,11 @@ methods::setClass("transcript_quantifier",
 #' column with a gene id
 #' @param gene_name_column a string that indicates which column in the
 #' GRanges object contains the gene names (not required)
+#' @param distance the distance within which two transcripts are
+#' considered connected (must be at least bin size, defaults to bin size). The
+#' smaller this value is the more efficiently the model can be fit. Only
+#' increase this if you are masking large regions at the starts and ends of
+#' genes.
 #' @inheritParams create_bins
 #' @inheritParams group_transcripts
 #' @inheritParams create_model_masks
@@ -97,7 +102,7 @@ methods::setClass("transcript_quantifier",
 #' @export
 transcript_quantifier <- function(transcripts, transcript_name_column,
                              gene_name_column = NULL,
-                             bin_size = 250, distance = 0,
+                             bin_size = 250, distance = NULL,
                              mask_start_bins = NULL, mask_end_bins = NULL,
                              bin_operation = c("round", "floor", "ceiling"),
                              threads = 1) {
@@ -128,6 +133,16 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
                  "must be of class 'character'"))
     }
   }
+  # Set default distance
+  if (is.null(distance)) {
+    message("Setting distance to default of ", bin_size)
+    distance <- bin_size
+  }
+  # This is important to ensure no spurious overlaps in all vs. all overlap
+  # during transcript model construction
+  if (distance < bin_size) {
+    stop("distance must be equal to or greater than bin size")
+  }
 
   # Check binsize
   if (bin_size < 1) {
@@ -151,9 +166,7 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
   tx_grps <- GenomicRanges::sort(tx_grps)
 
   # Get group strands
-  grp_strand <- as.character(unlist(lapply(tx_grps, function(x) {
-    return(S4Vectors::runValue(GenomicRanges::strand(x))[1])
-  })))
+  grp_strand <- stringr::str_extract(names(tx_grps), "[+-]")
 
   # Bin transcripts regions
   message("Binning loci...")
@@ -162,8 +175,9 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
 
   # Create transcript models
   message("Creating transcript models ...")
-  tx_models <- create_transcript_models(transcript_groups = tx_grps,
+  tx_models <- create_transcript_models(transcripts = transcripts,
                                         bins = grp_bins,
+                                        bin_size = bin_size,
                                         transcript_name_column)
 
   # Create masks

@@ -83,10 +83,13 @@ test_that("Transcript model generation", {
   tx_bins_25 <- create_bins(test_tx, bin_size = 25)
   tx_bins_50 <- create_bins(test_tx, bin_size = 50)
   # Create models
-  tx_models_25 <- create_transcript_models(test_tx, tx_bins_25, "tx_name")
-  tx_models_25_short <- create_transcript_models(test_tx[1], tx_bins_25[1],
-                                                 "tx_name")
-  tx_models_50 <- create_transcript_models(test_tx, tx_bins_50, "tx_name")
+  tx_models_25 <- create_transcript_models(unlist(test_tx), tx_bins_25, 25,
+                                           "tx_name")
+  tx_models_25_short <- create_transcript_models(unlist(test_tx[1]),
+                                                 tx_bins_25[1],
+                                                 25, "tx_name")
+  tx_models_50 <- create_transcript_models(unlist(test_tx), tx_bins_50, 50,
+                                           "tx_name")
   # The true models
   true_models_25 <- list(
     t(matrix(c(1, 1, 1, 1,
@@ -127,8 +130,8 @@ test_that("Transcript mask construction", {
   # Create bins at different sizes
   tx_bins_25 <- create_bins(test_tx, bin_size = 25)
   # Create models
-  tx_models_25 <- create_transcript_models(test_tx,
-                                           tx_bins_25, "tx_name")
+  tx_models_25 <- create_transcript_models(unlist(test_tx), tx_bins_25, 25,
+                                           "tx_name")
   # Create masks
   mask_0_0_plus <- create_model_masks(transcript_models = tx_models_25,
                                       strand = "+")
@@ -184,7 +187,8 @@ test_that("Transcript masking", {
   # Create bins at different sizes
   tx_bins_25 <- create_bins(test_tx, bin_size = 25)
   # Create models
-  tx_models_25 <- create_transcript_models(test_tx, tx_bins_25, "tx_name")
+  tx_models_25 <- create_transcript_models(unlist(test_tx), tx_bins_25, 25,
+                                           "tx_name")
   # Create masks for plus strand
   mask_1_0_plus <- create_model_masks(transcript_models = tx_models_25,
                                       strand = "+", c(1, 0), c(0, 0))
@@ -244,6 +248,32 @@ test_that("transcript_quantifier object construction", {
                                         transcript_name_column = "tx_name",
                                         gene_name_column = "gene_id"),
                   "transcript_quantifier")
+  # Test the case where transcripts are close together but non-overlapping
+  # and the bins hang over the end of the first loci to intersect the second
+  # loci: E.g
+  # Loci1 ==========================
+  # Loci2                            ========================
+  # Bin1  |   |   |   |   |   |   |   |
+  # Bin2                             |   |   |   |   |   |   |
+  # Currently handled by ensuring that distance mor merging loci >= distance
+  gap_tx <- GenomicRanges::GRanges(1, IRanges::IRanges(c(1, 97), c(95, 110)),
+                                   "+", TXNAME = as.character(1:2))
+  tq_gap_ceil <-
+    suppressMessages(transcript_quantifier(gap_tx, "TXNAME", bin_size = 10,
+                                           bin_operation = "ceiling"))
+  tq_gap_floor <-
+    suppressMessages(transcript_quantifier(gap_tx, "TXNAME", bin_size = 10,
+                                           bin_operation = "floor"))
+  # Check for correct model construction/grouping
+  expect_equal(length(tq_gap_ceil@models), 1)
+  expect_equal(ncol(tq_gap_ceil@models[[1]]), 2)
+  expect_equivalent(tq_gap_ceil@models[[1]][10, ], c(1, 1))
+  expect_equivalent(tq_gap_floor@models[[1]][10, ], c(0, 0))
+  # Check for error with too small distance
+  expect_error(transcript_quantifier(gap_tx, "TXNAME", bin_size = 10,
+                                     distance = 5),
+               "distance must be equal to or greater than bin size")
+
   # check for errors
   gr_ss_err <- gr_ss
   gr_ss_err$tx_name <- as.list(gr_ss_err$tx_name)
