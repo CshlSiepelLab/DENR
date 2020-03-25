@@ -80,6 +80,7 @@ methods::setClass("transcript_shape_profile",
 #' @inheritParams create_bins
 #' @inheritParams add_data
 #' @inheritParams stats::loess
+#' @importFrom data.table :=
 #'
 #' @name transcript_shape_profile
 #' @rdname transcript_shape_profile
