@@ -13,6 +13,20 @@ mask_data <- function(data, masks) {
   return(data)
 }
 
+#' @title Predicts signal at locus level
+#'
+#' @description outputs prediction for read counts across entire locus
+#'
+#' @param models the matrix of transcript models
+#' @param abundance the transcript model abundances (can be either a vector or
+#' a matrix where each column is a vecotor of abundances)
+#'
+#' @name predict_locus
+#' @rdname predict_locus
+predict_locus <- function(models, abundance) {
+  return(models %*% abundance)
+}
+
 #' @title Sum of squares
 #'
 #' @description Computes sum-of-squares for a
@@ -29,15 +43,15 @@ sum_squares_lasso <- function(x, models, data, lambda = 0,
                               transform) {
   # Normalize the sum-of-squares by the length of the region so the
   # lasso penalty is comparable across regions of different length
+  locus_pred <- predict_locus(models, x)
   if (transform == "identity") {
-      ss <- mean((data - (models %*% x))^2) + lambda * sum(abs(x))
+      sum_sq <- sum((data - locus_pred)^2)
   } else if (transform == "log") {
-      ss <- mean((log(data + 1e-3) - log((models %*% x) + 1e-3))^2) +
-        lambda * sum(abs(x))
+      sum_sq <- sum((log(data + 1e-3) - log(locus_pred + 1e-3))^2)
   } else {
     stop("Invalid transform specified")
   }
-  return(ss)
+  return(sum_sq)
 }
 
 #' @title Fit model
@@ -65,8 +79,19 @@ methods::setMethod("fit",
   signature(transcript_quantifier = "transcript_quantifier"),
   function(transcript_quantifier, lambda = 0, transform = "log",
            verbose = FALSE) {
+    # Alias for ease of use
+    tq <- transcript_quantifier
+
     if (lambda < 0) {
       stop("lambda must be positive")
+    }
+
+    if (length(tq@counts) == 0) {
+      stop("No count data has been entered for this model")
+    }
+
+    if (length(tq@counts) != length(tq@models)) {
+      stop("There is data for a different number of loci than there are models")
     }
 
     if (!is.logical(verbose)) {
@@ -84,8 +109,6 @@ methods::setMethod("fit",
            paste(transform_opts, collapse = ", ")))
     }
 
-    # Alias for ease of use
-    tq <- transcript_quantifier
     # Zip together models, counts, and abundances
     sufficient_values <- mapply(function(x, y, z, za) {
       list(abundance = x, models = y, counts = z, masks = za)
