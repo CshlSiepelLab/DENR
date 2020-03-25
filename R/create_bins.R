@@ -8,60 +8,45 @@
 #' @param bin_size An integer, used to tile the gene region. Default is 250bp.
 #' @return A \code{\link[GenomicRanges]{GRangesList-class}} object, containing
 #' the binned region.
-#' @importFrom data.table :=
 #' @export
- 
 create_bins <- function(transcript_groups, bin_size = 250) {
-    # check input class
-    if (!methods::is(transcript_groups, "GRangesList")) {
-        stop("transcript_groups is not a GRangesList object")
-    }
-    if (!methods::is(bin_size, "numeric") || bin_size < 0) {
-        stop("bin_size is not a positive number")
-    }
-    gr <- BiocGenerics::unlist(transcript_groups, use.names = TRUE)
-    gr_dt <- data.table::as.data.table(gr)
-    gr_dt[, select_groups := names(gr)]
-    gr_bin_ls <- with(
-        gr_dt[, bin_seq(seqnames[1],
-                       start[1],
-                       max(end),
-                       strand[1],
-                       bin_size), by = "select_groups"],
-        GenomicRanges::split(
-            GenomicRanges::GRanges(seqname, IRanges::IRanges(start, end),
-                                   strand = strand),
-            select_groups)
-    )
-    return(gr_bin_ls)
+  # check input class
+  if (!methods::is(transcript_groups, "GRangesList")) {
+    stop("transcript_groups is not a GRangesList object")
+  }
+  if (!methods::is(bin_size, "numeric") || bin_size < 0) {
+    stop("bin_size is not a positive number")
+  }
+
+  # First reduce transcript groups to single range using large gapwidth to
+  # ensure single range
+  red_tx_grps <- unlist(
+    GenomicRanges::reduce(transcript_groups, min.gapwidth = 1e9))
+  # Pre-compute number of bins in each range
+  bin_count <- ceiling(GenomicRanges::width(red_tx_grps) / bin_size)
+  # Pre-build rle for each element
+  chrom <-
+    S4Vectors::Rle(as.vector(GenomicRanges::seqnames(red_tx_grps)), bin_count)
+  strnd <-
+    S4Vectors::Rle(as.vector(GenomicRanges::strand(red_tx_grps)), bin_count)
+  # Create Granges as single GRanges
+  tiles <- GenomicRanges::GRanges(
+    chrom,
+    IRanges::IRanges(start = unlist(
+      seqv(from = GenomicRanges::start(red_tx_grps),
+           to = GenomicRanges::end(red_tx_grps),
+           by = bin_size)),
+      width = bin_size),
+    strand = strnd)
+  # Return split GRangesList
+  return(GenomicRanges::split(
+    x = tiles, rep(names(transcript_groups), bin_count))
+  )
 }
 
-#' Create bins for a group of overlapped transcripts
+#' Vectorized seq.default
 #'
-#' Function for generating bins for a group of overlapped transcripts.
+#' Version of the \code{seq} function that takes vectorized arguments
 #'
-#' @param seqname chromsome name
-#' @param start start (single value)
-#' @param end end (single value)
-#' @param strand strand (single value)
-#' @inheritParams create_bins
-#' @return A \code{\link[data.table]{data.table}} object, containing
-#' the binned region.
-
-bin_seq <- function(seqname, start, end, strand, bin_size) {
-    g_starts <- seq(start,
-                    length.out = ceiling((end - start + 1) / bin_size),
-                    by = bin_size)
-    gr_binned <-
-        data.table::data.table(seqname,
-                               start = g_starts,
-                                end = g_starts + bin_size - 1,
-                                strand = strand)
-    return(gr_binned)
-}
-
-## Appease R CMD check
-if (getRversion() >= "2.15.1") {
-    utils::globalVariables(c("select_groups", "seqnames", "start",
-                             "end", "strand"))
-}
+#' @inheritParams base::seq
+seqv <- Vectorize(seq.default, vectorize.args = c("from", "to"))

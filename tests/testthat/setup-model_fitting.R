@@ -7,9 +7,9 @@ suppressMessages({
 })
 
 # Create transcript_quantifier object
-tq <- transcript_quantifier(gr_ds, bin_size = 50,
+tq <- suppressMessages(transcript_quantifier(gr_ds, bin_size = 50,
                             transcript_name_column = "tx_name",
-                            mask_start_bins = c(5, 5))
+                            mask_start_bins = c(5, 5)))
 
 # The paths to relevant bigwig files
 bwp <- system.file("extdata", "test_double_strand_plus.bw",

@@ -141,30 +141,40 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
   # **End checks**
 
   # Group transcripts
+  message("Grouping transcripts...")
   tx_grps <- group_transcripts(transcripts,
                               distance = distance,
                               threads = threads)
+
+  # Ensure is sorted
+  tx_grps <- GenomeInfoDb::sortSeqlevels(tx_grps)
+  tx_grps <- GenomicRanges::sort(tx_grps)
+
   # Get group strands
   grp_strand <- as.character(unlist(lapply(tx_grps, function(x) {
     return(S4Vectors::runValue(GenomicRanges::strand(x))[1])
   })))
 
   # Bin transcripts regions
+  message("Binning loci...")
   grp_bins <- create_bins(transcript_groups = tx_grps,
                 bin_size = bin_size)
 
   # Create transcript models
+  message("Creating transcript models ...")
   tx_models <- create_transcript_models(transcript_groups = tx_grps,
                                         bins = grp_bins,
                                         transcript_name_column)
 
   # Create masks
+  message("Creating masks ...")
   model_masks <- create_model_masks(transcript_models = tx_models,
                                     strand = grp_strand,
                                     mask_start_bins = mask_start_bins,
                                     mask_end_bins = mask_end_bins)
 
   # Reduce transcript models and generate transcript_model_key
+  message("Merging redundant models ...")
   reduced_models <- reduce_transcript_models(
     transcript_models_ls = mask_transcripts(tx_models, model_masks),
     bin_operation = bin_operation)
