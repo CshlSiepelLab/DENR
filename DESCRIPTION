@@ -54,6 +54,7 @@ Collate:
     'get_ensembl_model.R'
     'group_transcripts.R'
     'model_fitting.R'
+    'model_fit_statistics.R'
     'plot_tq.R'
     'process_data.R'
     'reduce_transcript_model.R'
