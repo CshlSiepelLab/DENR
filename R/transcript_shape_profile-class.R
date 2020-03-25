@@ -218,6 +218,8 @@ transcript_shape_profile <- function(transcripts,
   profile_function <- stats::loess(scaled_count ~ pos,
                             data = rescaled_position_data, span = span,
                             control = ctrl)
+  # Strip out unnecessary bits of loess object to reduce memory footprint
+  profile_function <- strip_loess(profile_function)
 
   # 9) Compute scaling factor for profile model
   tmp <- data.table::data.table(
@@ -669,3 +671,28 @@ methods::setMethod("apply_shape_profile",
                         model_abundance = tq@model_abundance
     ))
   })
+
+#' @title Slims down loess object
+#'
+#' Removes parts of \code{loess} object that are not required for prediction
+#' or object printing. Edited down from code in the "strip" package.
+#'
+#' @param object a loess object
+#'
+#' @name strip_loess
+strip_loess <- function(object) {
+  if (class(object) != "loess") {
+    stop("must be loess object")
+  }
+  # Remove bits of object not needed for prediction
+  object$y <- NULL
+  object$model <- NULL
+  object$fitted <- NULL
+  object$residuals <- NULL
+  object$weights <- NULL
+  object$data <- NULL
+  object$one.delta <- NULL # nolint
+  object$two.delta <- NULL # nolint
+  attr(object$terms,".Environment") <- NULL # nolint
+  return(object)
+}
