@@ -63,7 +63,8 @@ methods::setMethod("summarize_bigwig", signature(bins = "GRangesList"),
   ))
 
   # Re-list the values
-  sum_list <- split(sum_flat, attr(sum_flat, "names"))
+  sum_list <- split(sum_flat, factor(attr(sum_flat, "names"),
+                                     levels = names(bins)))
   return(sum_list)
 })
 
