@@ -4,10 +4,10 @@
 \alias{locus_statistics}
 \title{locus_statistics}
 \usage{
-locus_statistics(transcript_quantifier, n = 1L)
+locus_statistics(tq, n = 1L)
 }
 \arguments{
-\item{transcript_quantifier}{A \link{transcript_quantifier-class} object}
+\item{tq}{A \link{transcript_quantifier-class} object}
 
 \item{n}{the number of model with non-zero abundance that can be used to
 explain variance. If fewer models available it will use all available models.

@@ -66,8 +66,6 @@ matrix_list_dim_equal <- function(l1, l2) {
 #'
 #' @return boolean
 is_length_two_vector <- function(x) {
-    out <-
-        all(!is.na(x)) &&
-        length(x) == 2 && all(x >= 0) && all(x - floor(x) == 0)
+    out <- all(!is.na(x)) && length(x) == 2 && all(x >= 0) && all(x - floor(x) == 0)
     return(out)
 }

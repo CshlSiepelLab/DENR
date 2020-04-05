@@ -95,7 +95,6 @@ methods::setClass("transcript_quantifier",
 #' @inheritParams create_model_masks
 #' @inheritParams reduce_transcript_models
 #' @inheritParams create_transcript_models
-#' @param threads number of threads that can be used
 #'
 #' @return an \code{\link{transcript_quantifier-class}} object
 #'
@@ -104,8 +103,7 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
                              gene_name_column = NULL,
                              bin_size = 250, distance = NULL,
                              mask_start_bins = NULL, mask_end_bins = NULL,
-                             bin_operation = c("round", "floor", "ceiling"),
-                             threads = 1) {
+                             bin_operation = c("round", "floor", "ceiling")) {
   # **Some checks prior to beginning construction**
   # Check for correct GRanges object metadata
   if (!transcript_name_column %in%
@@ -123,8 +121,7 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
     gnc <- gene_name_column
     if (!gnc %in%
        colnames(S4Vectors::elementMetadata(transcripts))) {
-      stop(paste("transcripts does not have a column matching",
-                 gnc))
+      stop("transcripts does not have a column matching ", gnc)
     }
     if (!is.character(
       S4Vectors::elementMetadata(transcripts)[, gnc])) {
@@ -157,9 +154,7 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
 
   # Group transcripts
   message("Grouping transcripts...")
-  tx_grps <- group_transcripts(transcripts,
-                              distance = distance,
-                              threads = threads)
+  tx_grps <- group_transcripts(transcripts, distance = distance)
 
   # Ensure is sorted
   tx_grps <- GenomeInfoDb::sortSeqlevels(tx_grps)

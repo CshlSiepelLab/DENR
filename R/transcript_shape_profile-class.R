@@ -127,12 +127,11 @@ transcript_shape_profile <- function(transcripts,
              "transcripts from a seqlevel not present in both bigwig files.",
              "Dropping those transcripts")
     )
-    message(paste("Transcripts after seqlevels drop:", tx_count_1))
+    message("Transcripts after seqlevels drop: ", tx_count_1)
   }
 
   # 1) Filter out short transcripts
-  transcripts <- transcripts[GenomicRanges::width(transcripts) >=
-                               min_transcript_length]
+  transcripts <- transcripts[GenomicRanges::width(transcripts) >= min_transcript_length]
   tx_count_2 <- length(transcripts)
   message(paste("Transcripts after size filter:", tx_count_2))
   if (tx_count_2 == 0) {
@@ -140,8 +139,7 @@ transcript_shape_profile <- function(transcripts,
   }
 
   # 2) Group transcripts and filter by group size
-  tx_grps <- group_transcripts(transcripts,
-                               distance = 0)
+  tx_grps <- group_transcripts(transcripts, distance = 0)
   group_count_1 <- length(tx_grps)
   message(paste("Groups formed:", group_count_1))
 
@@ -166,10 +164,8 @@ transcript_shape_profile <- function(transcripts,
   # 5) Convert candidates to GRanges
   final_tx_gr <- with(final_tx,
                       GenomicRanges::GRanges(seqnames,
-                                             IRanges::IRanges(
-                                               start,
-                                               end
-                                             ), strand = strand,
+                                             IRanges::IRanges(start, end),
+                                             strand = strand,
                                              percent_transcribed,
                                              percent_match
                       )
@@ -183,8 +179,7 @@ transcript_shape_profile <- function(transcripts,
   minus_grps <- grep("-", names(final_bins))
 
   # 6) Extract the relevant scores
-  plus_counts <- summarize_bigwig(bigwig_file = bigwig_plus,
-                  final_bins[plus_grps])
+  plus_counts <- summarize_bigwig(bigwig_file = bigwig_plus, final_bins[plus_grps])
   minus_counts <- lapply(summarize_bigwig(bigwig_file = bigwig_plus,
                                   final_bins[minus_grps]), rev) # reverse minus
   raw_counts <- c(plus_counts, minus_counts)
@@ -338,8 +333,7 @@ get_transcribed_regions <- function(ranges, bw, transcribed_thresh = 1) {
     con = bw, which = ranges,
     as = "GRanges")
   transcribed <- GenomicRanges::reduce(
-    imported_bw[GenomicRanges::score(imported_bw) >=
-                       transcribed_thresh]
+    imported_bw[GenomicRanges::score(imported_bw) >= transcribed_thresh]
   )
   return(transcribed)
 }
@@ -362,12 +356,8 @@ covered_bases <- function(query, subject) {
     both_par <- GenomicRanges::pintersect(query[S4Vectors::queryHits(map)],
                                           both[S4Vectors::subjectHits(map)])
 
-    tmp <- unlist(lapply(split(
-      GenomicRanges::width(
-        both_par
-      ),
-      S4Vectors::queryHits(map)
-    ), sum))
+    tmp <- unlist(
+      lapply(split(GenomicRanges::width(both_par), S4Vectors::queryHits(map)), sum))
     covered[as.integer(names(tmp))] <- tmp
   }
   return(covered)
@@ -438,8 +428,7 @@ rescale_fixed_width_position <- function(bin_size, length_out,
   rescaled_pos[1:linear_head_pos] <- seq(from = 0, to = head_percent,
                          length.out = linear_head_pos)
   rescaled_pos[linear_tail_pos:length_out] <-
-    seq(from = 1 - tail_percent, to = 1,
-        length.out = length_out - linear_tail_pos + 1)
+    seq(from = 1 - tail_percent, to = 1, length.out = length_out - linear_tail_pos + 1)
   mid_pos_len <- linear_tail_pos - linear_head_pos - 1 + 2
   # Trim off extra start and end position of mid_pos that were added so that
   # first and last positions did not overlap the head and tail
@@ -493,8 +482,7 @@ methods::setMethod("view",
 
                      if (!is.null(gene_length)) {
                        pred[, pos := seq(0, by = tsp@bin_size,
-                                         length.out =
-                                           round(gene_length / tsp@bin_size))]
+                                         length.out = round(gene_length / tsp@bin_size))]
                        xlabel <- "Location (kb)"
                        pred[pos <= tsp@linear_head_length, region := "head"]
                        pred[pos >= gene_length - tsp@linear_tail_length,
@@ -541,24 +529,22 @@ methods::setMethod("view",
 #' Create a \code{\link{transcript_quantifier-class}} that uses the shape
 #' profile from a \code{\link{transcript_shape_profile-class}}
 #'
-#' @param transcript_quantifier A \code{\link{transcript_quantifier-class}}
-#' object
+#' @param tq A \code{\link{transcript_quantifier-class}} object
 #' @param tsp A \link{transcript_shape_profile-class} object
 #'
 #' @name apply_shape_profile
 #' @rdname apply_shape_profile
 #' @export
 methods::setGeneric("apply_shape_profile",
-                    function(transcript_quantifier, tsp) {
+                    function(tq, tsp) {
                       standardGeneric("apply_shape_profile")
                     })
 
 #' @rdname apply_shape_profile
 methods::setMethod("apply_shape_profile",
-  signature(transcript_quantifier = "transcript_quantifier",
+  signature(tq = "transcript_quantifier",
             tsp = "transcript_shape_profile"),
-  function(transcript_quantifier, tsp) {
-    tq <- transcript_quantifier
+  function(tq, tsp) {
     if (tq@bin_size != tsp@bin_size) {
       stop("bin_size for transcript_quantifier and transcript_shape_profile ",
            "are not equal")
@@ -584,11 +570,8 @@ methods::setMethod("apply_shape_profile",
     tx_info <- data.table::data.table(
       tx_start = GenomicRanges::start(tq@transcripts),
       tx_end = GenomicRanges::end(tq@transcripts),
-      tx_strand = BiocGenerics::as.vector(
-        GenomicRanges::strand(tq@transcripts)),
-      tx_name = GenomicRanges::values(
-        tq@transcripts)[, tq@column_identifiers[1]]
-    )
+      tx_strand = BiocGenerics::as.vector(GenomicRanges::strand(tq@transcripts)),
+      tx_name = GenomicRanges::values(tq@transcripts)[, tq@column_identifiers[1]])
 
     tx_info <- merge(
       tx_info,
@@ -601,12 +584,10 @@ methods::setMethod("apply_shape_profile",
     # Average over transcripts when there are multiple transcripts in a single
     # model
     tx_info[, expected_bin_start := mean((tx_start - grp_start[group] + 1) /
-                                    tq@bin_size),
-            by = c("group", "model")]
+                                    tq@bin_size), by = c("group", "model")]
     tx_info[, expected_bin_start := ceiling(expected_bin_start)]
     tx_info[, expected_bin_end := mean((tx_end - grp_start[group] + 1) /
-                                           tq@bin_size),
-            by = c("group", "model")]
+                                           tq@bin_size), by = c("group", "model")]
     tx_info[, expected_bin_end := ceiling(expected_bin_end)]
     data.table::setkey(tx_info, "tx_name")
 
@@ -620,8 +601,7 @@ methods::setMethod("apply_shape_profile",
           tx_name <- colnames(models)[m]
           # Compute expected properties of transcript
           expected_range <- unlist(tx_info[tx_name, list(
-            expected_bin_start, expected_bin_end
-          )], use.names = FALSE)
+            expected_bin_start, expected_bin_end)], use.names = FALSE)
           expected_len <- expected_range[2] - expected_range[1] + 1
           # Compute which bins to omit by finding which indicies inside the
           # expected range of the transcript are zero
@@ -652,7 +632,8 @@ methods::setMethod("apply_shape_profile",
               models[non_z, m] <- pre_profile[rev(lookup_ind)][omit]
             } else {
               models[non_z, m] <- pre_profile[rev(lookup_ind)]
-            }          }
+            }
+          }
         }
       }
       return(models)

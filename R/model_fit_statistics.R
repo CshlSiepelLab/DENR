@@ -123,12 +123,11 @@ locus_variance_explained <- function(models, abundance, data, masks) {
 #' @return A table describing the variance at each locus and the variance
 #' explained by the model(s)
 #' @export
-locus_statistics <- function(transcript_quantifier, n = 1L) {
+locus_statistics <- function(tq, n = 1L) {
   if (as.integer(n) != n || n < 1) {
     stop("n must be an integer greater than 1")
   }
 
-  tq <- transcript_quantifier
   # Compute total variance at a locus
   total_var <- unlist(lapply(tq@counts, function(x) sum(x^2)))
 

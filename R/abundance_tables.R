@@ -11,16 +11,14 @@
 #'
 #' @export
 methods::setGeneric("abundance_table",
-                    function(transcript_quantifier) {
+                    function(tq) {
                       standardGeneric("abundance_table")
                     })
 
 #' @rdname abundance_table
 methods::setMethod("abundance_table",
-                   signature(transcript_quantifier = "transcript_quantifier"),
-  function(transcript_quantifier) {
-    # Alias for ease of use
-    tq <- transcript_quantifier
+                   signature(tq = "transcript_quantifier"),
+  function(tq) {
     # Unlist abundance table for ease of access
     abundance_vector <- unlist(tq@model_abundance)
     # Compute final index to match transcripts to indices

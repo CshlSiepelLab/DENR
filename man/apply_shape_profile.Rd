@@ -8,13 +8,12 @@
 Create a \code{\link{transcript_quantifier-class}} that uses the shape
 profile from a \code{\link{transcript_shape_profile-class}}}
 \usage{
-apply_shape_profile(transcript_quantifier, tsp)
+apply_shape_profile(tq, tsp)
 
-\S4method{apply_shape_profile}{transcript_quantifier,transcript_shape_profile}(transcript_quantifier, tsp)
+\S4method{apply_shape_profile}{transcript_quantifier,transcript_shape_profile}(tq, tsp)
 }
 \arguments{
-\item{transcript_quantifier}{A \code{\link{transcript_quantifier-class}}
-object}
+\item{tq}{A \code{\link{transcript_quantifier-class}} object}
 
 \item{tsp}{A \link{transcript_shape_profile-class} object}
 }
