@@ -5,12 +5,12 @@
 \alias{fit,transcript_quantifier-method}
 \title{Fit model}
 \usage{
-fit(transcript_quantifier, lambda = 0, transform = "log", verbose = FALSE)
+fit(tq, lambda = 0, transform = "log", verbose = FALSE)
 
-\S4method{fit}{transcript_quantifier}(transcript_quantifier, lambda = 0, transform = "log", verbose = FALSE)
+\S4method{fit}{transcript_quantifier}(tq, lambda = 0, transform = "log", verbose = FALSE)
 }
 \arguments{
-\item{transcript_quantifier}{A \link{transcript_quantifier-class} object}
+\item{tq}{A \link{transcript_quantifier-class} object}
 
 \item{lambda}{the weight of the lasso penalty}
 

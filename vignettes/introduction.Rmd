@@ -62,7 +62,7 @@ bwp <- system.file("extdata", "test_double_strand_plus.bw",
 bwm <- system.file("extdata", "test_double_strand_minus.bw",
                          package = "tuSelecter2")
 # Add the data
-tq <- add_data(transcript_quantifier = tq,
+tq <- add_data(tq = tq,
                bigwig_plus = bwp,
                bigwig_minus = bwm,
                summary_operation = "mean")

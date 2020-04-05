@@ -19,33 +19,33 @@ bwp <- system.file("extdata", "test_double_strand_plus.bw",
 bwm <- system.file("extdata", "test_double_strand_minus.bw",
                    package = "tuSelecter2")
 # Add the data
-tq <- add_data(transcript_quantifier = tq,
+tq <- add_data(tq = tq,
                bigwig_plus = bwp,
                bigwig_minus = bwm,
                summary_operation = "mean")
 
 test_that("get_transcripts", {
-  expect_equivalent(tuSelecter2:::get_transcripts(transcript_quantifier = tq,
+  expect_equivalent(tuSelecter2:::get_transcripts(tq = tq,
                                 gene_name = "g1"),
                     gr_ds[gr_ds$tx_name %in% c("t1.1", "t1.2", "t2.1")])
-  expect_equivalent(tuSelecter2:::get_transcripts(transcript_quantifier = tq,
+  expect_equivalent(tuSelecter2:::get_transcripts(tq = tq,
                                                   chrom = 1,
                                                   start = 1000,
                                                   end = 10000),
                     gr_ds)
-  expect_equivalent(tuSelecter2:::get_transcripts(transcript_quantifier = tq,
+  expect_equivalent(tuSelecter2:::get_transcripts(tq = tq,
                                                   chrom = 1,
                                                   start = 1000,
                                                   end = 10000,
                                                   strand = "+"),
                     gr_ds[GenomicRanges::strand(gr_ds) == "+"])
-  expect_equivalent(tuSelecter2:::get_transcripts(transcript_quantifier = tq,
+  expect_equivalent(tuSelecter2:::get_transcripts(tq = tq,
                                                   chrom = 1,
                                                   start = 1000,
                                                   end = 10000,
                                                   strand = "-"),
                     gr_ds[GenomicRanges::strand(gr_ds) == "-"])
-  expect_setequal(tuSelecter2:::get_transcripts(transcript_quantifier = tq,
+  expect_setequal(tuSelecter2:::get_transcripts(tq = tq,
                                                   chrom = 1,
                                                   start = 7000,
                                                   end = 10000)$tx_name,

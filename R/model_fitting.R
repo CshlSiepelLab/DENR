@@ -69,19 +69,16 @@ sum_squares_lasso <- function(x, models, data, lambda = 0,
 #'
 #' @export
 methods::setGeneric("fit",
-                    function(transcript_quantifier, lambda = 0,
+                    function(tq, lambda = 0,
                              transform = "log", verbose = FALSE) {
                       standardGeneric("fit")
                     })
 
 #' @rdname fit
 methods::setMethod("fit",
-  signature(transcript_quantifier = "transcript_quantifier"),
-  function(transcript_quantifier, lambda = 0, transform = "log",
+  signature(tq = "transcript_quantifier"),
+  function(tq, lambda = 0, transform = "log",
            verbose = FALSE) {
-    # Alias for ease of use
-    tq <- transcript_quantifier
-
     if (lambda < 0) {
       stop("lambda must be positive")
     }
@@ -117,9 +114,7 @@ methods::setMethod("fit",
     estim <- list()
     if (verbose) {
       message("Estimating abundance ...")
-      pb <- utils::txtProgressBar(min = 1,
-                                  max = length(sufficient_values),
-                                  style = 3)
+      pb <- utils::txtProgressBar(min = 1, max = length(sufficient_values), style = 3)
     }
 
     for (i in seq_along(sufficient_values)) {

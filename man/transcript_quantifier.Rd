@@ -12,8 +12,7 @@ transcript_quantifier(
   distance = NULL,
   mask_start_bins = NULL,
   mask_end_bins = NULL,
-  bin_operation = c("round", "floor", "ceiling"),
-  threads = 1
+  bin_operation = c("round", "floor", "ceiling")
 )
 }
 \arguments{
@@ -48,8 +47,6 @@ the second interger is the number outside the transcript. Default c(0, 0).}
 \item{bin_operation}{Three different modes to deal with decimals in the
 transript model (due to partial overlap of the first or last exon and bins).
 Either "ceiling", "floor", or "round" (default: "round").}
-
-\item{threads}{number of threads that can be used}
 }
 \value{
 an \code{\link{transcript_quantifier-class}} object
