@@ -75,7 +75,8 @@ function.
 tq <- fit(tq)
 ```
 
-To view the results we can all the `abundance_table()` function.
+To view the results we can all the `transcript_abundance()` or `gene_abundance()`
+function.
 ```{r}
 transcript_abundance(tq)
 ```
