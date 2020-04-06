@@ -116,6 +116,12 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
     stop(paste("transcripts column", transcript_name_column,
                "must be of class 'character'"))
   }
+  duplicated_transcript_names <-
+    any(duplicated(S4Vectors::elementMetadata(transcripts)[, transcript_name_column]))
+  if (duplicated_transcript_names) {
+    stop("One or more transcript names is duplicated, transcript names must be unique")
+  }
+  # Checks on gene names
   if (!is.null(gene_name_column)) {
     # Alias for easier use
     gnc <- gene_name_column
