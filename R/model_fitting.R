@@ -61,7 +61,9 @@ sum_squares_lasso <- function(x, models, data, lambda = 0,
 #'
 #' @param verbose if TRUE shows progress bar for fitting (default: FALSE)
 #' @param inactive_transcripts a character vector listing transcripts for which abundance
-#' values should be fixed to 0
+#' values should be fixed to 0. IMPORTANT: In the case where multiple transcripts are
+#' assigned to a single model (due to identical models at the specified bin scale) this
+#' will be overridden if one or more transcripts assigned to the same model are active.
 #' @inheritParams add_data
 #' @inheritParams sum_squares_lasso
 #'
@@ -136,10 +138,13 @@ methods::setMethod("fit",
       # Initialize upper bounds to infinity
       ub <- rep(1e9, length(sv$abundance))
       # Set values of elements that are designated as inactive to 0 and set upper bounds
-      # to 0 as well
+      # to 0 as well (all transcripts in model must be inactive for model to be
+      # considered inactive)
       inactive_models <- tq_inactive_ind[.(i), ][which(inactive)]$model
-      ub[inactive_models] <- 1e-100 # using this for now as using 0 throws error
-      sv$abundance[inactive_models] <- 0
+      active_models <- tq_inactive_ind[.(i), ][which(!inactive)]$model
+      final_inactive_models <- setdiff(inactive_models, active_models)
+      ub[final_inactive_models] <- 1e-100 # using this for now as using 0 throws error
+      sv$abundance[final_inactive_models] <- 0
 
       opt_result <- stats::optim(sv$abundance, fn = sum_squares_lasso,
                                  models = sv$models,
