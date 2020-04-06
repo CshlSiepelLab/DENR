@@ -60,6 +60,8 @@ sum_squares_lasso <- function(x, models, data, lambda = 0,
 #' \code{\link{transcript_quantifier-class}} object under a lasso penalty
 #'
 #' @param verbose if TRUE shows progress bar for fitting (default: FALSE)
+#' @param inactive_transcripts a character vector listing transcripts for which abundance
+#' values should be fixed to 0
 #' @inheritParams add_data
 #' @inheritParams sum_squares_lasso
 #'
@@ -70,14 +72,15 @@ sum_squares_lasso <- function(x, models, data, lambda = 0,
 #' @export
 methods::setGeneric("fit",
                     function(tq, lambda = 0,
-                             transform = "log", verbose = FALSE) {
+                             transform = "log", inactive_transcripts = NA,
+                             verbose = FALSE) {
                       standardGeneric("fit")
                     })
 
 #' @rdname fit
 methods::setMethod("fit",
   signature(tq = "transcript_quantifier"),
-  function(tq, lambda = 0, transform = "log",
+  function(tq, lambda = 0, transform = "log", inactive_transcripts = NA,
            verbose = FALSE) {
     if (lambda < 0) {
       stop("lambda must be positive")
@@ -93,6 +96,10 @@ methods::setMethod("fit",
 
     if (!is.logical(verbose)) {
       stop("verbose most be either TRUE or FALSE")
+    }
+
+    if (!is.character(inactive_transcripts) & !is.na(inactive_transcripts)) {
+      stop("inactive_transcripts must be either NA or a character vector")
     }
 
     # Handle transform option
@@ -117,14 +124,30 @@ methods::setMethod("fit",
       pb <- utils::txtProgressBar(min = 1, max = length(sufficient_values), style = 3)
     }
 
+    # Fast lookup version of index
+    tq_inactive_ind <- data.table::data.table(tq@transcript_model_key, inactive = FALSE,
+                                              key = c("tx_name"))
+    tq_inactive_ind[inactive_transcripts, inactive := TRUE]
+    data.table::setkey(tq_inactive_ind, "group")
+
+    # Iterate over transcript groups
     for (i in seq_along(sufficient_values)) {
       sv <- sufficient_values[[i]]
+      # Initialize upper bounds to infinity
+      ub <- rep(1e9, length(sv$abundance))
+      # Set values of elements that are designated as inactive to 0 and set upper bounds
+      # to 0 as well
+      inactive_models <- tq_inactive_ind[.(i), ][which(inactive)]$model
+      ub[inactive_models] <- 1e-100 # using this for now as using 0 throws error
+      sv$abundance[inactive_models] <- 0
+
       opt_result <- stats::optim(sv$abundance, fn = sum_squares_lasso,
                                  models = sv$models,
                                  data = mask_data(sv$counts, sv$masks),
                                  lambda = lambda,
                                  transform = transform,
                                  lower = rep(0, length(sv$abundance)),
+                                 upper = ub,
                                  method = "L-BFGS-B")
       estim[[i]] <- opt_result$par
       names(estim[[i]]) <- colnames(sv$models)
@@ -137,3 +160,8 @@ methods::setMethod("fit",
     return(tq)
   }
 )
+
+## Appease R CMD check
+if (getRversion() >= "2.15.1") {
+  utils::globalVariables(c("inactive"))
+}

@@ -11,6 +11,8 @@ test_that("Model fitting", {
                  length(tq_fitted@model_abundance[[1]]),
                  length(tq_fitted@model_abundance[[2]])),
                c(2, 2, 2))
+  tq_zero <- fit(tq, inactive_transcripts = "t1.1")
+  expect_equal(tq@model_abundance[[1]][1], 0)
 })
 
 # Check that abundance table output is correct
