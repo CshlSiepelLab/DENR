@@ -5,9 +5,21 @@
 \alias{fit,transcript_quantifier-method}
 \title{Fit model}
 \usage{
-fit(tq, lambda = 0, transform = "log", verbose = FALSE)
+fit(
+  tq,
+  lambda = 0,
+  transform = "log",
+  inactive_transcripts = NA,
+  verbose = FALSE
+)
 
-\S4method{fit}{transcript_quantifier}(tq, lambda = 0, transform = "log", verbose = FALSE)
+\S4method{fit}{transcript_quantifier}(
+  tq,
+  lambda = 0,
+  transform = "log",
+  inactive_transcripts = NA,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{tq}{A \link{transcript_quantifier-class} object}
@@ -15,6 +27,9 @@ fit(tq, lambda = 0, transform = "log", verbose = FALSE)
 \item{lambda}{the weight of the lasso penalty}
 
 \item{transform}{how to transform the data (either "identity" or "log")}
+
+\item{inactive_transcripts}{a character vector listing transcripts for which abundance
+values should be fixed to 0}
 
 \item{verbose}{if TRUE shows progress bar for fitting (default: FALSE)}
 }
