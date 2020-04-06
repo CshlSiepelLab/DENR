@@ -77,7 +77,7 @@ tq <- fit(tq)
 
 To view the results we can all the `abundance_table()` function.
 ```{r}
-abundance_table(tq)
+transcript_abundance(tq)
 ```
 
 We can also create plots for specific transcripts or genomic regions

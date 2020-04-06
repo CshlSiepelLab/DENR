@@ -14,13 +14,22 @@ test_that("Model fitting", {
 })
 
 # Check that abundance table output is correct
-a_tab <- abundance_table(tq_fitted)
+a_tab <- transcript_abundance(tq_fitted)
 lookup <- tq_fitted@transcript_model_key[tq_fitted@transcript_model_key$tx_name
                                          == "t2.1", ]
 
-test_that("Abundance table", {
+test_that("transcript abundance table", {
   expect_equivalent(as.character(a_tab$transcript_name),
                     tq@transcripts$tx_name)
   expect_equivalent(a_tab[a_tab$transcript_name == "t2.1", ]$abundance,
                     tq_fitted@model_abundance[[lookup$group]][lookup$model])
+})
+
+test_that("gene abundance table", {
+  tq_gene_fitted <- fit(tq_gene)
+  t_tab <- transcript_abundance(tq_gene_fitted)
+  g_tab <- gene_abundance(tq_gene_fitted)
+  half_t <- t_tab[, .(abundance = sum(abundance) / 2), by = "gene_name"]
+  expect_equivalent(g_tab, half_t)
+  expect_error(gene_abundance(tq_fitted))
 })
