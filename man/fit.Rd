@@ -24,12 +24,14 @@ fit(
 \arguments{
 \item{tq}{A \link{transcript_quantifier-class} object}
 
-\item{lambda}{the weight of the lasso penalty}
+\item{lambda}{the weight of the lasso penalty (not implemented at this time)}
 
 \item{transform}{how to transform the data (either "identity" or "log")}
 
 \item{inactive_transcripts}{a character vector listing transcripts for which abundance
-values should be fixed to 0}
+values should be fixed to 0. IMPORTANT: In the case where multiple transcripts are
+assigned to a single model (due to identical models at the specified bin scale) this
+will be overridden if one or more transcripts assigned to the same model are active.}
 
 \item{verbose}{if TRUE shows progress bar for fitting (default: FALSE)}
 }

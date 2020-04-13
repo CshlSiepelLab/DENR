@@ -15,6 +15,21 @@ test_that("Model fitting", {
   expect_equal(tq@model_abundance[[1]][1], 0)
 })
 
+test_that("Gradient estimation", {
+  tq_gr <- tq
+  tq_gr@model_abundance[[1]] <- c(0.5, 0.5)
+  gr_ana_log <- sum_squares_grad(x = tq@model_abundance[[1]], models = tq@models[[1]],
+                data = tq@counts[[1]], transform = "log")
+  gr_num_log <- num_grad(x = tq@model_abundance[[1]], models = tq@models[[1]],
+            data = tq@counts[[1]], transform = "log")
+  gr_ana_id <- sum_squares_grad(x = tq@model_abundance[[1]], models = tq@models[[1]],
+                        data = tq@counts[[1]], transform = "identity")
+  gr_num_id <- num_grad(x = tq@model_abundance[[1]], models = tq@models[[1]],
+                         data = tq@counts[[1]], transform = "identity")
+  expect_equal(gr_num_id, gr_ana_id)
+  expect_equal(gr_num_id, gr_ana_id)
+})
+
 # Check that abundance table output is correct
 a_tab <- transcript_abundance(tq_fitted)
 lookup <- tq_fitted@transcript_model_key[tq_fitted@transcript_model_key$tx_name
