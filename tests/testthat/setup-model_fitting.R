@@ -43,3 +43,17 @@ tq_gene <- add_data(tq = tq_gene,
                bigwig_plus = bwp,
                bigwig_minus = bwm,
                summary_operation = "mean")
+
+num_grad <- function(x, models, data, transform, eps = 1e-6) {
+  grad <- numeric(length(x))
+  for (i in seq_along(x)) {
+    xp <- x
+    xm <- x
+    xp[i] <- x[i] + eps
+    xm[i] <- x[i] - eps
+    ssp <- sum_squares_lasso(xp, models, data, transform = transform)
+    ssm <- sum_squares_lasso(xm, models, data, transform = transform)
+    grad[i] <- (ssp - ssm) / (xp[i] - xm[i])
+  }
+  return(grad)
+}

@@ -34,7 +34,7 @@ predict_locus <- function(models, abundance) {
 #' @param x the transcript model abundances
 #' @param models the matrix of transcript models
 #' @param data a vector of the observed data
-#' @param lambda the weight of the lasso penalty
+#' @param lambda the weight of the lasso penalty (not implemented at this time)
 #' @param transform how to transform the data (either "identity" or "log")
 #'
 #' @name sum_squares_lasso
@@ -52,6 +52,27 @@ sum_squares_lasso <- function(x, models, data, lambda = 0,
     stop("Invalid transform specified")
   }
   return(sum_sq)
+}
+
+#' @title Sum of squares gradient
+#'
+#' @description Computes gradient for sum-of-squares
+#'
+#' @inheritParams sum_squares_lasso
+#'
+#' @name sum_squares_grad
+#' @rdname sum_squares_grad
+sum_squares_grad <- function(x, models, data, transform, lambda = 0) {
+  if (transform == "identity") {
+    gr <- as.vector(-2 * crossprod(models, data - predict_locus(models, x)))
+  } else if (transform == "log") {
+    gr <-
+      as.vector(-2 * crossprod(models / as.vector(predict_locus(models, x) + 1e-3),
+                               log(data + 1e-3) - log(predict_locus(models, x) + 1e-3)))
+  } else {
+    stop("Invalid transform option")
+  }
+  return(gr)
 }
 
 #' @title Fit model
@@ -84,8 +105,8 @@ methods::setMethod("fit",
   signature(tq = "transcript_quantifier"),
   function(tq, lambda = 0, transform = "log", inactive_transcripts = NA,
            verbose = FALSE) {
-    if (lambda < 0) {
-      stop("lambda must be positive")
+    if (lambda != 0) {
+      stop("lambda feature not supported at this time")
     }
 
     if (length(tq@counts) == 0) {
@@ -147,6 +168,7 @@ methods::setMethod("fit",
       sv$abundance[final_inactive_models] <- 0
 
       opt_result <- stats::optim(sv$abundance, fn = sum_squares_lasso,
+                                 gr = sum_squares_grad,
                                  models = sv$models,
                                  data = mask_data(sv$counts, sv$masks),
                                  lambda = lambda,
