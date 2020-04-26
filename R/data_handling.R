@@ -23,9 +23,7 @@ methods::setGeneric("add_data",
 #' @rdname add_data
 methods::setMethod("add_data",
   signature(tq = "transcript_quantifier"),
-  function(tq,
-           bigwig_plus = NULL, bigwig_minus = NULL,
-           summary_operation = "sum") {
+  function(tq, bigwig_plus = NULL, bigwig_minus = NULL, summary_operation = "sum") {
       bins <- tq@bins
       strands <- S4Vectors::runValue(GenomicRanges::strand(bins))
       # summarize bigwig files by strands
@@ -37,8 +35,7 @@ methods::setMethod("add_data",
                                summary_operation)
           )
       # reorder the counts as the order in bins
-      tq@counts <-
-          bw_counts[names(tq@models)]
+      tq@counts <- bw_counts[names(tq@models)]
       return(tq)
 })
 
@@ -56,9 +53,8 @@ if (getRversion() >= "2.15.1") {
 #' @return silent if true, else error
 #' @export
 assert_chromosome_exists <- function(chromosome, bigwig_file) {
-  bw_seqnames <- GenomicRanges::seqnames(
-    rtracklayer::seqinfo(rtracklayer::BigWigFile(bigwig_file))
-  )
+  bw_seqnames <- GenomicRanges::seqnames(rtracklayer::seqinfo(
+    rtracklayer::BigWigFile(bigwig_file)))
   pass <- all(chromosome %in% bw_seqnames)
   if (!pass) {
     not_incl <- setdiff(chromosome, bw_seqnames)
@@ -66,6 +62,30 @@ assert_chromosome_exists <- function(chromosome, bigwig_file) {
                paste(not_incl, collapse = ", "),
                "does not exist in", bigwig_file))
   }
+}
+
+#' @title Total coverage
+#'
+#' @description  computes total coverage in bigwig
+#' @param x a string pointing to a bigwig file
+#'
+#' @name total_coverage
+#'
+#' @export
+total_coverage <- function(x) {
+  # Check file existance
+  if (!file.exists(x)) {
+    stop("file does not exist")
+  }
+  # Check correct suffix
+  ext <- tools::file_ext(x)
+  if (ext %in% c("bw", "bigWig")) {
+    tot_reads <- sum(sapply(rtracklayer::import.bw(con = x, as = "RleList"),
+                            function(x) sum(abs(x))))
+  } else {
+    stop(ext, " is an unsupported file type")
+  }
+  return(tot_reads)
 }
 
 #' @title Summarize bigwig
@@ -80,6 +100,8 @@ assert_chromosome_exists <- function(chromosome, bigwig_file) {
 #' given GRanges (or GRangesList element) are from the same chromosome
 #' @param summary_operation the summary opperation to apply per bin (e.g.
 #' sum, mean, median, etc.) Defaults to "sum"
+#' @param autostyle_seqlevels Logical. If \code{TRUE} matches the seqlevel style of the
+#' \code{bigwig_file} amd \code{bins} object. (Default: TRUE)
 #'
 #' @return A list of vectors with each one corresponding to one set of bins and
 #' each element of a vector corresponding to a bin
@@ -87,15 +109,19 @@ assert_chromosome_exists <- function(chromosome, bigwig_file) {
 #' @name summarize_bigwig
 #' @rdname summarize_bigwig
 #'
+#' @importClassesFrom GenomicRanges GRanges GRangesList
+#'
 #' @export
 methods::setGeneric("summarize_bigwig",
-                    function(bigwig_file, bins, summary_operation = "sum") {
+                    function(bigwig_file, bins, summary_operation = "sum",
+                             autostyle_seqlevels = TRUE) {
                       standardGeneric("summarize_bigwig")
                     })
 
 #' @rdname summarize_bigwig
 methods::setMethod("summarize_bigwig", signature(bins = "GRangesList"),
-                   function(bigwig_file, bins, summary_operation = "sum") {
+                   function(bigwig_file, bins, summary_operation = "sum",
+                            autostyle_seqlevels = TRUE) {
                      # Flatten GRangesList
                      flat_bins <- BiocGenerics::unlist(bins, use.names = TRUE)
 
@@ -114,11 +140,33 @@ methods::setMethod("summarize_bigwig", signature(bins = "GRangesList"),
 
 #' @rdname summarize_bigwig
 methods::setMethod("summarize_bigwig", signature(bins = "GRanges"),
-                   function(bigwig_file, bins, summary_operation = "sum") {
+                   function(bigwig_file, bins, summary_operation = "sum",
+                            autostyle_seqlevels = TRUE) {
                      # ** Checks **
                      if (!file.exists(bigwig_file)) {
                        stop("bigwig_file path does not exist")
                      }
+
+                     # Autostyle seqlevels if specified, this avoids issues
+                     # with queries failing due to chr1 vs. 1, etc. type
+                     # seqnames
+                     if (autostyle_seqlevels) {
+                       # supress errors complaining about equivalent maps
+                       withCallingHandlers({
+                         GenomeInfoDb::seqlevelsStyle(bins) <-
+                           GenomeInfoDb::seqlevelsStyle(
+                             rtracklayer::BigWigFile(bigwig_file))[1]
+                       }, warning = function(w) {
+                         if (startsWith(conditionMessage(w),
+                                        "found more than one best sequence"))
+                           invokeRestart("muffleWarning")
+                       })
+
+                     }
+
+                     # Restrice seqlevels in query to those in use
+                     GenomeInfoDb::seqlevels(bins) <-
+                       GenomeInfoDb::seqlevelsInUse(bins)
 
                      # Get unique chromosome names in bins
                      bin_chrom <-

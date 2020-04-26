@@ -31,11 +31,15 @@ Imports:
   Gviz,
   viridisLite,
   data.table,
-  ggplot2
+  ggplot2,
+  keras,
+  yaml,
+  matrixStats,
+  tensorflow
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 Suggests: 
     testthat (>= 2.1.0),
     lintr,
@@ -45,12 +49,13 @@ Suggests:
 Collate: 
     'transcript_quantifier-class.R'
     'abundance_tables.R'
+    'data_handling.R'
     'model_fitting.R'
     'model_fit_statistics.R'
-    'tq_data_handling.R'
     'tq_visualization.R'
     'type_checkers.R'
     'transcript_models_build_helpers.R'
     'transcript_shape_profile-class.R'
+    'tss_predictor.R'
     'txdb_handling.R'
 VignetteBuilder: knitr

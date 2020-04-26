@@ -34,3 +34,8 @@ test_that("TxDb listed correctly", {
                     "data.frame")
     expect_true(db_string %in% txdb_list$file_name)
 })
+
+test_that("view_available_txdb", {
+    skip_if_offline(host = "www.ensembl.org")
+    expect_s3_class(view_available_txdb("hsapiens", 98), "data.frame")
+})

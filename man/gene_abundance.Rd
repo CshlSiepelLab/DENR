@@ -14,5 +14,6 @@ gene_abundance(tq)
 }
 \description{
 Produces a table with estimated gene abundances for a given
-\code{\link{transcript_quantifier-class}} object if gene identifiers are present
+\code{\link{transcript_quantifier-class}} object if gene identifiers are
+present
 }
