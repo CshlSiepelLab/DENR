@@ -48,7 +48,8 @@ methods::setMethod("transcript_abundance",
 #' @title View gene abundances
 #'
 #' @description Produces a table with estimated gene abundances for a given
-#' \code{\link{transcript_quantifier-class}} object if gene identifiers are present
+#' \code{\link{transcript_quantifier-class}} object if gene identifiers are
+#' present
 #'
 #' @inheritParams add_data
 #'
@@ -72,9 +73,11 @@ methods::setMethod("gene_abundance",
                      }
                      # Get abundance at the per transcript level
                      tx_abund_tab <- transcript_abundance(tq)
-                     # Remove all duplicated models and sum over transcripts per gene
+                     # Remove all duplicated models and sum over transcripts per
+                     # gene
                      gene_abund_tab <-
-                       tx_abund_tab[!duplicated(model), .(abundance = sum(abundance)),
+                       tx_abund_tab[!duplicated(model),
+                                    .(abundance = sum(abundance)),
                               by = "gene_name"]
                      return(gene_abund_tab)
                    }

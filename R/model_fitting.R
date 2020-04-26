@@ -121,7 +121,7 @@ methods::setMethod("fit",
       stop("verbose most be either TRUE or FALSE")
     }
 
-    if (!is.character(inactive_transcripts) & !is.na(inactive_transcripts)) {
+    if (class(inactive_transcripts) != "character" & !is.na(inactive_transcripts)) {
       stop("inactive_transcripts must be either NA or a character vector")
     }
 

@@ -12,6 +12,8 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+# A simple quantification model
+
 TuSelecter2 quantifies nascent transcript abundance based on reference
 annotations. Those annotations can be from anywhere as long as they can be placed
 in a `GRanges` object. Here we obtain our transcript annotations from a `Txdb`
@@ -41,19 +43,20 @@ specify a bin size which will define the resolution of the transcript models.
 Bin sizes that are too small are computationally expensive and may provide a false
 sense of precision while bin sizes that are too large will result in a loss of
 ability to differentiate signal from distinct transcripts. As a reasonable
-midground we select a bin size of 50bp. We also must specify the metadata column
+midground we select a bin size of 250bp. We also must specify the metadata column
 corresponding to a unique transcript id. Another column for a unique gene id may
 be specified but is not required.
 
 ```{r create_transcript_quantifier}
-tq <- transcript_quantifier(gr_ds, bin_size = 50,
+bsize <- 250
+tq <- transcript_quantifier(gr_ds, bin_size = bsize,
                             transcript_name_column = "tx_name",
-                            gene_name_column = "gene_id", mask_start_bins = c(2, 4),
-                            mask_end_bins = c(0, 0))
+                            gene_name_column = "gene_id", mask_start_bins = c(1, 1),
+                            mask_end_bins = c(1, 1))
 ```
 
 To add a specific data set to the `transcript_quantifier` object we use the
-`add_data()` function using the `sum` summary operation.
+`add_data()` function using the `mean` summary operation.
 
 ```{r add_data}
 # The paths to relevant bigwig files
@@ -78,11 +81,58 @@ tq <- fit(tq)
 To view the results we can all the `transcript_abundance()` or `gene_abundance()`
 function.
 ```{r}
-transcript_abundance(tq)
+ta <- transcript_abundance(tq)
+head(ta)
 ```
 
 We can also create plots for specific transcripts or genomic regions
 ```{r}
 plot_model(tq, chrom = 1, start = 1, end= 11000)
-plot_model(tq, gene_name = "g1")
 ```
+
+# Using a non-uniform transcript coverage profile
+Because of variable polymerase elongation rates along the transcript body, polymerase
+density systematically varies along the length of the transcript. To accomadate this
+tuSelecter2 has the ability to fit a "shape profile" that attempts to capture this
+empirically. This empirical shape profile is then used instead of the uniform one during
+the abundance estimation step. To estimate a shape profile use the
+\code{transcript_shape_profile} as below (note the alteration of the 
+\code{min_transcript_length} here just for the purposes of demonstration with a synthetic
+data set. Generally using transcripts that short is not reccomended).
+
+```{r}
+tsp <- transcript_shape_profile(transcripts = gr_ds,
+                                bigwig_plus = bwp,
+                                bigwig_minus = bwm,
+                                bin_size = bsize,
+                                min_transcript_length = 1e3)
+```
+
+The empirical profile can be viewed with the \code{view()} function. This example looks a
+little odd as we are running on synthetic data and allowing really short transcripts.
+
+```{r}
+view(tsp)
+```
+
+The shape profile is then incorporated into the \code{transcript_quantifier} object and
+fitting proceeds as normal.
+
+```{r}
+tq_shape <- apply_shape_profile(tq, tsp)
+```
+
+# Using an ML model to predict inactive TSS
+Nascent RNA data tends to be fairly noisy and spill over annotated transcript boundries.
+For this reason, pre-filtering the set transcripts to quantify abundance for can be
+quite useful. Specific transcripts can be specified as inactive during the fitting step
+using the \code{inactive_transcripts} option.
+
+```{r}
+inactive_tss <- c("t1.2", "t2.1")
+tq <- fit(tq = tq, inactive_transcripts = inactive_tss)
+```
+
+
+
+

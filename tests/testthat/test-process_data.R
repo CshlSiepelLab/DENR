@@ -8,6 +8,7 @@ gr_ss <- GenomicFeatures::transcripts(txdb_ss)
 
 # Import bigwigs
 bw_ss <- system.file("extdata/test_single_strand.bw", package = "tuSelecter2")
+bw_multi <- system.file("extdata/test_multichrom.bw", package = "tuSelecter2")
 
 # Create bins
 tx_bins_25 <- create_bins(transcript_groups = group_transcripts(gr_ss),
@@ -86,4 +87,10 @@ test_that("counts are added correctly and in the same order as bins", {
     tq_added_data <-
         add_data(tq, bigwig_plus = bw_plus, bigwig_minus = bw_minus)
     expect_equal(names(tq_added_data@counts), names(tq@bins))
+})
+
+test_that("total_coverage counted correctly", {
+  expect_equal(total_coverage(bw_multi), 1500)
+  expect_error(total_coverage(txdb_path_ss), "txdb is an unsupported file type")
+  expect_error(total_coverage("foo"), "file does not exist")
 })
