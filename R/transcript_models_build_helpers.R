@@ -300,9 +300,9 @@ reduce_transcript_models <-
   function(transcript_models_ls,
            bin_operation = c("round", "floor", "ceiling")) {
     # check transcript class
-    tx_model_class <- unique(sapply(transcript_models_ls, class))
-    if (length(tx_model_class) != 1 || tx_model_class != "matrix") {
-      stop("invalid input for trascript models")
+    tx_model_class_matrix <- unique(sapply(transcript_models_ls, is.matrix))
+    if (!all(tx_model_class_matrix)) {
+      stop("invalid input for transcript models")
     }
     # check bin_operation
     if (length(bin_operation) > 1) bin_operation <- bin_operation[[1]]

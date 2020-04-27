@@ -103,7 +103,7 @@ methods::setGeneric("fit",
 #' @rdname fit
 methods::setMethod("fit",
   signature(tq = "transcript_quantifier"),
-  function(tq, lambda = 0, transform = "log", inactive_transcripts = NA,
+  function(tq, lambda = 0, transform = "log", inactive_transcripts = NULL,
            verbose = FALSE) {
     if (lambda != 0) {
       stop("lambda feature not supported at this time")
@@ -121,8 +121,11 @@ methods::setMethod("fit",
       stop("verbose most be either TRUE or FALSE")
     }
 
-    if (class(inactive_transcripts) != "character" & !is.na(inactive_transcripts)) {
-      stop("inactive_transcripts must be either NA or a character vector")
+    if (is.null(inactive_transcripts)) {
+      inactive_transcripts <- NA_character_
+    }
+    if (class(inactive_transcripts) != "character") {
+      stop("inactive_transcripts must be either NULL or a character vector")
     }
 
     # Handle transform option
