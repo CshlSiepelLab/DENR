@@ -17,6 +17,8 @@ predict_inactive_transcripts(tq, bigwig_plus, bigwig_minus)
 a vector of inactive transcript identifiers
 }
 \description{
-Predicts inactive transcripts based on GRO/PRO-seq data using
-a pre-trained convolutional neural net
+Predicts inactive transcripts based on GRO/PRO-seq data using a p
+re-trained convolutional neural net. For stability reasones, this function enforces
+the use of the CPU if a TF session has not already been started. Given the small size
+of the network this shouldn not impact performance significantly.
 }

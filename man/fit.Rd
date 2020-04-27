@@ -17,7 +17,7 @@ fit(
   tq,
   lambda = 0,
   transform = "log",
-  inactive_transcripts = NA,
+  inactive_transcripts = NULL,
   verbose = FALSE
 )
 }

@@ -432,8 +432,10 @@ tss_predictor <- function(train_features, train_labels, train = TRUE) {
 
 #' @title Return list of inactive TSS
 #'
-#' @description Predicts inactive transcripts based on GRO/PRO-seq data using
-#' a pre-trained convolutional neural net
+#' @description Predicts inactive transcripts based on GRO/PRO-seq data using a p
+#' re-trained convolutional neural net. For stability reasones, this function enforces
+#' the use of the CPU if a TF session has not already been started. Given the small size
+#' of the network this shouldn not impact performance significantly.
 #' @inheritParams add_data
 #'
 #' @return a vector of inactive transcript identifiers
@@ -442,6 +444,12 @@ tss_predictor <- function(train_features, train_labels, train = TRUE) {
 #' @include data_handling.R
 #' @export
 predict_inactive_transcripts <- function(tq, bigwig_plus, bigwig_minus) {
+  # If TF session not already started this will force usage of CPU
+  if (Sys.info()["sysname"] == "Windows") {
+    Sys.setenv(CUDA_VISIBLE_DEVICES = "-1")
+  } else {
+    Sys.setenv(CUDA_DEVICE_ORDER = "PCI_BUS_ID")
+  }
   model_id <- "conv_pool_conv_14e9c7d5"
   # The paths to relevant bigwig files
   ml_model <- system.file("extdata", model_id,

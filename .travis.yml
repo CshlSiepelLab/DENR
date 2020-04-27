@@ -1,6 +1,19 @@
 language: r
-r: bioc-release
+r:
+ - 3.6.2
+ - 4.0.0
 cache: packages
+before_install:
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ${HOME}/miniconda.sh;
+  - bash ${HOME}/miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a
+  - conda install h5py
+  - Rscript -e "install.packages('keras')"
+  - Rscript -e "keras::install_keras()"
 env:
   - NOT_CRAN="true"
 after_success:

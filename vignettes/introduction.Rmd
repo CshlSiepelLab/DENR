@@ -47,7 +47,7 @@ midground we select a bin size of 250bp. We also must specify the metadata colum
 corresponding to a unique transcript id. Another column for a unique gene id may
 be specified but is not required.
 
-```{r create_transcript_quantifier}
+```{r create_transcript_quantifier, message=FALSE}
 bsize <- 250
 tq <- transcript_quantifier(gr_ds, bin_size = bsize,
                             transcript_name_column = "tx_name",
@@ -86,11 +86,13 @@ head(ta)
 ```
 
 We can also create plots for specific transcripts or genomic regions
-```{r}
+```{r, message=FALSE}
 plot_model(tq, chrom = 1, start = 1, end= 11000)
 ```
 
-# Using a non-uniform transcript coverage profile
+# Secondary modeling features
+
+## Using a non-uniform transcript coverage profile
 Because of variable polymerase elongation rates along the transcript body, polymerase
 density systematically varies along the length of the transcript. To accomadate this
 tuSelecter2 has the ability to fit a "shape profile" that attempts to capture this
@@ -100,7 +102,7 @@ the abundance estimation step. To estimate a shape profile use the
 \code{min_transcript_length} here just for the purposes of demonstration with a synthetic
 data set. Generally using transcripts that short is not reccomended).
 
-```{r}
+```{r, message=FALSE}
 tsp <- transcript_shape_profile(transcripts = gr_ds,
                                 bigwig_plus = bwp,
                                 bigwig_minus = bwm,
@@ -109,30 +111,38 @@ tsp <- transcript_shape_profile(transcripts = gr_ds,
 ```
 
 The empirical profile can be viewed with the \code{view()} function. This example looks a
-little odd as we are running on synthetic data and allowing really short transcripts.
+fairly odd as we are running on synthetic data and allowing really short transcripts.
 
-```{r}
+```{r, message=FALSE}
 view(tsp)
 ```
 
 The shape profile is then incorporated into the \code{transcript_quantifier} object and
 fitting proceeds as normal.
 
-```{r}
+```{r, message=FALSE}
 tq_shape <- apply_shape_profile(tq, tsp)
 ```
 
-# Using an ML model to predict inactive TSS
+## Using an ML model to predict inactive TSS
 Nascent RNA data tends to be fairly noisy and spill over annotated transcript boundries.
 For this reason, pre-filtering the set transcripts to quantify abundance for can be
 quite useful. Specific transcripts can be specified as inactive during the fitting step
-using the \code{inactive_transcripts} option.
+using the \code{inactive_transcripts} option. You may create the list of these inactive
+transcripts in whatever manner you choose.
 
-```{r}
+```{r, message=FALSE}
+# Inactive transcripts selected manually
 inactive_tss <- c("t1.2", "t2.1")
 tq <- fit(tq = tq, inactive_transcripts = inactive_tss)
 ```
 
+However, if you have a tensorflow backend installed you can use a pre-trained ML
+classifier to predict inactive TSS and feed that into the fitting step instead. For
+instructions on how to install tensorflow see
+[here](https://tensorflow.rstudio.com/installation/).
 
-
-
+```{r, message=FALSE}
+itx <- predict_inactive_transcripts(tq, bwp, bwm)
+print(itx)
+```
