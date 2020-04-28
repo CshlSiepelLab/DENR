@@ -450,6 +450,7 @@ predict_inactive_transcripts <- function(tq, bigwig_plus, bigwig_minus) {
   } else {
     Sys.setenv(CUDA_DEVICE_ORDER = "PCI_BUS_ID")
   }
+  Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 3)
   model_id <- "conv_pool_conv_14e9c7d5"
   # The paths to relevant bigwig files
   ml_model <- system.file("extdata", model_id,

@@ -30,16 +30,22 @@ test_that("Gradient estimation", {
   expect_equal(gr_num_id, gr_ana_id)
 })
 
-# Check that abundance table output is correct
-a_tab <- transcript_abundance(tq_fitted)
-lookup <- tq_fitted@transcript_model_key[tq_fitted@transcript_model_key$tx_name
-                                         == "t2.1", ]
-
 test_that("transcript abundance table", {
+  # Check that abundance table output is correct
+  a_tab <- transcript_abundance(tq_fitted, norm_method = "total_counts")
+  lookup <- tq_fitted@transcript_model_key[tq_fitted@transcript_model_key$tx_name
+                                           == "t2.1", ]
+  sf_tpm <- 1e6 / tq@count_metadata$library_size
   expect_equivalent(as.character(a_tab$transcript_name),
                     tq@transcripts$tx_name)
   expect_equivalent(a_tab[a_tab$transcript_name == "t2.1", ]$abundance,
-                    tq_fitted@model_abundance[[lookup$group]][lookup$model])
+                    tq_fitted@model_abundance[[lookup$group]][lookup$model] * sf_tpm)
+  a_tab <- transcript_abundance(tq_fitted, norm_method = "tmm")
+  sf_tmm <-
+    1 / mean(unlist(tq_fitted@model_abundance)[unlist(tq_fitted@model_abundance) > 0],
+       trim =  0.2)
+  expect_equivalent(a_tab[a_tab$transcript_name == "t2.1", ]$abundance,
+                    tq_fitted@model_abundance[[lookup$group]][lookup$model] * sf_tmm)
 })
 
 test_that("gene abundance table", {

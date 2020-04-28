@@ -110,8 +110,6 @@ test_that("train and predict inactive transcripts", {
   mod <- tss_predictor(train_features = feat$feature_array,
                       train_labels = as.integer(feat$tss$active_tss), FALSE)
   expect_s3_class(mod, "keras.engine.sequential.Sequential")
-  # Keep tensorflow quiet
-  Sys.setenv(TF_CPP_MIN_LOG_LEVEL = "3")
   sink(file = nullfile())
   pred <- predict_inactive_transcripts(tq, bwp, bwm)
   sink()

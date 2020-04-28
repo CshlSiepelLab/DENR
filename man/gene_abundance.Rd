@@ -5,12 +5,15 @@
 \alias{gene_abundance,transcript_quantifier-method}
 \title{View gene abundances}
 \usage{
-gene_abundance(tq)
+gene_abundance(tq, norm_method = c("total_counts", "tmm"))
 
-\S4method{gene_abundance}{transcript_quantifier}(tq)
+\S4method{gene_abundance}{transcript_quantifier}(tq, norm_method = c("total_counts", "tmm"))
 }
 \arguments{
 \item{tq}{A \link{transcript_quantifier-class} object}
+
+\item{norm_method}{type of normalization to use: "total_counts" or "tmm". Defaults
+to "total_counts". Described further in details.}
 }
 \description{
 Produces a table with estimated gene abundances for a given

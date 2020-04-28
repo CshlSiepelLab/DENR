@@ -5,14 +5,31 @@
 \alias{transcript_abundance,transcript_quantifier-method}
 \title{View transcript abundances}
 \usage{
-transcript_abundance(tq)
+transcript_abundance(tq, norm_method = c("total_counts", "tmm"))
 
-\S4method{transcript_abundance}{transcript_quantifier}(tq)
+\S4method{transcript_abundance}{transcript_quantifier}(tq, norm_method = c("total_counts", "tmm"))
 }
 \arguments{
 \item{tq}{A \link{transcript_quantifier-class} object}
+
+\item{norm_method}{type of normalization to use: "total_counts" or "tmm". Defaults
+to "total_counts". Described further in details.}
 }
 \description{
 Produces a table with estimated trancript abundances for a given
-\code{\link{transcript_quantifier-class}} object
+\code{\link{transcript_quantifier-class}} object.
+}
+\details{
+We provide two methods for normalizing transcript abundances, with each
+having different strengths. Both of the methods start with the polymerase desity (
+polymerase per bp) estimated by the tuSelecter2 method but handle sequencing depth
+differently:
+\itemize{
+ \item{"total_counts"}{Abundances are returned in the form analogous to TPM
+ (transcripts per million) where the output units are normalized for sequencing depth
+ by dividing the polymerase density by the total read count and multiplying by 10^6}
+ \item{"tmm"}{Normalizes per transcript abundance using the inverse of the trimmed
+ mean abundance for transcripts with abundance > 0. Uses transcripts in the 20%-80%
+ quantile range.}
+}
 }

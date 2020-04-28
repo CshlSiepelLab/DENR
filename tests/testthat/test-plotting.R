@@ -21,8 +21,7 @@ bwm <- system.file("extdata", "test_double_strand_minus.bw",
 # Add the data
 tq <- add_data(tq = tq,
                bigwig_plus = bwp,
-               bigwig_minus = bwm,
-               summary_operation = "mean")
+               bigwig_minus = bwm)
 
 test_that("get_transcripts", {
   expect_equivalent(tuSelecter2:::get_transcripts(tq = tq,

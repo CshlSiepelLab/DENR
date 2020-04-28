@@ -3,7 +3,6 @@
 #' @description adds data from bigwig to a \link{transcript_quantifier-class}
 #' object
 #'
-#' @inheritParams summarize_bigwig
 #' @param tq A \link{transcript_quantifier-class} object
 #' @param bigwig_plus the path to a bigwig for reads on the plus strand
 #' @param bigwig_minus the path to a bigwig for reads on the minus strand
@@ -14,17 +13,16 @@
 #' @return A \link{transcript_quantifier-class} object with count data added.
 #' @export
 methods::setGeneric("add_data",
-                    function(tq,
-                             bigwig_plus = NULL, bigwig_minus = NULL,
-                             summary_operation = "sum") {
+                    function(tq, bigwig_plus = NULL, bigwig_minus = NULL) {
                       standardGeneric("add_data")
                     })
 
 #' @rdname add_data
 methods::setMethod("add_data",
   signature(tq = "transcript_quantifier"),
-  function(tq, bigwig_plus = NULL, bigwig_minus = NULL, summary_operation = "sum") {
+  function(tq, bigwig_plus = NULL, bigwig_minus = NULL) {
       bins <- tq@bins
+      summary_operation <- "mean"
       strands <- S4Vectors::runValue(GenomicRanges::strand(bins))
       # summarize bigwig files by strands
       bw_counts <-
@@ -36,6 +34,11 @@ methods::setMethod("add_data",
           )
       # reorder the counts as the order in bins
       tq@counts <- bw_counts[names(tq@models)]
+      # Add count metadata
+      tq@count_metadata$bigwig_plus <- bigwig_plus
+      tq@count_metadata$bigwig_plus <- bigwig_minus
+      tq@count_metadata$library_size <- abs(total_coverage(bigwig_plus)) +
+        abs(total_coverage(bigwig_minus))
       return(tq)
 })
 

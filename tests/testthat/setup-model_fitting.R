@@ -20,8 +20,7 @@ bwm <- system.file("extdata", "test_double_strand_minus.bw",
 # Add the data
 tq <- add_data(tq = tq,
                bigwig_plus = bwp,
-               bigwig_minus = bwm,
-               summary_operation = "mean")
+               bigwig_minus = bwm)
 
 # Create transcript_quantifier object with gene annotations, also double all transcripts
 # to ensure that duplicate models are being summed over correctly
@@ -35,14 +34,12 @@ tq_gene <- suppressMessages(transcript_quantifier(gr_ds_doubled, bin_size = 50,
 # Add the data
 tq <- add_data(tq = tq,
                bigwig_plus = bwp,
-               bigwig_minus = bwm,
-               summary_operation = "mean")
+               bigwig_minus = bwm)
 
 # Add the data
 tq_gene <- add_data(tq = tq_gene,
                bigwig_plus = bwp,
-               bigwig_minus = bwm,
-               summary_operation = "mean")
+               bigwig_minus = bwm)
 
 num_grad <- function(x, models, data, transform, eps = 1e-6) {
   grad <- numeric(length(x))
