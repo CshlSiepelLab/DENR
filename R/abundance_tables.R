@@ -1,7 +1,23 @@
 #' @title View transcript abundances
 #'
 #' @description Produces a table with estimated trancript abundances for a given
-#' \code{\link{transcript_quantifier-class}} object
+#' \code{\link{transcript_quantifier-class}} object.
+#' @param norm_method type of normalization to use: "total_counts" or "tmm". Defaults
+#' to "total_counts". Described further in details.
+#'
+#'
+#' @details We provide two methods for normalizing transcript abundances, with each
+#' having different strengths. Both of the methods start with the polymerase desity (
+#' polymerase per bp) estimated by the tuSelecter2 method but handle sequencing depth
+#' differently:
+#' \itemize{
+#'  \item{"total_counts"}{Abundances are returned in the form analogous to TPM
+#'  (transcripts per million) where the output units are normalized for sequencing depth
+#'  by dividing the polymerase density by the total read count and multiplying by 10^6}
+#'  \item{"tmm"}{Normalizes per transcript abundance using the inverse of the trimmed
+#'  mean abundance for transcripts with abundance > 0. Uses transcripts in the 20%-80%
+#'  quantile range.}
+#' }
 #'
 #' @inheritParams add_data
 #'
@@ -11,16 +27,24 @@
 #'
 #' @export
 methods::setGeneric("transcript_abundance",
-                    function(tq) {
+                    function(tq, norm_method = c("total_counts", "tmm")) {
                       standardGeneric("transcript_abundance")
                     })
 
 #' @rdname transcript_abundance
 methods::setMethod("transcript_abundance",
                    signature(tq = "transcript_quantifier"),
-  function(tq) {
+  function(tq, norm_method = c("total_counts", "tmm")) {
     # Unlist abundance table for ease of access
     abundance_vector <- unlist(tq@model_abundance)
+    # Compute 1/total_abundance then mutiply by 1e6 so that it becomes the correct
+    # scaling factor for a metric analogous to TPM
+    norm_method <- norm_method[1]
+    if (norm_method == "total_counts") {
+      scale_factor <- 1e6 / (tq@count_metadata$library_size)
+    } else if (norm_method == "tmm") {
+      scale_factor <- 1 / mean(abundance_vector[abundance_vector > 0], trim = 0.2)
+    }
     # Compute final index to match transcripts to indices
     abundance_lookup_index <-
       cumsum(!duplicated(with(tq@transcript_model_key,
@@ -28,7 +52,7 @@ methods::setMethod("transcript_abundance",
     # Add abundances to table
     abundance_dt <- data.table::data.table(
       transcript_name = tq@transcript_model_key$tx_name,
-      abundance = abundance_vector[abundance_lookup_index],
+      abundance = abundance_vector[abundance_lookup_index] * scale_factor,
       model = with(tq@transcript_model_key, paste0(group, "_", model))
     )
     # Sort to match transcripts
@@ -51,7 +75,7 @@ methods::setMethod("transcript_abundance",
 #' \code{\link{transcript_quantifier-class}} object if gene identifiers are
 #' present
 #'
-#' @inheritParams add_data
+#' @inheritParams transcript_abundance
 #'
 #' @include transcript_quantifier-class.R
 #' @name gene_abundance
@@ -59,20 +83,20 @@ methods::setMethod("transcript_abundance",
 #'
 #' @export
 methods::setGeneric("gene_abundance",
-                    function(tq) {
+                    function(tq, norm_method = c("total_counts", "tmm")) {
                       standardGeneric("gene_abundance")
                     })
 
 #' @rdname gene_abundance
 methods::setMethod("gene_abundance",
                    signature(tq = "transcript_quantifier"),
-                   function(tq) {
+                   function(tq, norm_method = c("total_counts", "tmm")) {
                      # If no gene catagory present return error
                      if (is.na(tq@column_identifiers[2])) {
                        stop("No gene level annotation present")
                      }
                      # Get abundance at the per transcript level
-                     tx_abund_tab <- transcript_abundance(tq)
+                     tx_abund_tab <- transcript_abundance(tq, norm_method)
                      # Remove all duplicated models and sum over transcripts per
                      # gene
                      gene_abund_tab <-

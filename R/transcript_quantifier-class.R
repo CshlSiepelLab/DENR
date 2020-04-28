@@ -56,6 +56,8 @@ transcript_quantifier_valid <- function(object) {
 #' transcripts to their group and model
 #' @slot counts a list of vectors containing the read counts per bin.
 #' Initialized empty.
+#' @slot count_metadata holds information about the files the count data came from
+#' including names and total counts
 #' @slot model_abundance A list of vectors corresponding to \code{models}
 #' of transcript abundances. Initialized at 0.
 #'
@@ -73,6 +75,7 @@ methods::setClass("transcript_quantifier",
                             masks = "list",
                             transcript_model_key = "data.frame",
                             counts = "list",
+                            count_metadata = "list",
                             model_abundance = "list"),
                   validity = transcript_quantifier_valid
 )
@@ -212,6 +215,9 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
                 masks = model_masks,
                 transcript_model_key = reduced_models[[2]],
                 counts = list(),
+                count_metadata = list(bigwig_plus = NA_character_,
+                                      bigwig_minus = NA_character_,
+                                      library_size = NA_real_),
                 model_abundance = abundance
                ))
 }

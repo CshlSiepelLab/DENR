@@ -5,19 +5,9 @@
 \alias{add_data,transcript_quantifier-method}
 \title{Add data}
 \usage{
-add_data(
-  tq,
-  bigwig_plus = NULL,
-  bigwig_minus = NULL,
-  summary_operation = "sum"
-)
+add_data(tq, bigwig_plus = NULL, bigwig_minus = NULL)
 
-\S4method{add_data}{transcript_quantifier}(
-  tq,
-  bigwig_plus = NULL,
-  bigwig_minus = NULL,
-  summary_operation = "sum"
-)
+\S4method{add_data}{transcript_quantifier}(tq, bigwig_plus = NULL, bigwig_minus = NULL)
 }
 \arguments{
 \item{tq}{A \link{transcript_quantifier-class} object}
@@ -25,9 +15,6 @@ add_data(
 \item{bigwig_plus}{the path to a bigwig for reads on the plus strand}
 
 \item{bigwig_minus}{the path to a bigwig for reads on the minus strand}
-
-\item{summary_operation}{the summary opperation to apply per bin (e.g.
-sum, mean, median, etc.) Defaults to "sum"}
 }
 \value{
 A \link{transcript_quantifier-class} object with count data added.

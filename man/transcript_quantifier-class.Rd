@@ -39,6 +39,9 @@ transcripts to their group and model}
 \item{\code{counts}}{a list of vectors containing the read counts per bin.
 Initialized empty.}
 
+\item{\code{count_metadata}}{holds information about the files the count data came from
+including names and total counts}
+
 \item{\code{model_abundance}}{A list of vectors corresponding to \code{models}
 of transcript abundances. Initialized at 0.}
 }}
