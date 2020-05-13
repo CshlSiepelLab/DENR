@@ -12,10 +12,12 @@ bw_1000 <- system.file("extdata", "test_transcript_filter_1_1000.bw",
 
 # test inputs
 test_that("covered_bases returns correct values", {
-  test1 <- GRanges("1", IRanges(c(1, 7, 7), c(10, 9, 9)),
+  test1 <- GenomicRanges::GRanges("1", IRanges::IRanges(c(1, 7, 7), c(10, 9, 18)),
                    strand = c("+", "+", "-"))
-  test2 <- GRanges("1", IRanges(5, 15), strand = "+")
+  test2 <- GenomicRanges::GRanges("1", IRanges::IRanges(5, 15), strand = "+")
+  test3 <- GenomicRanges::GRanges("1", IRanges::IRanges(5, 15), strand = "-")
   expect_equal(covered_bases(test1, test2), c(6, 3, 0))
+  expect_equal(covered_bases(test1, test3), c(0, 0, 9))
 })
 
 test_that("model_agreement returns correct values", {

@@ -27,10 +27,10 @@ methods::setMethod("add_data",
       # summarize bigwig files by strands
       bw_counts <-
           c(
-              summarize_bigwig(bigwig_plus, bins[unlist(strands == "+")],
-                               summary_operation),
-              summarize_bigwig(bigwig_minus, bins[unlist(strands == "-")],
-                               summary_operation)
+              lapply(summarize_bigwig(bigwig_plus, bins[unlist(strands == "+")],
+                               summary_operation), abs),
+              lapply(summarize_bigwig(bigwig_minus, bins[unlist(strands == "-")],
+                               summary_operation), abs)
           )
       # reorder the counts as the order in bins
       tq@counts <- bw_counts[names(tq@models)]
