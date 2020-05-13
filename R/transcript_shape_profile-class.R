@@ -277,9 +277,15 @@ model_agreement <- function(tx_grps, bigwig_plus, bigwig_minus) {
   untranscribed <- untranscribed[GenomicRanges::strand(untranscribed) != "*"]
 
   # Get start-stop of joint ranges for each group
-  group_ranges <- unlist(GenomicRanges::reduce(tx_grps))
+  group_ranges <- GenomicRanges::GRanges(
+    seqnames = unlist(S4Vectors::runValue(GenomicRanges::seqnames(tx_grps))),
+    IRanges::IRanges(min(GenomicRanges::start(tx_grps)),
+                     max(GenomicRanges::end(tx_grps))),
+    strand = unlist(S4Vectors::runValue(GenomicRanges::strand(tx_grps)))
+  )
   group_sizes <- S4Vectors::elementNROWS(tx_grps)
   group_ranges_repl <- rep(group_ranges, group_sizes)
+  names(group_ranges) <-  names(tx_grps)
 
   # Create ranges of the left and right untranscribed regions for each
   # transcript
@@ -333,7 +339,7 @@ get_transcribed_regions <- function(ranges, bw, transcribed_thresh = 1) {
     con = bw, which = ranges,
     as = "GRanges")
   transcribed <- GenomicRanges::reduce(
-    imported_bw[GenomicRanges::score(imported_bw) >= transcribed_thresh]
+    imported_bw[abs(GenomicRanges::score(imported_bw)) >= transcribed_thresh]
   )
   return(transcribed)
 }
@@ -352,7 +358,7 @@ covered_bases <- function(query, subject) {
   covered <- integer(length(query))
   both <- GenomicRanges::intersect(query, subject)
   if (length(both) > 0) {
-    map <- GenomicRanges::findOverlaps(query, both)
+    map <- GenomicRanges::findOverlaps(query, both, ignore.strand = FALSE)
     both_par <- GenomicRanges::pintersect(query[S4Vectors::queryHits(map)],
                                           both[S4Vectors::subjectHits(map)])
 
