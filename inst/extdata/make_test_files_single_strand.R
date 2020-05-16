@@ -5,6 +5,10 @@ library(plyranges)
 library(GenomicFeatures)
 library(Gviz)
 
+as_granges <- function(x) {
+    return(as(x, "GRanges"))
+}
+
 current_dir <- rstudioapi::getSourceEditorContext()$path
 inst_dir <- dirname(dirname(current_dir))
 extdata_dir <- file.path(inst_dir, "extdata")

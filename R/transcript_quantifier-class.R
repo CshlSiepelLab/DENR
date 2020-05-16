@@ -56,6 +56,9 @@ transcript_quantifier_valid <- function(object) {
 #' transcripts to their group and model
 #' @slot counts a list of vectors containing the read counts per bin.
 #' Initialized empty.
+#' @slot upstream_polymerase_ratios the log2 ratio of mean counts for each transcript
+#' from the region immediately upstream and downstream of each TSS;
+#' log2([500bp, 5.5kb] / [-5.5kb, -500bp])
 #' @slot count_metadata holds information about the files the count data came from
 #' including names and total counts
 #' @slot model_abundance A list of vectors corresponding to \code{models}
@@ -75,6 +78,7 @@ methods::setClass("transcript_quantifier",
                             masks = "list",
                             transcript_model_key = "data.frame",
                             counts = "list",
+                            upstream_polymerase_ratios = "numeric",
                             count_metadata = "list",
                             model_abundance = "list"),
                   validity = transcript_quantifier_valid
@@ -161,6 +165,12 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
 
   # **End checks**
 
+  # Force copy of object underlying GRanges to prevent any weird side effects if
+  # GRanges is using a data.table or something else that can modify in place
+  transcripts <- GenomicRanges::makeGRangesFromDataFrame(
+    data.table::copy(data.table::as.data.table(transcripts)),
+    keep.extra.columns = T)
+
   # Group transcripts
   message("Grouping transcripts...")
   tx_grps <- group_transcripts(transcripts, distance = distance)
@@ -215,9 +225,22 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
                 masks = model_masks,
                 transcript_model_key = reduced_models[[2]],
                 counts = list(),
+                upstream_polymerase_ratios = numeric(0),
                 count_metadata = list(bigwig_plus = NA_character_,
                                       bigwig_minus = NA_character_,
                                       library_size = NA_real_),
                 model_abundance = abundance
                ))
+}
+
+#' get_tx_id
+#'
+#' Convenience function for getting transcript names from a
+#' \code{\link{transcript_quantifier-class}} object
+#' @param tq \code{\link{transcript_quantifier-class}} object
+#'
+#' @return a character vector of transcript ids in the same order as they are in the
+#' \code{tq@transcripts} slot
+get_tx_id <- function(tq) {
+  return(GenomicRanges::mcols(tq@transcripts)[, tq@column_identifiers[1]])
 }

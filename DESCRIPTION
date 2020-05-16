@@ -1,9 +1,11 @@
 Package: tuSelecter2
 Type: Package
 Title: Selecting transcript model using PRO-seq
-Version: 0.1.0
-Authors@R: person("Yixin", "Zhao", email = "gzbyzyx2011@gmail.com",
-  role = c("aut", "cre"))
+Version: 0.3.0
+Authors@R: c(person("Yixin", "Zhao", email = "gzbyzyx2011@gmail.com",
+  role = c("aut", "cre")),
+  person("Dukler", "Noah", email = "ndukler@gmail.com",
+  role = c("aut")))
 Description: Select the most actively transcribed transcript model using PRO-seq.
 bioCviews:
   Software,
@@ -58,4 +60,5 @@ Collate:
     'transcript_shape_profile-class.R'
     'tss_predictor.R'
     'txdb_handling.R'
+    'upstream_density_ratio.R'
 VignetteBuilder: knitr

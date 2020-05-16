@@ -94,3 +94,46 @@ test_that("total_coverage counted correctly", {
   expect_error(total_coverage(txdb_path_ss), "txdb is an unsupported file type")
   expect_error(total_coverage("foo"), "file does not exist")
 })
+
+test_that("upstream polymerase ratio calculations", {
+  # Load in test txdb
+  txdb_path <- system.file("extdata", "test_upr.txdb",
+                           package = "tuSelecter2")
+  txdb <- AnnotationDbi::loadDb(file = txdb_path)
+  gr <- GenomicFeatures::transcripts(txdb, c("tx_name", "gene_id"))
+
+  # Load in test bigwigs
+  bw_plus <- system.file("extdata", "test_upr_plus.bw",
+                        package = "tuSelecter2")
+  bw_minus <- system.file("extdata", "test_upr_minus.bw",
+                         package = "tuSelecter2")
+
+  tq <- transcript_quantifier(gr, bin_size = 50,
+                              transcript_name_column = "tx_name")
+  upr <- upstream_polymerase_ratio(tq, bigwig_plus = bw_plus, bigwig_minus = bw_minus,
+                                   up_width = 500, up_shift = 0, body_width = 500,
+                                   body_shift = 0)
+
+  expected_upr <- c(log2(1 + 1e-3) - log2(1e-3),
+                    log2(1 + 1e-3) - log2(1 + 1e-3),
+                    log2(2 + 1e-3) - log2(1e-3))
+  expect_equivalent(upr, expected_upr)
+})
+
+test_that("bigwig seqinfo applied correctly", {
+  # Set up GRanges with different seqstyles
+  gr_ucsc <- gr_ss
+  GenomeInfoDb::seqlevelsStyle(gr_ucsc) <- "UCSC"
+  gr_ensembl <- gr_ss
+  GenomeInfoDb::seqlevelsStyle(gr_ensembl) <- "Ensembl"
+  bw_seqstyle <- GenomeInfoDb::seqlevelsStyle(rtracklayer::BigWigFile(bw_ss))[1]
+  bw_seqinfo <- GenomeInfoDb::seqinfo(rtracklayer::BigWigFile(bw_ss))
+
+  # Check that seqinfo is equivalent under varying seqstyles
+  expect_equivalent(
+    seqinfo(tuSelecter2:::apply_bigwig_seqinfo(x = gr_ucsc, bigwig_file = bw_ss)),
+    bw_seqinfo)
+  expect_equivalent(
+    seqinfo(tuSelecter2:::apply_bigwig_seqinfo(x = gr_ensembl, bigwig_file = bw_ss)),
+    bw_seqinfo)
+})

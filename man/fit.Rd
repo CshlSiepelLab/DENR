@@ -31,7 +31,10 @@ fit(
 \item{inactive_transcripts}{a character vector listing transcripts for which abundance
 values should be fixed to 0. IMPORTANT: In the case where multiple transcripts are
 assigned to a single model (due to identical models at the specified bin scale) this
-will be overridden if one or more transcripts assigned to the same model are active.}
+will be overridden if one or more transcripts assigned to the same model are active.
+This will also be overidden for specific transcripts if they have 10x or more
+polymerase density downstream from their TSS as they do upstream and there are no
+other active transcripts in their loci.}
 
 \item{verbose}{if TRUE shows progress bar for fitting (default: FALSE)}
 }
