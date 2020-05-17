@@ -5,6 +5,10 @@ library(plyranges)
 library(GenomicFeatures)
 library(Gviz)
 
+as_granges <- function(x) {
+    return(GenomicRanges::makeGRangesFromDataFrame(x, keep.extra.columns = TRUE))
+}
+
 current_dir <- rstudioapi::getSourceEditorContext()$path
 inst_dir <- dirname(dirname(current_dir))
 extdata_dir <- file.path(inst_dir, "extdata")
@@ -13,7 +17,7 @@ extdata_dir <- file.path(inst_dir, "extdata")
 # generate test txdb
 g1 <- tibble(
     start = c(1, 1, 301),
-    width = c(1000, 1000, 200),
+    end = start + c(1000, 1000, 200) - 1,
     seqnames = "1",
     strand = "+",
     type = c("gene", rep("transcript", 2)),
@@ -30,12 +34,12 @@ saveDb(txdb, file.path(extdata_dir, "test_transcript_filter.txdb"))
 # generate test bigwig file
 wig_1_1000 <- tibble(seqnames = 1,
               start = 1:1000,
-              width = 1,
+              end = start,
               score = 1) %>% as_granges()
 
 wig_301_500 <- tibble(seqnames = 1,
                       start = 1:1000,
-                      width = 1,
+                      end = start,
                       score = c(rep(0, 300), rep(1, 200), rep(0, 500))) %>%
     as_granges()
 

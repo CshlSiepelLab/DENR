@@ -39,6 +39,10 @@ transcripts to their group and model}
 \item{\code{counts}}{a list of vectors containing the read counts per bin.
 Initialized empty.}
 
+\item{\code{upstream_polymerase_ratios}}{the log2 ratio of mean counts for each transcript
+from the region immediately upstream and downstream of each TSS;
+log2([500bp, 5.5kb] / [-5.5kb, -500bp])}
+
 \item{\code{count_metadata}}{holds information about the files the count data came from
 including names and total counts}
 

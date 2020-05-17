@@ -85,6 +85,9 @@ sum_squares_grad <- function(x, models, data, transform, lambda = 0) {
 #' values should be fixed to 0. IMPORTANT: In the case where multiple transcripts are
 #' assigned to a single model (due to identical models at the specified bin scale) this
 #' will be overridden if one or more transcripts assigned to the same model are active.
+#' This will also be overidden for specific transcripts if they have 10x or more
+#' polymerase density downstream from their TSS as they do upstream and there are no
+#' other active transcripts in their loci.
 #' @inheritParams add_data
 #' @inheritParams sum_squares_lasso
 #'
@@ -150,10 +153,37 @@ methods::setMethod("fit",
       pb <- utils::txtProgressBar(min = 1, max = length(sufficient_values), style = 3)
     }
 
-    # Fast lookup version of index
+    # Fast lookup version of index built from specified inactive transcripts and
+    # overridden by polymerase ratios
+    min_polymerase_ratio <- log2(10)
     tq_inactive_ind <- data.table::data.table(tq@transcript_model_key, inactive = FALSE,
                                               key = c("tx_name"))
-    tq_inactive_ind[inactive_transcripts, inactive := TRUE]
+    tq_inactive_ind[.(inactive_transcripts), inactive := TRUE]
+
+
+    # Get transcripts that are marked active but pass upr threshold
+    inact_upr <- names(which(tq@upstream_polymerase_ratios >= min_polymerase_ratio))
+
+    # Get transcripts that are in the inact_upr list and whose TSS are not within
+    # 10kb of an active transcript
+    if (length(inact_upr) > 0) {
+      upstream_check_radius <- 5e3
+      downstream_check_radius <- 6e3
+      active_tx_gr <- tq@transcripts[!get_tx_id(tq) %in% inactive_transcripts]
+      inactive_tx_tss_checkzone <- GenomicRanges::promoters(
+        tq@transcripts[get_tx_id(tq) %in% inact_upr],
+        upstream = upstream_check_radius,
+        downstream = downstream_check_radius)
+      over <- GenomicRanges::findOverlaps(inactive_tx_tss_checkzone, active_tx_gr,
+                                          ignore.strand = FALSE)
+      override <- GenomicRanges::mcols(
+        inactive_tx_tss_checkzone[-S4Vectors::queryHits(over)])[,
+                                                                tq@column_identifiers[1]]
+      tq_inactive_ind[.(override),
+                      inactive := FALSE]
+    }
+
+    # Set key for efficient lookup by group
     data.table::setkey(tq_inactive_ind, "group")
 
     # Iterate over transcript groups

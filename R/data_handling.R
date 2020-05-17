@@ -36,9 +36,14 @@ methods::setMethod("add_data",
       tq@counts <- bw_counts[names(tq@models)]
       # Add count metadata
       tq@count_metadata$bigwig_plus <- bigwig_plus
-      tq@count_metadata$bigwig_plus <- bigwig_minus
+      tq@count_metadata$bigwig_minus <- bigwig_minus
       tq@count_metadata$library_size <- abs(total_coverage(bigwig_plus)) +
         abs(total_coverage(bigwig_minus))
+      # Calculate upstream polymerase ratios
+      tq@upstream_polymerase_ratios <-
+        upstream_polymerase_ratio(tq, bigwig_plus, bigwig_minus,
+                                  up_width = 2500, up_shift = 500,
+                                  body_width = 1500, body_shift = 500)
       return(tq)
 })
 
@@ -214,3 +219,44 @@ methods::setMethod("summarize_bigwig", signature(bins = "GRanges"),
                      names(scores) <- names(bins)
                      return(scores)
                    })
+
+#' Apply seqinfo from bigwig to GRanges
+#'
+#' Applies the seqinfo from a bigwig to any other object that has a valid \code{seqinfo}
+#' method matches seqlevels, and prunes out of range entries
+#'
+#' @inheritParams summarize_bigwig
+#' @param x an object trhat has a \code{seqinfo} method (e.g. GRanges)
+#' @param drop_unused boolean drop unused seqlevels
+#' @param pruning_mode see \code{pruning.mode} from \link[GenomeInfoDb]{seqinfo}
+#'
+#' @return a named vector of the polymerase ratios
+apply_bigwig_seqinfo <- function(x, bigwig_file, drop_unused = TRUE,
+                                 pruning_mode = c("error", "coarse", "fine", "tidy")) {
+  # Match seqlevels style
+  # supress errors complaining about equivalent maps
+  withCallingHandlers({
+    GenomeInfoDb::seqlevelsStyle(x) <-
+      GenomeInfoDb::seqlevelsStyle(
+        rtracklayer::BigWigFile(bigwig_file))[1]
+  }, warning = function(w) {
+    if (startsWith(conditionMessage(w),
+                   "found more than one best sequence"))
+      invokeRestart("muffleWarning")
+  })
+
+  if (drop_unused) {
+    GenomeInfoDb::seqlevels(x) <- GenomeInfoDb::seqlevelsInUse(x)
+  }
+
+  bw_seqinfo <- GenomeInfoDb::seqinfo(rtracklayer::BigWigFile(bigwig_file))
+
+  withCallingHandlers({
+    GenomeInfoDb::seqinfo(x, pruning.mode = pruning_mode) <- bw_seqinfo
+  }, warning = function(w) {
+    if (grepl("GRanges object contains \\d+ out-of-bound range",
+              conditionMessage(w)))
+      invokeRestart("muffleWarning")
+  })
+  return(x)
+}
