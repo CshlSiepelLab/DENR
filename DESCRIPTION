@@ -1,7 +1,7 @@
 Package: tuSelecter2
 Type: Package
 Title: Selecting transcript model using PRO-seq
-Version: 0.3.0
+Version: 0.3.1
 Authors@R: c(person("Yixin", "Zhao", email = "gzbyzyx2011@gmail.com",
   role = c("aut", "cre")),
   person("Dukler", "Noah", email = "ndukler@gmail.com",
@@ -34,10 +34,10 @@ Imports:
   viridisLite,
   data.table,
   ggplot2,
-  keras,
+  keras (>= 2.2.5.0),
   yaml,
   matrixStats,
-  tensorflow
+  tensorflow (>= 2.0.0)
 License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
