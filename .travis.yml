@@ -12,8 +12,8 @@ before_install:
   - conda update -q conda
   - conda info -a
   - conda install h5py
-  - Rscript -e "install.packages('keras')"
-  - Rscript -e "keras::install_keras()" &> /dev/null
+  - conda install pyyaml
+  - conda install -c conda-forge keras
 env:
   - NOT_CRAN="true"
 after_success:
