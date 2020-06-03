@@ -645,18 +645,8 @@ methods::setMethod("apply_shape_profile",
       return(models)
     }, models = tq@models, strand = grp_strand, masks = tq@masks,
     SIMPLIFY = FALSE)
-    # Create new tq object using new models
-    return(methods::new(Class = "transcript_quantifier",
-                        transcripts = tq@transcripts,
-                        column_identifiers = tq@column_identifiers,
-                        bins = tq@bins,
-                        bin_size = tq@bin_size,
-                        models = tx_remodel,
-                        masks = tq@masks,
-                        transcript_model_key = tq@transcript_model_key,
-                        counts = tq@counts,
-                        model_abundance = tq@model_abundance
-    ))
+    tq@models <- tx_remodel
+    return(tq)
   })
 
 #' @title Slims down loess object

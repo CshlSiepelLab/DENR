@@ -98,15 +98,15 @@ tuSelecter2 has the ability to fit a "shape profile" that attempts to capture th
 empirically. This empirical shape profile is then used instead of the uniform one during
 the abundance estimation step. To estimate a shape profile use the
 \code{transcript_shape_profile} as below (note the alteration of the 
-\code{min_transcript_length} here just for the purposes of demonstration with a synthetic
-data set. Generally using transcripts that short is not reccomended).
+\code{min_transcript_length} and the head and tail lengths here just for the purposes of demonstration with a synthetic data set. Generally using transcripts that short is not reccomended).
 
 ```{r, message=FALSE}
 tsp <- transcript_shape_profile(transcripts = gr_ds,
                                 bigwig_plus = bwp,
                                 bigwig_minus = bwm,
-                                bin_size = bsize,
-                                min_transcript_length = 1e3)
+                                bin_size = bsize,linear_head_length = 500,
+                                linear_tail_length = 500,
+                                min_transcript_length = 5e3)
 ```
 
 The empirical profile can be viewed with the \code{view()} function. This example looks a
@@ -121,6 +121,8 @@ fitting proceeds as normal.
 
 ```{r, message=FALSE}
 tq_shape <- apply_shape_profile(tq, tsp)
+tq_shape <- fit(tq_shape)
+head(transcript_abundance(tq_shape))
 ```
 
 ## Using an ML model to predict inactive TSS
