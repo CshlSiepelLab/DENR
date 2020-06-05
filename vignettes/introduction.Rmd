@@ -144,6 +144,7 @@ instructions on how to install tensorflow see
 [here](https://tensorflow.rstudio.com/installation/).
 
 ```{r, message=FALSE}
+tensorflow::tf_config()
 itx <- predict_inactive_transcripts(tq, bwp, bwm)
 print(itx)
 ```

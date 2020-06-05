@@ -250,6 +250,12 @@ apply_bigwig_seqinfo <- function(x, bigwig_file, drop_unused = TRUE,
   }
 
   bw_seqinfo <- GenomeInfoDb::seqinfo(rtracklayer::BigWigFile(bigwig_file))
+  common_seqlevel <-
+      intersect(GenomeInfoDb::seqlevels(bw_seqinfo),
+                GenomeInfoDb::seqlevels(x))
+
+  GenomeInfoDb::seqlevels(x) <- common_seqlevel
+  GenomeInfoDb::seqlevels(bw_seqinfo) <- common_seqlevel
 
   withCallingHandlers({
     GenomeInfoDb::seqinfo(x, pruning.mode = pruning_mode) <- bw_seqinfo
