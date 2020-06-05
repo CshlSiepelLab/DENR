@@ -249,9 +249,24 @@ apply_bigwig_seqinfo <- function(x, bigwig_file, drop_unused = TRUE,
     GenomeInfoDb::seqlevels(x) <- GenomeInfoDb::seqlevelsInUse(x)
   }
 
+  # Get seqlengths for chromosomes in bigwig
   bw_seqinfo <- GenomeInfoDb::seqinfo(rtracklayer::BigWigFile(bigwig_file))
 
+  # Get the seqlengths in the granges that are not in the bigwig
+  gr_not_bw_seqlevels <- setdiff(as.character(GenomeInfoDb::seqlevels(x)),
+    as.character(GenomeInfoDb::seqlevels(bw_seqinfo)))
+  if (length(gr_not_bw_seqlevels) > 0) {
+    warning("There are seqlevels in the GRanges that are not in the bigwig:",
+            paste(gr_not_bw_seqlevels, collapse = ","))
+  }
+  bw_seqinfo <-
+    bw_seqinfo[as.character(GenomeInfoDb::seqlevels(x))]
+
   withCallingHandlers({
+    # Have to add this line because for some reason the pruning mode doesn't seem to
+    # be called correctly from seqinfo
+    GenomeInfoDb::seqlevels(x, pruning.mode = pruning_mode) <-
+      GenomeInfoDb::seqlevels(bw_seqinfo)
     GenomeInfoDb::seqinfo(x, pruning.mode = pruning_mode) <- bw_seqinfo
   }, warning = function(w) {
     if (grepl("GRanges object contains \\d+ out-of-bound range",
