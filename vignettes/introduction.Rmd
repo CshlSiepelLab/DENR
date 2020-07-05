@@ -86,7 +86,7 @@ head(ta)
 
 We can also create plots for specific transcripts or genomic regions
 ```{r, message=FALSE}
-plot_model(tq, chrom = 1, start = 1, end= 11000)
+plot_model(tq, chrom = 1, start = 1, end= 11000, ymax_bw = 300, ymax_abundance = 250)
 ```
 
 # Secondary modeling features

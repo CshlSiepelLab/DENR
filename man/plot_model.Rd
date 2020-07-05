@@ -13,7 +13,8 @@ plot_model(
   strand = NULL,
   bigwig_plus = NULL,
   bigwig_minus = NULL,
-  ymax = NULL
+  ymax_bw = NULL,
+  ymax_abundance = NULL
 )
 }
 \arguments{
@@ -34,7 +35,9 @@ to the \link{transcript_quantifier-class} object}
 
 \item{bigwig_minus}{the path to a bigwig for reads on the minus strand}
 
-\item{ymax}{maximum value of y-axis when plotting}
+\item{ymax_bw}{maximum value of y-axis for bw files when plotting}
+
+\item{ymax_abundance}{maximum value of y-axis for abundance when plotting}
 }
 \value{
 plotted tracks of transcripts and masks of your query gene
