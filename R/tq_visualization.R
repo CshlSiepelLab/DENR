@@ -126,6 +126,8 @@ plot_model <- function(tq,
                            seqnames = chrom,
                            ranges = IRanges::IRanges(start = start, end = end)
                        ))
+            bw$score <- abs(bw$score)
+
             # Get potential ymax
             bw_max <-
                 max(bw_max, max(stats::quantile(abs(bw$score), 0.99))) * 1.05
