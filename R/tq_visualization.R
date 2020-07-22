@@ -9,7 +9,8 @@
 #' @param start the start position of your query region (single value)
 #' @param end the end position of your query region (single value)
 #' @param strand the strand specificity of your query region (default: ANY)
-#' @param ymax maximum value of y-axis when plotting
+#' @param ymax_bw maximum value of y-axis for bw files when plotting
+#' @param ymax_abundance maximum value of y-axis for abundance when plotting
 #'
 #' @return plotted tracks of transcripts and masks of your query gene
 #'
@@ -24,7 +25,8 @@ plot_model <- function(tq,
                        strand = NULL,
                        bigwig_plus = NULL,
                        bigwig_minus = NULL,
-                       ymax = NULL) {
+                       ymax_bw = NULL,
+                       ymax_abundance = NULL) {
     # Check that only gene name or position information is specified
     if (!is.null(gene_name) & (!is.null(chrom) | !is.null(start) |
                                !is.null(end))) {
@@ -124,6 +126,8 @@ plot_model <- function(tq,
                            seqnames = chrom,
                            ranges = IRanges::IRanges(start = start, end = end)
                        ))
+            bw$score <- abs(bw$score)
+
             # Get potential ymax
             bw_max <-
                 max(bw_max, max(stats::quantile(abs(bw$score), 0.99))) * 1.05
@@ -198,9 +202,12 @@ plot_model <- function(tq,
     )
 
     # Override default ymax with user specification if given
-    if (!is.null(ymax)) {
-        bw_max <- ymax
-        abundance_max <- ymax
+    if (!is.null(ymax_bw)) {
+        bw_max <- ymax_bw
+    }
+
+    if (!is.null(ymax_abundance)) {
+        abundance_max <- ymax_abundance
     }
 
     datatrack_names <- c("Summarized read counts (+)",
