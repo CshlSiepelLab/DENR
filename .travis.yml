@@ -1,6 +1,5 @@
 language: r
 r:
- - 3.6.2
  - 4.0.0
 cache: packages
 before_install:
