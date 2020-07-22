@@ -393,20 +393,13 @@ tss_predictor <- function(train_features, train_labels, train = TRUE) {
     stop("Features must have at least 25 bins")
   }
 
-  # Initalize bias
-  b_0 <- log(sum(train_labels) / (length(train_labels) - sum(train_labels)))
-  b_0 <- keras::initializer_constant(value = b_0)
-
   # Create sequential model
-  model <- keras::keras_model_sequential(name = "conv_pool_conv")
+  model_name <- "conv_onelayer"
+  model <- keras::keras_model_sequential(name = model_name)
   model %>%
-    keras::layer_conv_1d(filters = 10, kernel_size = 15,
-                  padding = "same", input_shape = c(bins, channels)) %>%
+    keras::layer_conv_1d(filters = 10, kernel_size = 6, padding = "same",
+                  input_shape = c(bins, channels)) %>%
     keras::layer_activation("relu") %>%
-    keras::layer_max_pooling_1d(pool_size = 5) %>%
-    # another 1-D convolution layer
-    keras::layer_conv_1d(filters = 10, kernel_size = 10,
-                         padding = "same") %>%
     # Defining a Pooling layer which reduces the dimensions of the
     # features map and reduces the computational complexity of the model
     keras::layer_max_pooling_1d(pool_size = 5) %>%
@@ -414,13 +407,14 @@ tss_predictor <- function(train_features, train_labels, train = TRUE) {
     keras::layer_dropout(0.25) %>%
     keras::layer_flatten() %>%
     keras::layer_dense(units = 15, activation = "relu") %>%
-    keras::layer_dense(units = 1, activation = "sigmoid", bias_initializer = b_0)
-  # compile model
+    keras::layer_dense(units = 1, activation = "sigmoid")
+
   model %>% keras::compile(
-    optimizer = "adam",
+    optimizer = keras::optimizer_adam(lr = 0.001),
     loss = "binary_crossentropy",
     metrics =  "accuracy"
   )
+
   # fit model
   if (train) {
     model %>% keras::fit(train_features, train_labels, epochs = 300, verbose = 3,
@@ -451,12 +445,13 @@ predict_inactive_transcripts <- function(tq, bigwig_plus, bigwig_minus) {
     Sys.setenv(CUDA_DEVICE_ORDER = "PCI_BUS_ID")
   }
   Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 3)
-  model_id <- "conv_pool_conv_14e9c7d5"
+  model_id <- "conv_onelayer_61aa9200"
   # The paths to relevant bigwig files
-  ml_model <- system.file("extdata", model_id,
+  ml_model <- system.file("extdata", paste0(model_id, ".hdf5"),
                      package = "tuSelecter2")
   # Get input dimensions and use it retrieve correct inputs
-  config <- yaml::read_yaml(paste0(ml_model, "_input_info.yaml"))
+  config <- yaml::read_yaml(system.file("extdata", paste0(model_id, "_input_info.yaml"),
+                                        package = "tuSelecter2"))
   # Get features
   message("Collecting features ...")
   features <- collect_tss_features(transcripts = tq@transcripts,

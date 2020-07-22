@@ -114,5 +114,5 @@ test_that("train and predict inactive transcripts", {
   pred <- predict_inactive_transcripts(tq, bwp, bwm)
   sink()
   # check for obviously inactive tss, the model really should get these right
-  expect_equal(sort(pred), c("t1.2", "t2.1"))
+  expect_equal(sort(pred), c("t1.2"))
 })
