@@ -451,12 +451,14 @@ predict_inactive_transcripts <- function(tq, bigwig_plus, bigwig_minus) {
     Sys.setenv(CUDA_DEVICE_ORDER = "PCI_BUS_ID")
   }
   Sys.setenv(TF_CPP_MIN_LOG_LEVEL = 3)
-  model_id <- "conv_pool_conv_14e9c7d5"
+  model_id <- "conv_onelayer_61aa9200"
+  #model_id <- "conv_pool_conv_14e9c7d5"
   # The paths to relevant bigwig files
-  ml_model <- system.file("extdata", model_id,
+  ml_model <- system.file("extdata", paste0(model_id, ".hdf5"),
                      package = "tuSelecter2")
   # Get input dimensions and use it retrieve correct inputs
-  config <- yaml::read_yaml(paste0(ml_model, "_input_info.yaml"))
+  config <- yaml::read_yaml(system.file("extdata", paste0(model_id, "_input_info.yaml"),
+                                        package = "tuSelecter2"))
   # Get features
   message("Collecting features ...")
   features <- collect_tss_features(transcripts = tq@transcripts,
