@@ -11,7 +11,7 @@
 #' polymerase per bp) estimated by the tuSelecter2 method but handle sequencing depth
 #' differently:
 #' \itemize{
-#'  \item{"total_counts"}{Abundances are returned in the form analogous to TPM
+#'  \item{"tpm"}{Abundances are returned in the form analogous to TPM
 #'  (transcripts per million) where the output units are normalized for sequencing depth
 #'  by dividing the polymerase density by the total read count and multiplying by 10^6}
 #'  \item{"tmm"}{Normalizes per transcript abundance using the inverse of the trimmed
@@ -27,23 +27,27 @@
 #'
 #' @export
 methods::setGeneric("transcript_abundance",
-                    function(tq, norm_method = c("total_counts", "tmm")) {
+                    function(tq, norm_method = c("tpm", "tmm")) {
                       standardGeneric("transcript_abundance")
                     })
 
 #' @rdname transcript_abundance
 methods::setMethod("transcript_abundance",
                    signature(tq = "transcript_quantifier"),
-  function(tq, norm_method = c("total_counts", "tmm")) {
+  function(tq, norm_method = c("tpm", "tmm")) {
     # Unlist abundance table for ease of access
     abundance_vector <- unlist(tq@model_abundance)
     # Compute 1/total_abundance then mutiply by 1e6 so that it becomes the correct
     # scaling factor for a metric analogous to TPM
     norm_method <- norm_method[1]
-    if (norm_method == "total_counts") {
-      scale_factor <- 1e6 / (tq@count_metadata$library_size)
+    if (norm_method == "tpm") {
+      # Note: no need to correct for transcript length because abundances are already
+      # based on per bp density
+      scale_factor <-  1e6 / sum(abundance_vector)
     } else if (norm_method == "tmm") {
       scale_factor <- 1 / mean(abundance_vector[abundance_vector > 0], trim = 0.2)
+    } else {
+      stop("Invalid normalization method")
     }
     # Compute final index to match transcripts to indices
     abundance_lookup_index <-

@@ -61,4 +61,5 @@ Collate:
     'tss_predictor.R'
     'txdb_handling.R'
     'upstream_density_ratio.R'
+    'zzz.R'
 VignetteBuilder: knitr
