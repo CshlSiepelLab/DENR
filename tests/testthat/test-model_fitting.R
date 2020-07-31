@@ -32,10 +32,10 @@ test_that("Gradient estimation", {
 
 test_that("transcript abundance table", {
   # Check that abundance table output is correct
-  a_tab <- transcript_abundance(tq_fitted, norm_method = "total_counts")
+  a_tab <- transcript_abundance(tq_fitted, norm_method = "tpm")
   lookup <- tq_fitted@transcript_model_key[tq_fitted@transcript_model_key$tx_name
                                            == "t2.1", ]
-  sf_tpm <- 1e6 / tq@count_metadata$library_size
+  sf_tpm <- 1e6 / sum(unlist(tq_fitted@model_abundance))
   expect_equivalent(as.character(a_tab$transcript_name),
                     tq@transcripts$tx_name)
   expect_equivalent(a_tab[a_tab$transcript_name == "t2.1", ]$abundance,

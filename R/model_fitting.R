@@ -210,6 +210,8 @@ methods::setMethod("fit",
                                  upper = ub,
                                  method = "L-BFGS-B")
       estim[[i]] <- opt_result$par
+      ## Force set inactive transcripts to 0 even if they were slightly perturbed
+      estim[[i]][final_inactive_models] <- 0
       names(estim[[i]]) <- colnames(sv$models)
       if (verbose) {
         utils::setTxtProgressBar(pb, i)
