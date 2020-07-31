@@ -2,8 +2,8 @@
 #'
 #' @description Produces a table with estimated trancript abundances for a given
 #' \code{\link{transcript_quantifier-class}} object.
-#' @param norm_method type of normalization to use: "total_counts" or "tmm". Defaults
-#' to "total_counts". Described further in details.
+#' @param norm_method type of normalization to use: "tpm" or "tmm". Defaults
+#' to "tpm". Described further in details.
 #'
 #'
 #' @details We provide two methods for normalizing transcript abundances, with each
@@ -87,14 +87,14 @@ methods::setMethod("transcript_abundance",
 #'
 #' @export
 methods::setGeneric("gene_abundance",
-                    function(tq, norm_method = c("total_counts", "tmm")) {
+                    function(tq, norm_method = c("tpm", "tmm")) {
                       standardGeneric("gene_abundance")
                     })
 
 #' @rdname gene_abundance
 methods::setMethod("gene_abundance",
                    signature(tq = "transcript_quantifier"),
-                   function(tq, norm_method = c("total_counts", "tmm")) {
+                   function(tq, norm_method = c("tpm", "tmm")) {
                      # If no gene catagory present return error
                      if (is.na(tq@column_identifiers[2])) {
                        stop("No gene level annotation present")

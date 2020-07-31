@@ -246,8 +246,7 @@ get_tx_id <- function(tq) {
 }
 
 #' @inherit methods::show
-methods::setMethod("show", signature(object = "transcript_quantifier"), function(object)
-{
+methods::setMethod("show", signature = "transcript_quantifier", function(object) {
   num_transcripts <- length(object@transcripts)
   num_models <- sum(unlist(lapply(object@models, ncol)))
   num_loci <- length(object@models)
@@ -255,7 +254,7 @@ methods::setMethod("show", signature(object = "transcript_quantifier"), function
   bwp <- object@count_metadata$bigwig_plus
   bwm <- object@count_metadata$bigwig_minus
 
-  if(!is.na(object@column_identifiers["gene_id"])) {
+  if (!is.na(object@column_identifiers["gene_id"])) {
     num_genes <- length(unique(
       S4Vectors::mcols(object@transcripts)[[object@column_identifiers["gene_id"]]]))
     gene_string <- paste("Number of Genes:", num_genes)
@@ -271,5 +270,3 @@ methods::setMethod("show", signature(object = "transcript_quantifier"), function
   write(paste("Bigwig data (plus):", bwp), file = stdout())
   write(paste("Bigwig data (minus):", bwm), file = stdout())
 })
-
-

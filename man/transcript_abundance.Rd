@@ -12,8 +12,8 @@ transcript_abundance(tq, norm_method = c("tpm", "tmm"))
 \arguments{
 \item{tq}{A \link{transcript_quantifier-class} object}
 
-\item{norm_method}{type of normalization to use: "total_counts" or "tmm". Defaults
-to "total_counts". Described further in details.}
+\item{norm_method}{type of normalization to use: "tpm" or "tmm". Defaults
+to "tpm". Described further in details.}
 }
 \description{
 Produces a table with estimated trancript abundances for a given

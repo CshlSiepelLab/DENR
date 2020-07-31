@@ -1,4 +1,4 @@
-.onLoad <- function(libname, pkgname){
+.onLoad <- function(libname, pkgname) { # nolint
   # Avoids any issues with non-standard chromosome names in plotting
-  options(ucscChromosomeNames=FALSE)
+  options(ucscChromosomeNames = FALSE)
 }
