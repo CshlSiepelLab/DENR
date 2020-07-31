@@ -244,3 +244,32 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
 get_tx_id <- function(tq) {
   return(GenomicRanges::mcols(tq@transcripts)[, tq@column_identifiers[1]])
 }
+
+#' @inherit methods::show
+methods::setMethod("show", signature(object = "transcript_quantifier"), function(object)
+{
+  num_transcripts <- length(object@transcripts)
+  num_models <- sum(unlist(lapply(object@models, ncol)))
+  num_loci <- length(object@models)
+  bin_size <- object@bin_size
+  bwp <- object@count_metadata$bigwig_plus
+  bwm <- object@count_metadata$bigwig_minus
+
+  if(!is.na(object@column_identifiers["gene_id"])) {
+    num_genes <- length(unique(
+      S4Vectors::mcols(object@transcripts)[[object@column_identifiers["gene_id"]]]))
+    gene_string <- paste("Number of Genes:", num_genes)
+  } else {
+    gene_string <- "No gene id present"
+  }
+
+  write("A transcript_quantifier object with:", file = stdout())
+  write(paste(num_transcripts, "transcripts converted to", num_models, "models",
+              "grouped into", num_loci, "loci"), file = stdout())
+  write(gene_string, file = stdout())
+  write(paste("bin size:", bin_size), file = stdout())
+  write(paste("Bigwig data (plus):", bwp), file = stdout())
+  write(paste("Bigwig data (minus):", bwm), file = stdout())
+})
+
+
