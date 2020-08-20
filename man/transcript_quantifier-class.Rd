@@ -43,6 +43,9 @@ Initialized empty.}
 from the region immediately upstream and downstream of each TSS;
 log2([500bp, 5.5kb] / [-5.5kb, -500bp])}
 
+\item{\code{tx_gof_metrics}}{some crude per transcript goodness-of-fit metrics that are used
+for heuristics in the fitting step}
+
 \item{\code{count_metadata}}{holds information about the files the count data came from
 including names and total counts}
 

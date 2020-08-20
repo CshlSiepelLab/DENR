@@ -44,6 +44,23 @@ methods::setMethod("add_data",
         upstream_polymerase_ratio(tq, bigwig_plus, bigwig_minus,
                                   up_width = 2500, up_shift = 500,
                                   body_width = 1500, body_shift = 500)
+      # Calculate percent_match statistic
+      # Get the grouping of the transcripts and order to match tq@transcripts
+      tmk <- data.table::as.data.table(
+        tq@transcript_model_key[match(get_tx_id(tq),
+                                      tq@transcript_model_key$tx_name), ])
+      # Split tq@transcripts into groups
+      tx_grps <- GenomicRanges::split(tq@transcripts, tmk$group)
+      # Compute model agreement
+      qc <- model_agreement(tx_grps, bigwig_plus, bigwig_minus)
+      # Put key data into data.table and sort to match tq@transcript ordering
+      qc_stats <- data.table::data.table(
+        transcript_id = S4Vectors::mcols(qc)[, tq@column_identifiers[1]],
+        percent_match = qc$percent_match,
+        percent_transcribed = qc$percent_transcribed)
+      qc_stats <- qc_stats[match(get_tx_id(tq),
+                                 qc_stats$transcript_id)]
+      tq@tx_gof_metrics <- qc_stats
       return(tq)
 })
 

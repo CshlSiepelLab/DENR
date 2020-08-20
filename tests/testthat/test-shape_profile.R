@@ -16,8 +16,17 @@ test_that("covered_bases returns correct values", {
                    strand = c("+", "+", "-"))
   test2 <- GenomicRanges::GRanges("1", IRanges::IRanges(5, 15), strand = "+")
   test3 <- GenomicRanges::GRanges("1", IRanges::IRanges(5, 15), strand = "-")
+  test4 <- GenomicRanges::GRanges(c(1, 1, 2),
+                                  IRanges::IRanges(c(1, 1, 1),
+                                                   c(10, 10, 10)),
+                                  strand = c("+", "-", "+"))
+  test5 <- GenomicRanges::GRanges(c(1, 1, 2, 2),
+                                  IRanges::IRanges(c(5, 8, 1, 100),
+                                                   c(10, 10, 7, 200)),
+                                  strand = c("+", "-", "+", "+"))
   expect_equal(covered_bases(test1, test2), c(6, 3, 0))
   expect_equal(covered_bases(test1, test3), c(0, 0, 9))
+  expect_equal(covered_bases(test4, test5), c(6, 3, 7))
 })
 
 test_that("model_agreement returns correct values", {

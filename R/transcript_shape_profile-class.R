@@ -355,16 +355,46 @@ get_transcribed_regions <- function(ranges, bw, transcribed_thresh = 1) {
 #'
 #' @name covered_bases
 covered_bases <- function(query, subject) {
+  # Pre-allocate output vector with intial value set to zero
   covered <- integer(length(query))
-  both <- GenomicRanges::intersect(query, subject)
-  if (length(both) > 0) {
-    map <- GenomicRanges::findOverlaps(query, both, ignore.strand = FALSE)
-    both_par <- GenomicRanges::pintersect(query[S4Vectors::queryHits(map)],
-                                          both[S4Vectors::subjectHits(map)])
-
-    tmp <- unlist(
-      lapply(split(GenomicRanges::width(both_par), S4Vectors::queryHits(map)), sum))
-    covered[as.integer(names(tmp))] <- tmp
+  # Reduce subject to guarentee unique overlaps
+  subject <- GenomicRanges::reduce(subject)
+  # Save initial query rows and split by strand and chromosome
+  query$uniq_row_id <- seq_along(query)
+  query_l <- GenomicRanges::split(query, GenomicRanges::seqnames(query))
+  # Get the coverages to the subject per strand level
+  sub_covr_plus <-
+    GenomicRanges::coverage(subject[GenomicRanges::strand(subject) == "+"])
+  sub_covr_minus <-
+    GenomicRanges::coverage(subject[GenomicRanges::strand(subject) == "-"])
+  sub_covr_star <-
+    GenomicRanges::coverage(subject[GenomicRanges::strand(subject) == "*"])
+  # Iterate over the seqlevels where there is coverage
+  for (s in GenomeInfoDb::seqlevels(subject)) {
+    q_split <- GenomicRanges::split(query_l[[s]], GenomicRanges::strand(query_l[[s]]))
+    # Subjects on the +/* strand cover + query items
+    covered[q_split[["+"]]$uniq_row_id] <- unlist(
+      IRanges::viewSums(IRanges::Views(sub_covr_plus[[s]],
+                                       IRanges::ranges(q_split[["+"]]))) +
+        IRanges::viewSums(IRanges::Views(sub_covr_star[[s]],
+                                         IRanges::ranges(q_split[["+"]])))
+    )
+    # Subjects on the -/* strand cover - query items
+    covered[q_split[["-"]]$uniq_row_id] <- unlist(
+      IRanges::viewSums(IRanges::Views(sub_covr_minus[[s]],
+                                       IRanges::ranges(q_split[["-"]]))) +
+        IRanges::viewSums(IRanges::Views(sub_covr_star[[s]],
+                                         IRanges::ranges(q_split[["-"]])))
+    )
+    # Subjects on the +/-/* strand cover * query items
+    covered[q_split[["*"]]$uniq_row_id] <- unlist(
+      IRanges::viewSums(IRanges::Views(sub_covr_plus[[s]],
+                                       IRanges::ranges(q_split[["*"]]))) +
+        IRanges::viewSums(IRanges::Views(sub_covr_minus[[s]],
+                                         IRanges::ranges(q_split[["*"]]))) +
+        IRanges::viewSums(IRanges::Views(sub_covr_star[[s]],
+                                         IRanges::ranges(q_split[["*"]])))
+    )
   }
   return(covered)
 }

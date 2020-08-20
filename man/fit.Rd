@@ -10,7 +10,8 @@ fit(
   lambda = 0,
   transform = "log",
   inactive_transcripts = NA,
-  verbose = FALSE
+  verbose = FALSE,
+  heuristic_inactive_override = T
 )
 
 \S4method{fit}{transcript_quantifier}(
@@ -18,7 +19,8 @@ fit(
   lambda = 0,
   transform = "log",
   inactive_transcripts = NULL,
-  verbose = FALSE
+  verbose = FALSE,
+  heuristic_inactive_override = T
 )
 }
 \arguments{
@@ -37,6 +39,10 @@ polymerase density downstream from their TSS as they do upstream and there are n
 other active transcripts in their loci.}
 
 \item{verbose}{if TRUE shows progress bar for fitting (default: FALSE)}
+
+\item{heuristic_inactive_override}{Boolean. If TRUE uses a series of heuristics to
+re-activate some of the transcripts labeled as inactive. We reccomend you leave this
+on unless your're really confident in your inactive calls. See Details for more.}
 }
 \description{
 Estimates trancript abundances for a given
