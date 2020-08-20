@@ -59,6 +59,8 @@ transcript_quantifier_valid <- function(object) {
 #' @slot upstream_polymerase_ratios the log2 ratio of mean counts for each transcript
 #' from the region immediately upstream and downstream of each TSS;
 #' log2([500bp, 5.5kb] / [-5.5kb, -500bp])
+#' @slot tx_gof_metrics some crude per transcript goodness-of-fit metrics that are used
+#' for heuristics in the fitting step
 #' @slot count_metadata holds information about the files the count data came from
 #' including names and total counts
 #' @slot model_abundance A list of vectors corresponding to \code{models}
@@ -68,6 +70,7 @@ transcript_quantifier_valid <- function(object) {
 #' @rdname transcript_quantifier-class
 #' @importClassesFrom GenomicRanges GRanges
 #' @importClassesFrom GenomicRanges CompressedGRangesList
+#' @importClassesFrom data.table data.table
 #' @exportClass transcript_quantifier
 methods::setClass("transcript_quantifier",
                   slots = c(transcripts = "GRanges",
@@ -79,6 +82,7 @@ methods::setClass("transcript_quantifier",
                             transcript_model_key = "data.frame",
                             counts = "list",
                             upstream_polymerase_ratios = "numeric",
+                            tx_gof_metrics = "data.table",
                             count_metadata = "list",
                             model_abundance = "list"),
                   validity = transcript_quantifier_valid
@@ -226,6 +230,7 @@ transcript_quantifier <- function(transcripts, transcript_name_column,
                 transcript_model_key = reduced_models[[2]],
                 counts = list(),
                 upstream_polymerase_ratios = numeric(0),
+                tx_gof_metrics = data.table::data.table(),
                 count_metadata = list(bigwig_plus = NA_character_,
                                       bigwig_minus = NA_character_,
                                       library_size = NA_real_),

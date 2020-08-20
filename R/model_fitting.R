@@ -88,6 +88,9 @@ sum_squares_grad <- function(x, models, data, transform, lambda = 0) {
 #' This will also be overidden for specific transcripts if they have 10x or more
 #' polymerase density downstream from their TSS as they do upstream and there are no
 #' other active transcripts in their loci.
+#' @param heuristic_inactive_override Boolean. If TRUE uses a series of heuristics to
+#' re-activate some of the transcripts labeled as inactive. We reccomend you leave this
+#' on unless your're really confident in your inactive calls. See Details for more.
 #' @inheritParams add_data
 #' @inheritParams sum_squares_lasso
 #'
@@ -99,7 +102,7 @@ sum_squares_grad <- function(x, models, data, transform, lambda = 0) {
 methods::setGeneric("fit",
                     function(tq, lambda = 0,
                              transform = "log", inactive_transcripts = NA,
-                             verbose = FALSE) {
+                             verbose = FALSE, heuristic_inactive_override = T) {
                       standardGeneric("fit")
                     })
 
@@ -107,7 +110,7 @@ methods::setGeneric("fit",
 methods::setMethod("fit",
   signature(tq = "transcript_quantifier"),
   function(tq, lambda = 0, transform = "log", inactive_transcripts = NULL,
-           verbose = FALSE) {
+           verbose = FALSE, heuristic_inactive_override = T) {
     if (lambda != 0) {
       stop("lambda feature not supported at this time")
     }
@@ -153,34 +156,56 @@ methods::setMethod("fit",
       pb <- utils::txtProgressBar(min = 1, max = length(sufficient_values), style = 3)
     }
 
-    # Fast lookup version of index built from specified inactive transcripts and
-    # overridden by polymerase ratios
-    min_polymerase_ratio <- log2(10)
+    # Fast lookup version of index built from specified inactive transcripts
     tq_inactive_ind <- data.table::data.table(tq@transcript_model_key, inactive = FALSE,
                                               key = c("tx_name"))
     tq_inactive_ind[.(inactive_transcripts), inactive := TRUE]
 
+    # There are currently two heuristics here meant to deal with possible deficiencies in
+    # inactive lists
+    #   1) Upstream polymerase ratio
+    #   2) GOF metric activation at loci with no active transcripts but 1% or more sites
+    #      covered polymerase for a given transcript
+    if (heuristic_inactive_override) {
+      # ** UPR heuristic **
+      # Get transcripts that are marked as inactive but who have a high UPR. Keep those
+      # whose TSS are not within -3kb/+2kb of an active transcript's TSS on the same
+      # strand. These numbers are based on the regions used to compute the UPR
+      # [-3kb, -500bp] and [+500bp, 2kb]. If they pass all these standards, reactivate
+      # them
+      min_polymerase_ratio <- log2(5)
+      inact_upr <- names(which(tq@upstream_polymerase_ratios >= min_polymerase_ratio))
+      if (length(inact_upr) > 0) {
+        upstream_check_radius <- 3e3
+        downstream_check_radius <- 2e3
+        active_tx_gr <- tq@transcripts[!get_tx_id(tq) %in% inactive_transcripts]
+        active_checkzone <- GenomicRanges::promoters(
+          tq@transcripts[get_tx_id(tq) %in% inact_upr],
+          upstream = upstream_check_radius,
+          downstream = downstream_check_radius)
+        over <- GenomicRanges::findOverlaps(active_checkzone, active_tx_gr,
+                                            ignore.strand = FALSE)
+        override <- GenomicRanges::mcols(
+          active_checkzone[-S4Vectors::queryHits(over)])[, tq@column_identifiers[1]]
+        tq_inactive_ind[.(override), inactive := FALSE]
+      }
 
-    # Get transcripts that are marked active but pass upr threshold
-    inact_upr <- names(which(tq@upstream_polymerase_ratios >= min_polymerase_ratio))
-
-    # Get transcripts that are in the inact_upr list and whose TSS are not within
-    # 10kb of an active transcript
-    if (length(inact_upr) > 0) {
-      upstream_check_radius <- 5e3
-      downstream_check_radius <- 6e3
-      active_tx_gr <- tq@transcripts[!get_tx_id(tq) %in% inactive_transcripts]
-      inactive_tx_tss_checkzone <- GenomicRanges::promoters(
-        tq@transcripts[get_tx_id(tq) %in% inact_upr],
-        upstream = upstream_check_radius,
-        downstream = downstream_check_radius)
-      over <- GenomicRanges::findOverlaps(inactive_tx_tss_checkzone, active_tx_gr,
-                                          ignore.strand = FALSE)
-      override <- GenomicRanges::mcols(
-        inactive_tx_tss_checkzone[-S4Vectors::queryHits(over)])[,
-                                                                tq@column_identifiers[1]]
-      tq_inactive_ind[.(override),
-                      inactive := FALSE]
+      # ** GOF heuristic **
+      # This metric looks for loci in which all transcripts have been marked as inactive
+      # but one or more transcripts show >= 1% of sites covered by polymerase. In that
+      # case take the one with the best model_match statistic and activate it
+      gof_tx_tab <- data.table::merge.data.table(
+        data.table::as.data.table(tq@transcript_model_key),
+        tq@tx_gof_metrics,
+        by.x = "tx_name", by.y = "transcript_id")
+      # Get loci where all transcripts are inactive
+      loci_active <- tq_inactive_ind[, .(all_inactive = all(inactive)), by = "group"]
+      # Reactivate transcript in loci that is at least 1% tx and has highest % match
+      reactivate <-
+        gof_tx_tab[group %in% loci_active[(all_inactive)]$group &
+                     percent_transcribed >= 0.01, .SD[which.max(percent_match)][1],
+                   by = "group"]$tx_name
+      tq_inactive_ind[.(reactivate), inactive := FALSE]
     }
 
     # Set key for efficient lookup by group
