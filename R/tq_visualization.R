@@ -194,23 +194,7 @@ plot_model <- function(tq,
                                  sel_tx_key$tx_name), "model_key_label"]
       rm(tx_key, sel_tx_key, same_model_key, model_key_label)
       # plot datatrack for abundance
-      i <- 1
       for (s in unique(GenomicRanges::strand(abundance))) {
-          if (i == 1) {
-              abundance_tracks[[as.character(s)]] <- Gviz::DataTrack(
-                  abundance[GenomicRanges::strand(abundance) == s],
-                  type = "histogram",
-                  name = paste0("Predicted abundance (", s, ")"),
-                  groups = colnames(
-                      S4Vectors::elementMetadata(
-                          abundance[GenomicRanges::strand(abundance) == s])),
-                  legend = TRUE,
-                  strand = s,
-                  chromosome = chrom,
-                  stackedBars = TRUE
-              )
-              i <- i + 1
-          } else {
               abundance_tracks[[as.character(s)]] <- Gviz::DataTrack(
                   abundance[GenomicRanges::strand(abundance) == s],
                   type = "histogram",
@@ -223,8 +207,7 @@ plot_model <- function(tq,
                   chromosome = chrom,
                   stackedBars = TRUE
               )
-          }
-      }
+              }
       abundance_max <-
           ceiling(abs(max(as.matrix(S4Vectors::mcols(abundance)))))
     }
@@ -283,6 +266,10 @@ plot_model <- function(tq,
 
     mask_colors <- c("blue", "red")
     names(mask_colors) <- c("+", "-")
+    # add legend back to the last DataTrack
+    dt_idx <- max(which(sapply(args$trackList, class) == "DataTrack"))
+    args$trackList[[dt_idx]] <-
+        Gviz::setPar(args$trackList[[dt_idx]], "legend", TRUE)
 
     args <- c(args, gene_colors, mask_colors)
 
