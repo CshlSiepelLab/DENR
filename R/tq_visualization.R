@@ -192,7 +192,7 @@ plot_model <- function(tq,
                                  sel_tx_key$tx_name), "model_key_label"]
       rm(tx_key, sel_tx_key, same_model_key, model_key_label)
       # plot datatrack for abundance
-      i = 1
+      i <- 1
       for (s in unique(GenomicRanges::strand(abundance))) {
           if (i == 1) {
               abundance_tracks[[as.character(s)]] <- Gviz::DataTrack(
