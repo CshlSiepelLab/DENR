@@ -50,7 +50,8 @@ plot_model <- function(tq,
         }
         # Check that position overlaps with one or more transcripts
         query_range <-
-            GenomicRanges::GRanges(chrom, IRanges::IRanges(start, end), strand = strand)
+            GenomicRanges::GRanges(chrom, IRanges::IRanges(start, end),
+                                   strand = strand)
         query_inter <-
             GenomicRanges::intersect(query_range, tq@transcripts,
                                      ignore.strand = is.null(strand))
@@ -171,7 +172,8 @@ plot_model <- function(tq,
       # Get abundance data
       abundance <- get_abundance(tq, chrom, start, end)
       # Only keep transcripts with non-zero expression for visualization
-      abundance <- abundance[, apply(S4Vectors::mcols(abundance), 2, max) > 1e-3]
+      abundance <- abundance[,
+                             apply(S4Vectors::mcols(abundance), 2, max) > 1e-3]
       # Generate group model name lgend in abundance track
       tx_key <- tq@transcript_model_key
       sel_tx_key <-
@@ -267,7 +269,8 @@ plot_model <- function(tq,
             if (args$trackList[[track]]@name %in%
                 c("Predicted abundance (+)", "Predicted abundance (-)")) {
                 args$trackList[[track]] <-
-                    set_datatrack_ylim(args$trackList[[track]], c(0, abundance_max))
+                    set_datatrack_ylim(args$trackList[[track]],
+                                       c(0, abundance_max))
             }
         }
     }
@@ -373,9 +376,11 @@ methods::setMethod("get_data",
                                            end = end)
                        # Lookup the relevant groups
                        tx_col <- data_source@column_identifiers[1]
-                       transcripts <- S4Vectors::elementMetadata(target_tx)[, tx_col]
+                       transcripts <-
+                           S4Vectors::elementMetadata(target_tx)[, tx_col]
                        key <- data_source@transcript_model_key
-                       target_group <- unique(key[key$tx_name %in% transcripts, ]$group)
+                       target_group <-
+                           unique(key[key$tx_name %in% transcripts, ]$group)
 
                        # Combine the data and the GRanges object
                        value_granges <-
@@ -411,7 +416,8 @@ methods::setMethod("get_data",
 #' @name get_abundance
 get_abundance <-
     function(tq, chrom, start, end) {
-        target_tx <- get_transcripts(tq, chrom = chrom, start = start, end = end)
+        target_tx <- get_transcripts(tq, chrom = chrom,
+                                     start = start, end = end)
         # Lookup the relevant groups
         tx_col <- tq@column_identifiers[1]
         transcripts <- S4Vectors::elementMetadata(target_tx)[, tx_col]
