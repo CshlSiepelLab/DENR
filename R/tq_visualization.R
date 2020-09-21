@@ -171,7 +171,7 @@ plot_model <- function(tq,
       # Get abundance data
       abundance <- get_abundance(tq, chrom, start, end)
       # Only keep transcripts with non-zero expression for visualization
-      abundance <- abundance[, apply(mcols(abundance), 2, max) != 0]
+      abundance <- abundance[, apply(S4Vectors::mcols(abundance), 2, max) > 1e-3]
       # plot datatrack for abundance
       for (s in unique(GenomicRanges::strand(abundance))) {
           abundance_tracks[[as.character(s)]] <- Gviz::DataTrack(
