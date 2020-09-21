@@ -74,7 +74,7 @@ plot_model <- function(tq,
     }
 
     # genome coordination track
-    axis_track <- Gviz::GenomeAxisTrack()
+    axis_track <- Gviz::GenomeAxisTrack(target_tx)
 
     # Get masks
     tx_col <- tq@column_identifiers[1]
@@ -166,22 +166,23 @@ plot_model <- function(tq,
 
     abundance_max <- 0
     abundance_tracks <- list()
+
     if (any(unlist(tq@model_abundance) != 0)) {
       # Get abundance data
       abundance <- get_abundance(tq, chrom, start, end)
       # plot datatrack for abundance
       for (s in unique(GenomicRanges::strand(abundance))) {
-        abundance_tracks[[as.character(s)]] <- Gviz::DataTrack(
-          abundance[GenomicRanges::strand(abundance) == s],
-          type = "histogram",
-          name = paste0("Predicted abundance (", s, ")"),
-          groups = colnames(
-            S4Vectors::elementMetadata(
-              abundance[GenomicRanges::strand(abundance) == s])),
-          legend = FALSE,
-          col = strand_col[s],
-          strand = s,
-          chromosome = chrom
+          abundance_tracks[[as.character(s)]] <- Gviz::DataTrack(
+              abundance[GenomicRanges::strand(abundance) == s],
+              type = "histogram",
+              name = paste0("Predicted abundance (", s, ")"),
+              groups = colnames(
+                  S4Vectors::elementMetadata(
+                      abundance[GenomicRanges::strand(abundance) == s])),
+              legend = TRUE,
+              strand = s,
+              chromosome = chrom,
+              stackedBars = TRUE
         )
       }
       abundance_max <-
