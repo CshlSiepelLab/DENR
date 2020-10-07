@@ -14,7 +14,8 @@ plot_model(
   bigwig_plus = NULL,
   bigwig_minus = NULL,
   ymax_bw = NULL,
-  ymax_abundance = NULL
+  ymax_abundance = NULL,
+  all_transcripts = TRUE
 )
 }
 \arguments{
@@ -38,6 +39,10 @@ to the \link{transcript_quantifier-class} object}
 \item{ymax_bw}{maximum value of y-axis for bw files when plotting}
 
 \item{ymax_abundance}{maximum value of y-axis for abundance when plotting}
+
+\item{all_transcripts}{whether to show all transcripts in the annotation
+track or only show one transcript per transcript model. default TRUE, which
+shows all transcripts.}
 }
 \value{
 plotted tracks of transcripts and masks of your query gene

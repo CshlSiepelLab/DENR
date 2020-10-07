@@ -11,6 +11,9 @@
 #' @param strand the strand specificity of your query region (default: ANY)
 #' @param ymax_bw maximum value of y-axis for bw files when plotting
 #' @param ymax_abundance maximum value of y-axis for abundance when plotting
+#' @param all_transcripts whether to show all transcripts in the annotation
+#' track or only show one transcript per transcript model. default TRUE, which
+#' shows all transcripts.
 #'
 #' @return plotted tracks of transcripts and masks of your query gene
 #'
@@ -26,7 +29,9 @@ plot_model <- function(tq,
                        bigwig_plus = NULL,
                        bigwig_minus = NULL,
                        ymax_bw = NULL,
-                       ymax_abundance = NULL) {
+                       ymax_abundance = NULL,
+                       all_transcripts = TRUE
+                       ) {
     # Check that only gene name or position information is specified
     if (!is.null(gene_name) & (!is.null(chrom) | !is.null(start) |
                                !is.null(end))) {
@@ -97,22 +102,32 @@ plot_model <- function(tq,
     target_tx$feature <- target_tx$gene
     target_tx$transcript <- unlist(GenomicRanges::values(target_tx)[[tx_col]])
 
-    # Only show one transcript per transcript model
-    tx_key <- tq@transcript_model_key
-    tx_key$tx_group_name <-
-        paste0("G", tx_key$group, "M", tx_key$model)
+    if (all_transcripts) {
+        # Add annotation track
+        tx_track <- Gviz::GeneRegionTrack(
+            target_tx,
+            name = "transcripts"
+        )
+    } else {
+        # Only show one transcript per transcript model
+        tx_key <- tq@transcript_model_key
+        tx_key$tx_group_name <-
+            paste0("G", tx_key$group, "M", tx_key$model)
 
-    tx_key <- tx_key[!base::duplicated(tx_key$tx_group_name), ]
+        tx_key <- tx_key[!base::duplicated(tx_key$tx_group_name), ]
 
-    target_tx <- target_tx[target_tx$transcript %in% tx_key$tx_name]
-    target_tx$tx_group_name <-
-        tx_key[base::match(target_tx$transcript,
-                           tx_key$tx_name), "tx_group_name"]
+        target_tx <- target_tx[target_tx$transcript %in% tx_key$tx_name]
+        target_tx$tx_group_name <-
+            tx_key[base::match(target_tx$transcript,
+                               tx_key$tx_name), "tx_group_name"]
 
-    tx_track <- Gviz::GeneRegionTrack(
-        target_tx,
-        name = "transcript models"
-    )
+        # Add annotation track
+        tx_track <- Gviz::GeneRegionTrack(
+            target_tx,
+            name = "transcript models"
+        )
+        rm(tx_key)
+    }
 
     tx_track@dp@pars$shape <- "arrow"
 
