@@ -272,6 +272,9 @@ model_agreement <- function(tx_grps, bigwig_plus, bigwig_minus) {
                                               bigwig_minus, transcribed_thresh)
   GenomicRanges::strand(transcribed_minus) <- "-"
   transcribed <- c(transcribed_plus, transcribed_minus)
+  # remove unused seqlevels
+  GenomeInfoDb::seqlevels(transcribed) <-
+      GenomeInfoDb::seqlevelsInUse(transcribed)
   # use complement to get untranscribed regions
   untranscribed <- GenomicRanges::gaps(transcribed)
   untranscribed <- untranscribed[GenomicRanges::strand(untranscribed) != "*"]
