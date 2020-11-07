@@ -201,8 +201,8 @@ plot_model <- function(tq,
         abundance <- get_abundance(tq, chrom, start, end)
         # Only keep transcripts with non-zero expression for visualization
         abundance <-
-            abundance[, apply(S4Vectors::mcols(abundance), 2, max) > 1e-3]
-        # Generate group model name lgend in abundance track
+            abundance[, apply(S4Vectors::mcols(abundance), 2, max) > 0]
+        # Generate legend with group model name in abundance track
         tx_key <- tq@transcript_model_key
         sel_tx_key <-
             tx_key[tx_key$tx_name %in% colnames(S4Vectors::mcols(abundance)), ]
@@ -214,12 +214,12 @@ plot_model <- function(tq,
         model_key_label <- as.data.frame(table(model_key_label))
         sel_tx_key$model_key_label <-
             paste0("G", sel_tx_key$group, "M", sel_tx_key$model)
-        sel_tx_key <- merge(sel_tx_key, model_key_label)
+        sel_tx_key <-
+            merge(sel_tx_key, model_key_label, by = "model_key_label",
+                  all.x = TRUE, sort = FALSE)
         sel_tx_key$model_key_label <-
             paste0(sel_tx_key$model_key_label, " (", sel_tx_key$Freq, " tx)")
-        colnames(S4Vectors::mcols(abundance)) <-
-            sel_tx_key[base::match(colnames(S4Vectors::mcols(abundance)),
-                                   sel_tx_key$tx_name), "model_key_label"]
+        colnames(S4Vectors::mcols(abundance)) <- sel_tx_key$model_key_label
         rm(tx_key, sel_tx_key, same_model_key, model_key_label)
         # plot datatrack for abundance
         tx_num <- length(colnames(S4Vectors::mcols(abundance)))
@@ -229,9 +229,7 @@ plot_model <- function(tq,
                     abundance[GenomicRanges::strand(abundance) == s],
                     type = "histogram",
                     name = paste0("Predicted abundance (", s, ")"),
-                    groups = colnames(
-                        S4Vectors::elementMetadata(
-                            abundance[GenomicRanges::strand(abundance) == s])),
+                    groups = factor(colnames(S4Vectors::mcols(abundance))),
                     legend = FALSE,
                     strand = s,
                     chromosome = chrom,
