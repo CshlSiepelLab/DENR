@@ -160,15 +160,17 @@ plot_model <- function(tq,
             # Get potential ymax
             bw_max <-
                 max(bw_max, max(stats::quantile(abs(bw$score), 0.99))) * 1.05
-            data_tracks[[s]] <- Gviz::DataTrack(
-                range = bw,
-                type = "h",
-                window = -1,
-                windowSize = tq@bin_size,
-                name = paste0("PRO-seq (", s, ")"),
-                col = strand_col[s],
-                strand = s,
-                chromosome = chrom)
+            if (length(bw) > 0) {
+                data_tracks[[s]] <- Gviz::DataTrack(
+                    range = bw,
+                    type = "h",
+                    window = -1,
+                    windowSize = tq@bin_size,
+                    name = paste0("PRO-seq (", s, ")"),
+                    col = strand_col[s],
+                    strand = s,
+                    chromosome = chrom)
+            }
 
         }
     } else {
