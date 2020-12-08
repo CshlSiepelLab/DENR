@@ -17,7 +17,7 @@ testthat::test_that("Style should be lint-free", {
                    recursive = TRUE, full.names = TRUE)
     )
     my_linters <- lintr::with_defaults(cyclocomp_linter =
-                                         lintr::cyclocomp_linter(35),
+                                         lintr::cyclocomp_linter(40),
                                        line_length_linter =
                                          lintr::line_length_linter(90)
                                        )
