@@ -11,6 +11,9 @@
 #' @param strand the strand specificity of your query region (default: ANY)
 #' @param ymax_bw maximum value of y-axis for bw files when plotting
 #' @param ymax_abundance maximum value of y-axis for abundance when plotting
+#' @param all_transcripts whether to show all transcripts in the annotation
+#' track or only show one transcript per transcript model. default TRUE, which
+#' shows all transcripts.
 #'
 #' @return plotted tracks of transcripts and masks of your query gene
 #'
@@ -26,7 +29,9 @@ plot_model <- function(tq,
                        bigwig_plus = NULL,
                        bigwig_minus = NULL,
                        ymax_bw = NULL,
-                       ymax_abundance = NULL) {
+                       ymax_abundance = NULL,
+                       all_transcripts = TRUE
+                       ) {
     # Check that only gene name or position information is specified
     if (!is.null(gene_name) & (!is.null(chrom) | !is.null(start) |
                                !is.null(end))) {
@@ -40,7 +45,7 @@ plot_model <- function(tq,
             stop("transcript_quantifier object not built with gene ids")
         }
         if (!all(gene_name %in%
-            S4Vectors::elementMetadata(tq@transcripts)[, gid_col])) {
+                 S4Vectors::elementMetadata(tq@transcripts)[, gid_col])) {
             stop(paste("Gene", gene_name, "does not exist"))
         }
     } else if (!is.null(chrom) &
@@ -50,7 +55,8 @@ plot_model <- function(tq,
         }
         # Check that position overlaps with one or more transcripts
         query_range <-
-            GenomicRanges::GRanges(chrom, IRanges::IRanges(start, end), strand = strand)
+            GenomicRanges::GRanges(chrom, IRanges::IRanges(start, end),
+                                   strand = strand)
         query_inter <-
             GenomicRanges::intersect(query_range, tq@transcripts,
                                      ignore.strand = is.null(strand))
@@ -68,13 +74,13 @@ plot_model <- function(tq,
     # Define bounds of plot range
     if (is.null(start)) {
         chrom <-
-          S4Vectors::runValue(droplevels(GenomicRanges::seqnames(target_tx)[1]))
+            S4Vectors::runValue(droplevels(GenomicRanges::seqnames(target_tx)[1]))
         start <- min(GenomicRanges::start(target_tx))
         end <- max(GenomicRanges::end(target_tx))
     }
 
     # genome coordination track
-    axis_track <- Gviz::GenomeAxisTrack()
+    axis_track <- Gviz::GenomeAxisTrack(target_tx)
 
     # Get masks
     tx_col <- tq@column_identifiers[1]
@@ -96,10 +102,32 @@ plot_model <- function(tq,
     target_tx$feature <- target_tx$gene
     target_tx$transcript <- unlist(GenomicRanges::values(target_tx)[[tx_col]])
 
-    tx_track <- Gviz::GeneRegionTrack(
-        target_tx,
-        name = "transcripts"
-    )
+    if (all_transcripts) {
+        # Add annotation track
+        tx_track <- Gviz::GeneRegionTrack(
+            target_tx,
+            name = "transcripts"
+        )
+    } else {
+        # Only show one transcript per transcript model
+        tx_key <- tq@transcript_model_key
+        tx_key$tx_group_name <-
+            paste0("G", tx_key$group, "M", tx_key$model)
+
+        tx_key <- tx_key[!base::duplicated(tx_key$tx_group_name), ]
+
+        target_tx <- target_tx[target_tx$transcript %in% tx_key$tx_name]
+        target_tx$tx_group_name <-
+            tx_key[base::match(target_tx$transcript,
+                               tx_key$tx_name), "tx_group_name"]
+
+        # Add annotation track
+        tx_track <- Gviz::GeneRegionTrack(
+            target_tx,
+            name = "transcript models"
+        )
+        rm(tx_key)
+    }
 
     tx_track@dp@pars$shape <- "arrow"
 
@@ -122,24 +150,27 @@ plot_model <- function(tq,
                 stop(paste("File", file, "does not exist"))
             }
             bw <- rtracklayer::import(file,
-                       which = GenomicRanges::GRanges(
-                           seqnames = chrom,
-                           ranges = IRanges::IRanges(start = start, end = end)
-                       ))
+                                      which = GenomicRanges::GRanges(
+                                          seqnames = chrom,
+                                          ranges = IRanges::IRanges(start = start,
+                                                                    end = end)
+                                      ))
             bw$score <- abs(bw$score)
 
             # Get potential ymax
             bw_max <-
                 max(bw_max, max(stats::quantile(abs(bw$score), 0.99))) * 1.05
-            data_tracks[[s]] <- Gviz::DataTrack(
-                                 range = bw,
-                                 type = "h",
-                                 window = -1,
-                                 windowSize = tq@bin_size,
-                                 name = paste0("PRO-seq (", s, ")"),
-                                 col = strand_col[s],
-                                 strand = s,
-                                 chromosome = chrom)
+            if (length(bw) > 0) {
+                data_tracks[[s]] <- Gviz::DataTrack(
+                    range = bw,
+                    type = "h",
+                    window = -1,
+                    windowSize = tq@bin_size,
+                    name = paste0("PRO-seq (", s, ")"),
+                    col = strand_col[s],
+                    strand = s,
+                    chromosome = chrom)
+            }
 
         }
     } else {
@@ -166,26 +197,61 @@ plot_model <- function(tq,
 
     abundance_max <- 0
     abundance_tracks <- list()
+
     if (any(unlist(tq@model_abundance) != 0)) {
-      # Get abundance data
-      abundance <- get_abundance(tq, chrom, start, end)
-      # plot datatrack for abundance
-      for (s in unique(GenomicRanges::strand(abundance))) {
-        abundance_tracks[[as.character(s)]] <- Gviz::DataTrack(
-          abundance[GenomicRanges::strand(abundance) == s],
-          type = "histogram",
-          name = paste0("Predicted abundance (", s, ")"),
-          groups = colnames(
-            S4Vectors::elementMetadata(
-              abundance[GenomicRanges::strand(abundance) == s])),
-          legend = FALSE,
-          col = strand_col[s],
-          strand = s,
-          chromosome = chrom
-        )
-      }
-      abundance_max <-
-          ceiling(abs(max(as.matrix(S4Vectors::mcols(abundance)))))
+        # Get abundance data
+        abundance <- get_abundance(tq, chrom, start, end)
+        # Only keep transcripts with non-zero expression for visualization
+        abundance <-
+            abundance[, apply(S4Vectors::mcols(abundance), 2, max) > 0]
+        # Generate legend with group model name in abundance track
+        tx_key <- tq@transcript_model_key
+        sel_tx_key <-
+            tx_key[tx_key$tx_name %in% colnames(S4Vectors::mcols(abundance)), ]
+        same_model_key <-
+            tx_key[tx_key$group %in% sel_tx_key$group &
+                       tx_key$model %in% sel_tx_key$model, ]
+        model_key_label <-
+            paste0("G", same_model_key$group, "M", same_model_key$model)
+        model_key_label <- as.data.frame(table(model_key_label))
+        sel_tx_key$model_key_label <-
+            paste0("G", sel_tx_key$group, "M", sel_tx_key$model)
+        sel_tx_key <-
+            merge(sel_tx_key, model_key_label, by = "model_key_label",
+                  all.x = TRUE, sort = FALSE)
+        sel_tx_key$model_key_label <-
+            paste0(sel_tx_key$model_key_label, " (", sel_tx_key$Freq, " tx)")
+        colnames(S4Vectors::mcols(abundance)) <- sel_tx_key$model_key_label
+        rm(tx_key, sel_tx_key, same_model_key, model_key_label)
+        # plot datatrack for abundance
+        tx_num <- length(colnames(S4Vectors::mcols(abundance)))
+        for (s in unique(GenomicRanges::strand(abundance))) {
+            if (tx_num > 1) {
+                abundance_tracks[[as.character(s)]] <- Gviz::DataTrack(
+                    abundance[GenomicRanges::strand(abundance) == s],
+                    type = "histogram",
+                    name = paste0("Predicted abundance (", s, ")"),
+                    groups = factor(colnames(S4Vectors::mcols(abundance))),
+                    legend = FALSE,
+                    strand = s,
+                    chromosome = chrom,
+                    stackedBars = TRUE
+                )
+            }
+            # fix the issue that color is gray when there is only one transcript
+            if (tx_num == 1) {
+                abundance_tracks[[as.character(s)]] <- Gviz::DataTrack(
+                    abundance[GenomicRanges::strand(abundance) == s],
+                    type = "h",
+                    name = paste0("Predicted abundance (", s, ")"),
+                    col = strand_col[s],
+                    strand = s,
+                    chromosome = chrom
+                )
+            }
+        }
+        abundance_max <-
+            ceiling(abs(max(as.matrix(S4Vectors::mcols(abundance)))))
     }
 
     # Plot tracks
@@ -228,7 +294,8 @@ plot_model <- function(tq,
             if (args$trackList[[track]]@name %in%
                 c("Predicted abundance (+)", "Predicted abundance (-)")) {
                 args$trackList[[track]] <-
-                    set_datatrack_ylim(args$trackList[[track]], c(0, abundance_max))
+                    set_datatrack_ylim(args$trackList[[track]],
+                                       c(0, abundance_max))
             }
         }
     }
@@ -241,6 +308,14 @@ plot_model <- function(tq,
 
     mask_colors <- c("blue", "red")
     names(mask_colors) <- c("+", "-")
+    # Add legend back to the last DataTrack
+    if (tx_num > 1) {
+        dt_idx <- max(which(sapply(args$trackList, class) == "DataTrack"))
+        suppressMessages(
+            args$trackList[[dt_idx]] <-
+                Gviz::setPar(args$trackList[[dt_idx]], "legend", TRUE)
+        )
+    }
 
     args <- c(args, gene_colors, mask_colors)
 
@@ -272,10 +347,10 @@ get_transcripts <- function(tq,
     }
 
     query_range <- GenomicRanges::GRanges(chrom,
-                                              IRanges::IRanges(start, end),
-                                              strand)
+                                          IRanges::IRanges(start, end),
+                                          strand)
     overlaps <- GenomicRanges::findOverlaps(query_range, tq@transcripts,
-                                        ignore.strand = is.null(strand))
+                                            ignore.strand = is.null(strand))
     out <- tq@transcripts[S4Vectors::subjectHits(overlaps)]
 
     return(out)
@@ -334,23 +409,25 @@ methods::setMethod("get_data",
                                            end = end)
                        # Lookup the relevant groups
                        tx_col <- data_source@column_identifiers[1]
-                       transcripts <- S4Vectors::elementMetadata(target_tx)[, tx_col]
+                       transcripts <-
+                           S4Vectors::elementMetadata(target_tx)[, tx_col]
                        key <- data_source@transcript_model_key
-                       target_group <- unique(key[key$tx_name %in% transcripts, ]$group)
+                       target_group <-
+                           unique(key[key$tx_name %in% transcripts, ]$group)
 
                        # Combine the data and the GRanges object
                        value_granges <-
-                         BiocGenerics::Reduce("c",
-                                              mapply(
-                                                function(bins, counts) {
-                                                  bins$value <- counts
-                                                  return(bins)
-                                                },
-                                                data_source@bins[target_group],
-                                                data_source@counts[target_group],
-                                                SIMPLIFY = FALSE
-                                              ), init = GenomicRanges::GRanges()
-                         )
+                           BiocGenerics::Reduce("c",
+                                                mapply(
+                                                    function(bins, counts) {
+                                                        bins$value <- counts
+                                                        return(bins)
+                                                    },
+                                                    data_source@bins[target_group],
+                                                    data_source@counts[target_group],
+                                                    SIMPLIFY = FALSE
+                                                ), init = GenomicRanges::GRanges()
+                           )
                        return(value_granges)
                    })
 
@@ -372,7 +449,8 @@ methods::setMethod("get_data",
 #' @name get_abundance
 get_abundance <-
     function(tq, chrom, start, end) {
-        target_tx <- get_transcripts(tq, chrom = chrom, start = start, end = end)
+        target_tx <- get_transcripts(tq, chrom = chrom,
+                                     start = start, end = end)
         # Lookup the relevant groups
         tx_col <- tq@column_identifiers[1]
         transcripts <- S4Vectors::elementMetadata(target_tx)[, tx_col]
@@ -398,10 +476,10 @@ get_abundance <-
             tx_meta, SIMPLIFY = FALSE), init = GenomicRanges::GRanges())
         # Set NA to zero
         GenomicRanges::values(value_granges) <-
-          apply(GenomicRanges::values(value_granges), 2, function(x) {
-            x[is.na(x)] <- 0
-            return(x)
-          })
+            apply(GenomicRanges::values(value_granges), 2, function(x) {
+                x[is.na(x)] <- 0
+                return(x)
+            })
         return(value_granges)
     }
 

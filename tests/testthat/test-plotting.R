@@ -23,6 +23,8 @@ tq <- add_data(tq = tq,
                bigwig_plus = bwp,
                bigwig_minus = bwm)
 
+tq <- fit(tq)
+
 test_that("get_transcripts", {
   expect_equivalent(tuSelecter2:::get_transcripts(tq = tq,
                                 gene_name = "g1"),
