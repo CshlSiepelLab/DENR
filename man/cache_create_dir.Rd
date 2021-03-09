@@ -22,7 +22,7 @@ default user data directory for the package will be used. See
 \examples{
 \dontrun{
 # set a different cache path
-set_cache_path("z:/transcript_db/tuselecter")
+set_cache_path("z:/transcript_db/DENR")
 }
 
 }

@@ -1,5 +1,5 @@
 ---
-title: "tuSelecter"
+title: "DENR"
 author: "Noah Dukler"
 ---
 
@@ -36,7 +36,7 @@ Instructions on installing tensorflow and keras from R can be found
 
 
 ## Overview
-The tuSelecter method performs annotation based transcript level quantification on
+The DENR method performs annotation based transcript level quantification on
 nascent RNA sequencing data. Although it was developed on PRO-seq data it should be
 generally applicable to any nascent sequencing dataset which has been processed such that
 each read is represented as a single count representing the 3' end of the trancript being
@@ -45,11 +45,11 @@ PRO-seq 2.0 pipeline [here](https://github.com/Danko-Lab/proseq2.0).
 
 ## Application tutorial
 
-For details on running the tuSelecter method please see the Introduction vignette. It can
-be built locally or viewed online [here](https://rpubs.com/ndukler/tuSelecterIntro).
+For details on running the DENR method please see the Introduction vignette. It can
+be built locally or viewed online [here](https://rpubs.com/ndukler/DENRIntro).
 
 ## Methodology
-The tuSelecter method explains the observed polymerase density as a weighted mixture of
+The DENR method explains the observed polymerase density as a weighted mixture of
 the underlying transcript annotations. The algorithm is outlined as follows ("*" steps
 are optional):
 
@@ -59,7 +59,7 @@ are optional):
 4. Estimate per-transcript level abundances
 
 ### Transcript model generation
-After being provided annotations, tuSelecter constructs a set of models corresponding
+After being provided annotations, DENR constructs a set of models corresponding
 to each transcript and reduces them to a set of unique models. Transcripts with highly
 similar 5' and 3' ends are often indistinguishable from each other from when looking at
 nascent RNA sequencing data. The degree to which this occurs depends on the degree of
@@ -67,10 +67,10 @@ granularity in the transcript models as specified by the user and the length of 
 5' and 3' regions that are masked for each transcript. We reccomend masking roughly +/-
 1kb for all transcripts as intiation and especially termination are messy processes
 producing highly noisy signals and thus ignoring them generally improves the performance
-of tuSelecter. tuSelecter then reduces these non-identifiable transcripts to a shared
+of DENR. DENR then reduces these non-identifiable transcripts to a shared
 model. This process is outlined in the figure below.
 
-![Schematic of tuSelecter model generation](man/figures/transcript_model_generation.png)
+![Schematic of DENR model generation](man/figures/transcript_model_generation.png)
 
 ### Quantification
 Transcripts are quantified by minimizing the difference between the polymerase density
@@ -89,7 +89,7 @@ sum-of-squares cost function.
 ### Optional: TSS filtering
 TSS filtering is done by providing the fitting step with a list of inactive TSS. The user
 may create this list however they want, but we do include an deep learning model trained
-to detect active TSS in the tuSelecter package. In order to run this model `keras` must
+to detect active TSS in the DENR package. In order to run this model `keras` must
 be installed on your machine. As this is a fairly simple convolutional model it runs fine
 on a CPU, with no need for GPU acceleration.
 
@@ -117,7 +117,7 @@ Although we already reccomend masking out the head and tail regions of the trans
 avoid the large spikes of polymerase density typically viewed there, we provide another
 tool to account for the more subtle variation caused by the acceleration. Using
 heuristic methods to select transcripts that are explain the vast majority of polymerase
-density at their locus, tuSelecter constructs an empirical model for relative polymerase
+density at their locus, DENR constructs an empirical model for relative polymerase
 densities in the gene body. The profile is then calculated using a loess fit that maps
 position within the gene on a rescaled [0, 1] range to the observed polymerase density,
 normalized median density in the gene body. Relative positions within the gene body are

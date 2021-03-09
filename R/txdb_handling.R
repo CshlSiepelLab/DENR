@@ -23,7 +23,7 @@ split_path <- function(path) {
 #'
 cache_defaults <- function() {
   # Set default cache dir location
-  default_cache_dir <- rappdirs::user_data_dir(appname = "tuselecter")
+  default_cache_dir <- rappdirs::user_data_dir(appname = "DENR")
   default_cache_dir <- do.call(
     file.path,
     as.list(split_path(path = default_cache_dir))
@@ -53,7 +53,7 @@ cache_defaults <- function() {
 #' @examples
 #' \dontrun{
 #' # set a different cache path
-#' set_cache_path("z:/transcript_db/tuselecter")
+#' set_cache_path("z:/transcript_db/DENR")
 #' }
 #'
 #' @export
