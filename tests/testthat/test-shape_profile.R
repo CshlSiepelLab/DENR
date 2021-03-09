@@ -1,14 +1,14 @@
 # Load in test txdb
 txdb_path <- system.file("extdata", "test_transcript_filter.txdb",
-                            package = "tuSelecter2")
+                            package = "DENR")
 txdb <- AnnotationDbi::loadDb(file = txdb_path)
 gr <- GenomicFeatures::transcripts(txdb, c("tx_name", "gene_id"))
 
 # Load in test bigwigs
 bw_200 <- system.file("extdata", "test_transcript_filter_301_500.bw",
-                         package = "tuSelecter2")
+                         package = "DENR")
 bw_1000 <- system.file("extdata", "test_transcript_filter_1_1000.bw",
-                      package = "tuSelecter2")
+                      package = "DENR")
 
 # test inputs
 test_that("covered_bases returns correct values", {

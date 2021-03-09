@@ -1,4 +1,4 @@
-pkgname <- "tuSelecter2"
+pkgname <- "DENR"
 lint_path <- path.expand(normalizePath(getwd(), winslash = "/"))
 
 find_root <- function(path, pkgname) {

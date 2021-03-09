@@ -14,15 +14,15 @@ vignette: >
 
 # A simple quantification model
 
-TuSelecter2 quantifies nascent transcript abundance based on reference
+DENR quantifies nascent transcript abundance based on reference
 annotations. Those annotations can be from anywhere as long as they can be placed
 in a `GRanges` object. Here we obtain our transcript annotations from a `Txdb`
 object.
 
 ```{r, message=FALSE}
-library(tuSelecter2)
+library(DENR)
 txdb_path_ds <- system.file("extdata", "test_double_strand.txdb",
-                         package = "tuSelecter2")
+                         package = "DENR")
 txdb_ds <- AnnotationDbi::loadDb(file = txdb_path_ds)
 gr_ds <- GenomicFeatures::transcripts(txdb_ds, c("tx_name", "gene_id"))
 gr_ds$gene_id <- as.character(gr_ds$gene_id)
@@ -61,9 +61,9 @@ To add a specific data set to the `transcript_quantifier` object we use the
 ```{r add_data}
 # The paths to relevant bigwig files
 bwp <- system.file("extdata", "test_double_strand_plus.bw",
-                         package = "tuSelecter2")
+                         package = "DENR")
 bwm <- system.file("extdata", "test_double_strand_minus.bw",
-                         package = "tuSelecter2")
+                         package = "DENR")
 # Add the data
 tq <- add_data(tq = tq,
                bigwig_plus = bwp,
@@ -94,10 +94,10 @@ plot_model(tq, chrom = 1, start = 1, end= 11000, ymax_bw = 300, ymax_abundance =
 ## Using a non-uniform transcript coverage profile
 Because of variable polymerase elongation rates along the transcript body, polymerase
 density systematically varies along the length of the transcript. To accomadate this
-tuSelecter2 has the ability to fit a "shape profile" that attempts to capture this
+DENR has the ability to fit a "shape profile" that attempts to capture this
 empirically. This empirical shape profile is then used instead of the uniform one during
 the abundance estimation step. To estimate a shape profile use the
-\code{transcript_shape_profile} as below (note the alteration of the 
+\code{transcript_shape_profile} as below (note the alteration of the
 \code{min_transcript_length} and the head and tail lengths here just for the purposes of demonstration with a synthetic data set. Generally using transcripts that short is not reccomended).
 
 ```{r, message=FALSE}

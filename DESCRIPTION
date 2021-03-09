@@ -1,4 +1,4 @@
-Package: tuSelecter2
+Package: DENR
 Type: Package
 Title: Selecting transcript model using PRO-seq
 Version: 0.3.1
@@ -42,13 +42,13 @@ License: GPL (>=2)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0
-Suggests: 
+Suggests:
     testthat (>= 2.1.0),
     lintr,
     covr,
     knitr,
     rmarkdown
-Collate: 
+Collate:
     'transcript_quantifier-class.R'
     'abundance_tables.R'
     'data_handling.R'

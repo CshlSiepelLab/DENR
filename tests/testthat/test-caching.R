@@ -1,6 +1,6 @@
 # Load in test txdb
 txdb_path <- system.file("extdata", "hsapiens_gene_ensembl_96_txdb_test",
-                        package = "tuSelecter2")
+                        package = "DENR")
 txdb <- AnnotationDbi::loadDb(file = txdb_path)
 db_string <- "homo_sapiens-grch38.p12-ensembl_genes_96_test_Fh4Jf93l1.txdb"
 

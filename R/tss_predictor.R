@@ -448,10 +448,10 @@ predict_inactive_transcripts <- function(tq, bigwig_plus, bigwig_minus) {
   model_id <- "conv_onelayer_61aa9200"
   # The paths to relevant bigwig files
   ml_model <- system.file("extdata", paste0(model_id, ".hdf5"),
-                     package = "tuSelecter2")
+                     package = "DENR")
   # Get input dimensions and use it retrieve correct inputs
   config <- yaml::read_yaml(system.file("extdata", paste0(model_id, "_input_info.yaml"),
-                                        package = "tuSelecter2"))
+                                        package = "DENR"))
   # Get features
   message("Collecting features ...")
   features <- collect_tss_features(transcripts = tq@transcripts,
