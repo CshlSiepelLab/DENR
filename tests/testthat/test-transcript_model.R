@@ -1,9 +1,9 @@
 # Load in test txdb
 txdb_path_ss <- system.file("extdata", "test_single_strand.txdb",
-                         package = "tuSelecter2")
+                         package = "DENR")
 txdb_ss <- AnnotationDbi::loadDb(file = txdb_path_ss)
 txdb_path_ds <- system.file("extdata", "test_double_strand.txdb",
-                         package = "tuSelecter2")
+                         package = "DENR")
 txdb_ds <- AnnotationDbi::loadDb(file = txdb_path_ds)
 
 ## Convert txdb to granges

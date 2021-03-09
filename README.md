@@ -4,8 +4,8 @@ author: "Noah Dukler"
 ---
 
 <!-- badges: start -->
-[![Build Status](https://travis-ci.org/CshlSiepelLab/tuSelecter2.svg?branch=master)](https://travis-ci.org/CshlSiepelLab/tuSelecter2)
-[![Codecov test coverage](https://codecov.io/gh/CshlSiepelLab/tuSelecter2/branch/master/graph/badge.svg)](https://codecov.io/gh/CshlSiepelLab/tuSelecter2?branch=master)
+[![Build Status](https://travis-ci.org/CshlSiepelLab/DENR.svg?branch=master)](https://travis-ci.org/CshlSiepelLab/DENR)
+[![Codecov test coverage](https://codecov.io/gh/CshlSiepelLab/DENR/branch/master/graph/badge.svg)](https://codecov.io/gh/CshlSiepelLab/DENR?branch=master)
 <!-- badges: end -->
 
 # Quantifying nascent RNA sequencing data with transcript level resolution
@@ -16,10 +16,10 @@ As we begin official version releases we will document changes in the NEWS file,
 breaking changes as well as critical updates.
 
 ## Installation
-### tuSelecter2 package
+### DENR package
 Package can be installed with the following line of code:
 
-devtools::install_github("CshlSiepelLab/tuSelecter2")
+devtools::install_github("CshlSiepelLab/DENR")
 
 ### Tensorflow and Keras
 The TSS identification method uses the deep learning framework `Keras` and `Tensorflow`.
@@ -73,7 +73,7 @@ model. This process is outlined in the figure below.
 ![Schematic of tuSelecter model generation](man/figures/transcript_model_generation.png)
 
 ### Quantification
-Transcripts are quantified by minimizing the difference between the polymerase density 
+Transcripts are quantified by minimizing the difference between the polymerase density
 predicted by transcript models (M) weighted by their abundances (A) vs the observed
 polymerase density(Y). There are two different cost functions, one based on the raw
 counts (1), the other based on the log counts (2).
@@ -89,14 +89,14 @@ sum-of-squares cost function.
 ### Optional: TSS filtering
 TSS filtering is done by providing the fitting step with a list of inactive TSS. The user
 may create this list however they want, but we do include an deep learning model trained
-to detect active TSS in the tuSelecter package. In order to run this model `keras` must 
+to detect active TSS in the tuSelecter package. In order to run this model `keras` must
 be installed on your machine. As this is a fairly simple convolutional model it runs fine
 on a CPU, with no need for GPU acceleration.
 
 #### Technical notes
 **Technical Note 1:** If two or more transcripts share the same model but at least one is
-not marked as inactive, the model will be presumed to be active and allowed to have a 
-non-zero abundance value during fitting. 
+not marked as inactive, the model will be presumed to be active and allowed to have a
+non-zero abundance value during fitting.
 
 **Technical Note 2:** Given that the TSS predictor misses some active TSS with abnormal
 polymerase density patterns there is an additional heuristic that looks for unexplainable
@@ -110,7 +110,7 @@ ratio (UPR) using the regions indicated in the schematic below:
 If the UPR of a transcript *t* is greater than or equal to 10, and there are no other
 active transcripts within 5Kb upstream or 6Kb downstream of the TSS of *t*, then *t* is
 allowed to be active during the fitting step.
- 
+
 ### Optional: Shape profile
 It is know that polymerase density varies as the polymerase moves the body of the gene.
 Although we already reccomend masking out the head and tail regions of the transcripts to
@@ -120,9 +120,9 @@ heuristic methods to select transcripts that are explain the vast majority of po
 density at their locus, tuSelecter constructs an empirical model for relative polymerase
 densities in the gene body. The profile is then calculated using a loess fit that maps
 position within the gene on a rescaled [0, 1] range to the observed polymerase density,
-normalized median density in the gene body. Relative positions within the gene body are 
+normalized median density in the gene body. Relative positions within the gene body are
 calculated such that regions close to the head and tail of the gene where absolute
-position is important are scaled identically across genes (e.g. head 5kb -> [0, 0.2] and 
+position is important are scaled identically across genes (e.g. head 5kb -> [0, 0.2] and
 tail 5kb -> [0.8, 1]), and the midsection of each gene is scaled to fit into the
 remaining space on the [0, 1] interval. Short genes are handled specially to just use the
 applicable part of the linearly scaled regions. Once this shape profile has been

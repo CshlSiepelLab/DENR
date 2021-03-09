@@ -1,7 +1,7 @@
 # Load data
 suppressMessages({
   txdb_path_ds <- system.file("extdata", "test_double_strand.txdb",
-                              package = "tuSelecter2")
+                              package = "DENR")
   txdb_ds <- AnnotationDbi::loadDb(file = txdb_path_ds)
   gr_ds <- GenomicFeatures::transcripts(txdb_ds, c("tx_name", "gene_id"))
   gr_ds$gene_id <- as.character(gr_ds$gene_id)
@@ -15,9 +15,9 @@ tq <- transcript_quantifier(gr_ds, bin_size = 50,
 
 # The paths to relevant bigwig files
 bwp <- system.file("extdata", "test_double_strand_plus.bw",
-                   package = "tuSelecter2")
+                   package = "DENR")
 bwm <- system.file("extdata", "test_double_strand_minus.bw",
-                   package = "tuSelecter2")
+                   package = "DENR")
 # Add the data
 tq <- add_data(tq = tq,
                bigwig_plus = bwp,
@@ -26,27 +26,27 @@ tq <- add_data(tq = tq,
 tq <- fit(tq)
 
 test_that("get_transcripts", {
-  expect_equivalent(tuSelecter2:::get_transcripts(tq = tq,
+  expect_equivalent(DENR:::get_transcripts(tq = tq,
                                 gene_name = "g1"),
                     gr_ds[gr_ds$tx_name %in% c("t1.1", "t1.2", "t2.1")])
-  expect_equivalent(tuSelecter2:::get_transcripts(tq = tq,
+  expect_equivalent(DENR:::get_transcripts(tq = tq,
                                                   chrom = 1,
                                                   start = 1000,
                                                   end = 10000),
                     gr_ds)
-  expect_equivalent(tuSelecter2:::get_transcripts(tq = tq,
+  expect_equivalent(DENR:::get_transcripts(tq = tq,
                                                   chrom = 1,
                                                   start = 1000,
                                                   end = 10000,
                                                   strand = "+"),
                     gr_ds[GenomicRanges::strand(gr_ds) == "+"])
-  expect_equivalent(tuSelecter2:::get_transcripts(tq = tq,
+  expect_equivalent(DENR:::get_transcripts(tq = tq,
                                                   chrom = 1,
                                                   start = 1000,
                                                   end = 10000,
                                                   strand = "-"),
                     gr_ds[GenomicRanges::strand(gr_ds) == "-"])
-  expect_setequal(tuSelecter2:::get_transcripts(tq = tq,
+  expect_setequal(DENR:::get_transcripts(tq = tq,
                                                   chrom = 1,
                                                   start = 7000,
                                                   end = 10000)$tx_name,
@@ -54,15 +54,15 @@ test_that("get_transcripts", {
 })
 
 test_that("get_masks", {
-  expect_equivalent(tuSelecter2:::get_masks(tq, "t1.1"),
+  expect_equivalent(DENR:::get_masks(tq, "t1.1"),
                     tq@bins[[2]][tq@masks[[2]]])
-  expect_equivalent(tuSelecter2:::get_masks(tq, c("t2.1", "t1.2")),
+  expect_equivalent(DENR:::get_masks(tq, c("t2.1", "t1.2")),
                     c(tq@bins[[1]][tq@masks[[1]]],
                       (tq@bins[[2]][tq@masks[[2]]])))
 })
 
 test_that("get_data", {
-  test_dat <- tuSelecter2:::get_data(tq, chrom = 1, start = 1,
+  test_dat <- DENR:::get_data(tq, chrom = 1, start = 1,
                                            end = 6500)
   # Seperately compute the real bins and counts
   test_granges <- GenomicRanges::GRanges(1, IRanges::IRanges(1, 6500))

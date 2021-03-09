@@ -1,14 +1,14 @@
 # Load in test txdb
 txdb_path_ss <- system.file("extdata", "test_single_strand.txdb",
-                            package = "tuSelecter2")
+                            package = "DENR")
 txdb_ss <- AnnotationDbi::loadDb(file = txdb_path_ss)
 
 ## Convert txdb to granges
 gr_ss <- GenomicFeatures::transcripts(txdb_ss)
 
 # Import bigwigs
-bw_ss <- system.file("extdata/test_single_strand.bw", package = "tuSelecter2")
-bw_multi <- system.file("extdata/test_multichrom.bw", package = "tuSelecter2")
+bw_ss <- system.file("extdata/test_single_strand.bw", package = "DENR")
+bw_multi <- system.file("extdata/test_multichrom.bw", package = "DENR")
 
 # Create bins
 tx_bins_25 <- create_bins(transcript_groups = group_transcripts(gr_ss),
@@ -52,7 +52,7 @@ test_that("summarize_bigwig error catching", {
 # A simple two chromosome (1, Z) bigwig where [1:1000] = 1 and [1:500] = 1
 # respectively
 multichrom_bw <- system.file("extdata", "test_multichrom.bw",
-                             package = "tuSelecter2")
+                             package = "DENR")
 multichrom_gr <- GenomicRanges::GRanges(c(1, "Z"),
                                         IRanges::IRanges(1, 1e3))
 multichrom_gr_ls <- GenomicRanges::split(multichrom_gr,
@@ -69,12 +69,12 @@ test_that("multichrom bigwig sum correct values", {
 
 # A test for adding data to the transcript_quantifier object
 bw_plus <- system.file("extdata",
-                       "test_double_strand_plus.bw", package = "tuSelecter2")
+                       "test_double_strand_plus.bw", package = "DENR")
 bw_minus <- system.file("extdata",
-                        "test_double_strand_minus.bw", package = "tuSelecter2")
+                        "test_double_strand_minus.bw", package = "DENR")
 
 txdb_path_ds <- system.file("extdata", "test_double_strand.txdb",
-                            package = "tuSelecter2")
+                            package = "DENR")
 txdb_ds <- AnnotationDbi::loadDb(file = txdb_path_ds)
 gr_ds <-
     GenomicFeatures::transcripts(txdb_ds, c("tx_name", "gene_id"))
@@ -98,15 +98,15 @@ test_that("total_coverage counted correctly", {
 test_that("upstream polymerase ratio calculations", {
   # Load in test txdb
   txdb_path <- system.file("extdata", "test_upr.txdb",
-                           package = "tuSelecter2")
+                           package = "DENR")
   txdb <- AnnotationDbi::loadDb(file = txdb_path)
   gr <- GenomicFeatures::transcripts(txdb, c("tx_name", "gene_id"))
 
   # Load in test bigwigs
   bw_plus <- system.file("extdata", "test_upr_plus.bw",
-                        package = "tuSelecter2")
+                        package = "DENR")
   bw_minus <- system.file("extdata", "test_upr_minus.bw",
-                         package = "tuSelecter2")
+                         package = "DENR")
 
   tq <- transcript_quantifier(gr, bin_size = 50,
                               transcript_name_column = "tx_name")
@@ -131,9 +131,9 @@ test_that("bigwig seqinfo applied correctly", {
 
   # Check that seqinfo is equivalent under varying seqstyles
   expect_equivalent(
-    seqinfo(tuSelecter2:::apply_bigwig_seqinfo(x = gr_ucsc, bigwig_file = bw_ss)),
+    seqinfo(DENR:::apply_bigwig_seqinfo(x = gr_ucsc, bigwig_file = bw_ss)),
     bw_seqinfo)
   expect_equivalent(
-    seqinfo(tuSelecter2:::apply_bigwig_seqinfo(x = gr_ensembl, bigwig_file = bw_ss)),
+    seqinfo(DENR:::apply_bigwig_seqinfo(x = gr_ensembl, bigwig_file = bw_ss)),
     bw_seqinfo)
 })

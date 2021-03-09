@@ -22,7 +22,7 @@ Produces a table with estimated trancript abundances for a given
 \details{
 We provide two methods for normalizing transcript abundances, with each
 having different strengths. Both of the methods start with the polymerase desity (
-polymerase per bp) estimated by the tuSelecter2 method but handle sequencing depth
+polymerase per bp) estimated by the DENR method but handle sequencing depth
 differently:
 \itemize{
  \item{"tpm"}{Abundances are returned in the form analogous to TPM
