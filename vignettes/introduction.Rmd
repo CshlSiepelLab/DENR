@@ -12,7 +12,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# A simple quantification model
+# Quantifying nascent RNA sequencing data with transcript level resolution
 
 DENR quantifies nascent transcript abundance based on reference
 annotations. Those annotations can be from anywhere as long as they can be placed
@@ -33,9 +33,9 @@ print(gr_ds)
 ```
 
 `Txdb` objects provide a convienent way to obtain such annotations from a variety
-of species and assemblies through `biomaRt`. We have implemented some convenience
+of species and assemblies through `biomaRt`. We also implemented some convenience
 functions for retrieving and locally caching `Txdb` objects from the ensembl
-biomart which will be shown later in this vignette.
+biomart in a companion package `nascentRNASim` via function `download_txdb()`.
 
 Once we have a list of transcripts we can contruct a `transcript_quantification`
 object which will hold all data for further analysis. In order to do this we must
@@ -79,17 +79,22 @@ tq <- fit(tq)
 
 To view the results we can all the `transcript_abundance()` or `gene_abundance()`
 function.
+
 ```{r}
 ta <- transcript_abundance(tq)
 head(ta)
 ```
 
 We can also create plots for specific transcripts or genomic regions
-```{r, message=FALSE}
+
+```{r, message=FALSE, fig.height=7, fig.width=7, fig.align='center'}
 plot_model(tq, chrom = 1, start = 1, end= 11000, ymax_bw = 300, ymax_abundance = 250)
 ```
 
-# Secondary modeling features
+Note that if USCS chromosome names are not used (e.g., Ensembl style, 1 instead of chr1),
+user will need to first `library(Gviz)` then set `options(ucscChromosomeNames=FALSE)`.
+
+# Optional modeling features
 
 ## Using a non-uniform transcript coverage profile
 Because of variable polymerase elongation rates along the transcript body, polymerase
@@ -104,7 +109,7 @@ the abundance estimation step. To estimate a shape profile use the
 tsp <- transcript_shape_profile(transcripts = gr_ds,
                                 bigwig_plus = bwp,
                                 bigwig_minus = bwm,
-                                bin_size = bsize,linear_head_length = 500,
+                                bin_size = bsize, linear_head_length = 500,
                                 linear_tail_length = 500,
                                 min_transcript_length = 5e3)
 ```
@@ -112,7 +117,7 @@ tsp <- transcript_shape_profile(transcripts = gr_ds,
 The empirical profile can be viewed with the \code{view()} function. This example looks a
 fairly odd as we are running on synthetic data and allowing really short transcripts.
 
-```{r, message=FALSE}
+```{r, message=FALSE, fig.height=7, fig.width=7, fig.align='center'}
 view(tsp)
 ```
 
@@ -130,7 +135,8 @@ Nascent RNA data tends to be fairly noisy and spill over annotated transcript bo
 For this reason, pre-filtering the set transcripts to quantify abundance for can be
 quite useful. Specific transcripts can be specified as inactive during the fitting step
 using the \code{inactive_transcripts} option. You may create the list of these inactive
-transcripts in whatever manner you choose.
+transcripts in whatever manner you choose, e.g., based on emprical evidences from GRO-cap,
+PRO-cap, CAGE, RNA-seq, etc.
 
 ```{r, message=FALSE}
 # Inactive transcripts selected manually
