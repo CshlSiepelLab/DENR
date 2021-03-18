@@ -10,16 +10,13 @@ author: "Noah Dukler"
 
 # Quantifying nascent RNA sequencing data with transcript level resolution
 
-Note: This package should shave a relatively stable external interface at this point
-however there is a small chance we will have to make some breaking changes at some point.
-As we begin official version releases we will document changes in the NEWS file, noting
-breaking changes as well as critical updates.
-
 ## Installation
 ### DENR package
 Package can be installed with the following line of code:
 
+```
 devtools::install_github("CshlSiepelLab/DENR")
+```
 
 ### Tensorflow and Keras
 The TSS identification method uses the deep learning framework `Keras` and `Tensorflow`.
@@ -36,21 +33,21 @@ Instructions on installing tensorflow and keras from R can be found
 
 
 ## Overview
-The DENR method performs annotation based transcript level quantification on
+DENR performs annotation based transcript level quantification on
 nascent RNA sequencing data. Although it was developed on PRO-seq data it should be
 generally applicable to any nascent sequencing dataset which has been processed such that
-each read is represented as a single count representing the 3' end of the trancript being
+each read is represented as a single count representing the 3' end of the transcript being
 synthesized. For a pipeline to process PRO-seq data in this manner see the Danko Lab's
 PRO-seq 2.0 pipeline [here](https://github.com/Danko-Lab/proseq2.0).
 
 ## Application tutorial
 
 For details on running the DENR method please see the Introduction vignette. It can
-be built locally or viewed online [here](https://rpubs.com/ndukler/DENRIntro).
+be built locally or viewed online [here](https://rpubs.com/ndukler/622610).
 
 ## Methodology
 The DENR method explains the observed polymerase density as a weighted mixture of
-the underlying transcript annotations. The algorithm is outlined as follows ("*" steps
+the underlying transcript annotations. The algorithm is outlined as follows ("\*" steps
 are optional):
 
 1. Construct a unique set of transcript models from annotations
@@ -60,17 +57,17 @@ are optional):
 
 ### Transcript model generation
 After being provided annotations, DENR constructs a set of models corresponding
-to each transcript and reduces them to a set of unique models. Transcripts with highly
-similar 5' and 3' ends are often indistinguishable from each other from when looking at
+to each transcript and reduces them to a set of unique pre-RNA isoform models. Transcripts
+with highly similar 5' and 3' ends are often indistinguishable from each other when looking at
 nascent RNA sequencing data. The degree to which this occurs depends on the degree of
 granularity in the transcript models as specified by the user and the length of the
-5' and 3' regions that are masked for each transcript. We reccomend masking roughly +/-
+5' and 3' regions that are masked for each transcript. We recommend masking roughly +/-
 1kb for all transcripts as intiation and especially termination are messy processes
 producing highly noisy signals and thus ignoring them generally improves the performance
 of DENR. DENR then reduces these non-identifiable transcripts to a shared
 model. This process is outlined in the figure below.
 
-![Schematic of DENR model generation](man/figures/transcript_model_generation.png)
+![Schematic of DENR model generation](man/figures/transcript_model_creation.pdf)
 
 ### Quantification
 Transcripts are quantified by minimizing the difference between the polymerase density
