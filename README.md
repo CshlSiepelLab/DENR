@@ -50,28 +50,28 @@ The DENR method explains the observed polymerase density as a weighted mixture o
 the underlying transcript annotations. The algorithm is outlined as follows ("\*" steps
 are optional):
 
-1. Construct a unique set of transcript models from annotations
+1. Construct a unique set of pre-RNA isoform models from annotations
 2. Produce non-uniform polymerase density profile*
 3. Predict inactive transcript start sites (TSS)*
-4. Estimate per-transcript level abundances
+4. Estimate pre-RNA isoform abundances
 
 ### Transcript model generation
 After being provided annotations, DENR constructs a set of models corresponding
-to each transcript and reduces them to a set of unique pre-RNA isoform models. Transcripts
+to each mature RNA isoform and reduces them to a set of unique pre-RNA isoform models. Isoforms
 with highly similar 5' and 3' ends are often indistinguishable from each other when looking at
 nascent RNA sequencing data. The degree to which this occurs depends on the degree of
-granularity in the transcript models as specified by the user and the length of the
-5' and 3' regions that are masked for each transcript. We recommend masking roughly +/-
-1kb for all transcripts as intiation and especially termination are messy processes
+granularity in the isoform models as specified by the user and the length of the
+5' and 3' regions that are masked for each isoform. We recommend masking roughly +/-
+1kb for all isoforms as initiation and especially termination are messy processes
 producing highly noisy signals and thus ignoring them generally improves the performance
-of DENR. DENR then reduces these non-identifiable transcripts to a shared
+of DENR. DENR then reduces these non-identifiable isoforms to a shared
 model. This process is outlined in the figure below.
 
-![Schematic of DENR model generation](man/figures/transcript_model_creation.pdf)
+![Schematic of DENR model generation](man/figures/transcript_model_creation.png)
 
 ### Quantification
-Transcripts are quantified by minimizing the difference between the polymerase density
-predicted by transcript models (M) weighted by their abundances (A) vs the observed
+pre-RNA isoforms are quantified by minimizing the difference between the polymerase density
+predicted by isoform models (M) weighted by their abundances (A) vs the observed
 polymerase density(Y). There are two different cost functions, one based on the raw
 counts (1), the other based on the log counts (2).
 
@@ -110,10 +110,10 @@ allowed to be active during the fitting step.
 
 ### Optional: Shape profile
 It is know that polymerase density varies as the polymerase moves the body of the gene.
-Although we already reccomend masking out the head and tail regions of the transcripts to
+Although we already recommend masking out the head and tail regions of the isoforms to
 avoid the large spikes of polymerase density typically viewed there, we provide another
 tool to account for the more subtle variation caused by the acceleration. Using
-heuristic methods to select transcripts that are explain the vast majority of polymerase
+heuristic methods to select isoforms that are explained by the vast majority of polymerase
 density at their locus, DENR constructs an empirical model for relative polymerase
 densities in the gene body. The profile is then calculated using a loess fit that maps
 position within the gene on a rescaled [0, 1] range to the observed polymerase density,
@@ -123,5 +123,5 @@ position is important are scaled identically across genes (e.g. head 5kb -> [0, 
 tail 5kb -> [0.8, 1]), and the midsection of each gene is scaled to fit into the
 remaining space on the [0, 1] interval. Short genes are handled specially to just use the
 applicable part of the linearly scaled regions. Once this shape profile has been
-calculated it can be used to adjust the transcript models so that they do not assume
+calculated it can be used to adjust the isoform models so that they do not assume
 uniform polymerase density throughout the gene body.
