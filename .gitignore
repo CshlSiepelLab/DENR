@@ -43,6 +43,9 @@ vignettes/rsconnect
 # Rproject file
 *.Rproj
 
+# conda environment
+environment.yml
+
 log/
 .Rproj.user
 inst/doc

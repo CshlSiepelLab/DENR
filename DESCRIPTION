@@ -1,12 +1,18 @@
 Package: DENR
 Type: Package
-Title: Selecting transcript model using PRO-seq
-Version: 0.3.1
+Title: Deconvolution of Expression for Nascent RNA Sequencing Data
+Version: 1.0.0
 Authors@R: c(person("Yixin", "Zhao", email = "gzbyzyx2011@gmail.com",
   role = c("aut", "cre")),
   person("Dukler", "Noah", email = "ndukler@gmail.com",
   role = c("aut")))
-Description: Select the most actively transcribed transcript model using PRO-seq.
+Description: DENR is a new computational method built to quantify the abundance 
+    of distinct precursor RNAs based on nascent RNA sequencing data. It models
+    the nascent RNA read counts at each locus as a mixture of user-provided
+    isoforms. The performance of the baseline algorithm is enhanced by the use
+    of machine-learning predictions of transcription start sites (TSSs) and an
+    adjustment for the typical "shape profile"" of read counts along a
+    transcription unit.
 bioCviews:
   Software,
   StatisticalMethod,
