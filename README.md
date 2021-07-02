@@ -67,7 +67,9 @@ producing highly noisy signals and thus ignoring them generally improves the per
 of DENR. DENR then reduces these non-identifiable isoforms to a shared
 model. This process is outlined in the figure below.
 
-![Schematic of DENR model generation](man/figures/transcript_model_creation.png)
+<p align="center">
+  <img src="man/figures/transcript_model_creation.png" alt="Schematic of DENR model generation" width="400"/>
+</p>
 
 ### Quantification
 pre-RNA isoforms are quantified by minimizing the difference between the polymerase density
@@ -75,8 +77,8 @@ predicted by isoform models (M) weighted by their abundances (A) vs the observed
 polymerase density(Y). There are two different cost functions, one based on the raw
 counts (1), the other based on the log counts (2).
 
-<p style="text-align:center;">
-<img src="man/figures/optimization.png" width="500" />
+<p align="center">
+  <img src="man/figures/optimization.png" width="500" />
 </p>
 
 The default model is the one using the log counts as the errors are more gaussian-like
@@ -100,8 +102,8 @@ polymerase density patterns there is an additional heuristic that looks for unex
 high density polymerase regions. It does this by calculating and upstream polymerase
 ratio (UPR) using the regions indicated in the schematic below:
 
-<p style="text-align:center;">
-<img src="man/figures/upstream_polymerase_ratio.png" width="600" />
+<p align="center">
+  <img src="man/figures/upstream_polymerase_ratio.png" width="600" />
 </p>
 
 If the UPR of a transcript *t* is greater than or equal to 10, and there are no other
