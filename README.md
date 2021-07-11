@@ -1,6 +1,6 @@
 ---
-title: "DENR"
-author: "Noah Dukler"
+TITLE: "DENR"
+AUTHORS: "Noah Dukler; Yixin Zhao"
 ---
 
 <!-- badges: start -->
@@ -43,7 +43,7 @@ PRO-seq 2.0 pipeline [here](https://github.com/Danko-Lab/proseq2.0).
 ## Application tutorial
 
 For details on running the DENR method please see the Introduction vignette. It can
-be built locally or viewed online [here](https://rpubs.com/ndukler/622610).
+be built locally or viewed online [here](https://rpubs.com/gzbyzyx/DENR).
 
 ## Methodology
 The DENR method explains the observed polymerase density as a weighted mixture of
@@ -74,7 +74,7 @@ model. This process is outlined in the figure below.
 ### Quantification
 pre-RNA isoforms are quantified by minimizing the difference between the polymerase density
 predicted by isoform models (M) weighted by their abundances (A) vs the observed
-polymerase density(Y). There are two different cost functions, one based on the raw
+polymerase density (Y). There are two different cost functions, one based on the raw
 counts (1), the other based on the log counts (2).
 
 <p align="center">
@@ -99,16 +99,16 @@ non-zero abundance value during fitting.
 
 **Technical Note 2:** Given that the TSS predictor misses some active TSS with abnormal
 polymerase density patterns there is an additional heuristic that looks for unexplainable
-high density polymerase regions. It does this by calculating and upstream polymerase
+high density polymerase regions. It does this by calculating an upstream polymerase
 ratio (UPR) using the regions indicated in the schematic below:
 
 <p align="center">
   <img src="man/figures/upstream_polymerase_ratio.png" width="600" />
 </p>
 
-If the UPR of a transcript *t* is greater than or equal to 10, and there are no other
-active transcripts within 5Kb upstream or 6Kb downstream of the TSS of *t*, then *t* is
-allowed to be active during the fitting step.
+If the UPR of an isoform *t* is greater than or equal to 5, and there are no other
+active isoforms within 5Kb upstream or 6Kb downstream of the TSS of *t*, then isoform *t*
+is eligible to be assigned a non-zero weight during the fitting step.
 
 ### Optional: Shape profile
 It is know that polymerase density varies as the polymerase moves the body of the gene.

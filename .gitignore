@@ -51,3 +51,7 @@ log/
 inst/doc
 doc
 Meta
+
+nohup.out
+
+vignettes/introduction_files/figure-html/
