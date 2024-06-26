@@ -11,11 +11,13 @@ AUTHORS: "Noah Dukler; Yixin Zhao"
 # Quantifying nascent RNA sequencing data with transcript level resolution
 
 ## Installation
-### DENR package
-Package can be installed with the following line of code:
+### DENR container
+Package is installed within singularity container that can be setup with the following lines of code:
 
 ```
-devtools::install_github("CshlSiepelLab/DENR")
+singularity pull library://rhassett-cshl/stadyum/denr:latest
+singularity shell denr_latest.sif
+singularity exec denr_latest.sif R
 ```
 
 ### Tensorflow and Keras
@@ -27,10 +29,6 @@ run.
 tensorflow::tf_config()
 
 ```
-
-Instructions on installing tensorflow and keras from R can be found
-[here](https://tensorflow.rstudio.com/reference/keras/install_keras/).
-
 
 ## Overview
 DENR performs annotation based transcript level quantification on
