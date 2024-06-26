@@ -23,8 +23,8 @@ singularity exec denr_latest.sif R
 ### Tensorflow and Keras
 The TSS identification method uses the deep learning framework `Keras` and `Tensorflow`.
 Only tensorflow 2.0 or greater is supported. Note that the version of the R `tensorflow`
-package is not the same as the python versions it is using under the hood. To check it
-run.
+package is not the same as the python versions it is using under the hood. The singularity 
+container comes with tensorflow and keras pre-installed. To check it run.
 ```
 tensorflow::tf_config()
 
